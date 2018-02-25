@@ -124,7 +124,7 @@
 			<scope>compile</scope>
 			<version>${mybatis.spring.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
@@ -179,14 +179,14 @@
 			<artifactId>mail</artifactId>
 			<version>1.4.7</version>
 		</dependency>
-		
+
 		<!-- quartz -->
 		<dependency>
-		    <groupId>org.quartz-scheduler</groupId>
-		    <artifactId>quartz</artifactId>
-		    <version>2.2.1</version>
+			<groupId>org.quartz-scheduler</groupId>
+			<artifactId>quartz</artifactId>
+			<version>2.2.1</version>
 		</dependency>
-		
+
 		<!-- 服务接口 -->
 		<dependency>
 			<groupId>com.sms</groupId>
@@ -197,24 +197,34 @@
 	</dependencies>
 	<build>
 		<finalName>trade-dispatch-server</finalName>
-			<resources>
-				<resource>
-					<directory>src/main/resources</directory>
-					<includes>
-						<include>**/*.*</include>
-					</includes>
-					<filtering>false</filtering>
-				</resource>
-				<resource>
-					<directory>src/main/java</directory>
-					<includes>
-						<include>**/*.properties</include>
-						<include>**/*.xml</include>
-					</includes>
-					<filtering>false</filtering>
-				</resource>
-			</resources>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<includes>
+					<include>**/*.*</include>
+				</includes>
+				<filtering>false</filtering>
+			</resource>
+			<resource>
+				<directory>src/main/java</directory>
+				<includes>
+					<include>**/*.properties</include>
+					<include>**/*.xml</include>
+				</includes>
+				<filtering>false</filtering>
+			</resource>
+		</resources>
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.1</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
@@ -248,5 +258,6 @@
 					</execution>
 				</executions>
 			</plugin>
-		</plugins>	</build>
+		</plugins>
+	</build>
 </project>
