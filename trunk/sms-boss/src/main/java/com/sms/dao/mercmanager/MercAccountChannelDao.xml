@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.sms.dao.mercmanager.MercAccountChannelDao" >
+
+	<resultMap type="MercAccountChannel" id="resultMercAccountChannel">
+		<result column="merc_account_no"	property="accountNo"/>
+		<result column="channel_id"	property="channelId"/>
+		<result column="priority"	property="priority"/>
+		
+  	</resultMap>
+	
+	<insert id="insertBatch" useGeneratedKeys="true" parameterType="java.util.List"> 
+		insert into s_mercaccount_channel (
+			  merc_account_no
+			  ,channel_id
+			  ,priority
+			) VALUES  
+			<foreach collection="list" item="item" index="index" separator="," >  
+		        (#{item.accountNo},#{item.channelId},#{item.priority})  
+		    </foreach>  
+	</insert>  
+	
+	<select id="getByAccountNo" resultMap="resultMercAccountChannel">
+		select record_id, merc_account_no, channel_id, priority FROM s_mercaccount_channel where merc_account_no =#{mercAccountNo}
+	</select>
+	
+	<delete id="deleteByAccountNo">
+		delete from s_mercaccount_channel WHERE merc_account_no =#{accountNo}
+	</delete>
+    
+</mapper>

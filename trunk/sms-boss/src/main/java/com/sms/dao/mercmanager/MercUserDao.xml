@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.sms.dao.mercmanager.MercUserDao" >
+
+	<resultMap type="MercUser" id="resultMercUser">
+		<result column="operator_id"					property="operatorId"/>
+		<result column="operator_login_name"					property="operatorLoginName"/>
+		<result column="operator_name"					property="operatorName"/>
+		<result column="operator_login_password"					property="operatorLoginPassword"/>
+		<result column="pwd_err_cnt"					property="pwdErrCnt"/>
+		<result column="expiration_date"					property="expirationDate"/>
+		<result column="mobile"					property="mobile"/>
+		<result column="phone"					property="phone"/>
+		<result column="email"					property="email"/>
+		<result column="operator_status"					property="operatorStatus"/>
+		<result column="operator_status_des"					property="operatorStatusDes"/>
+		<result column="create_datetime"					property="createDatetime"/>
+		<result column="update_datetime"					property="updateDatetime"/>
+		<result column="remark"					property="remark"/>
+		<result column="merchant_id"					property="merchantId"/>  
+		<result column="merchant_name"					property="merchantName"/> 
+  	</resultMap>
+	
+	<sql id="select">
+	select t.operator_id, t.operator_login_name, t.operator_name,
+		t.operator_login_password, t.pwd_err_cnt, t.expiration_date, t.mobile, t.phone, t.email, t.operator_status,
+		if(t.operator_status='100','正常','禁用') operator_status_des,
+		date_format(t.create_datetime, '%Y-%m-%d %H:%i:%s') create_datetime,
+		date_format(t.update_datetime, '%Y-%m-%d %H:%i:%s') update_datetime,
+		t.remark, t.merchant_id, t.merchant_name
+	from t_operator t
+	</sql>
+	
+	<sql id="conditions">
+		<where>
+			<if test="merchantId !=null">
+				and t.merchant_id = #{merchantId}
+			</if>
+			<if test="merchantName !=null and merchantName !=''">
+				and t.merchant_name like concat('%',#{merchantName},'%')
+			</if>
+			<if test="userMobile !=null">
+				and t.mobile = #{userMobile}
+			</if>
+			<if test="userName !=null and userName !=''">
+				and t.operator_name like concat('%',#{userName},'%')
+			</if>
+		</where>
+	</sql>
+    
+    <select id="query" parameterType="MercUserCriteria" resultMap="resultMercUser">
+		<include refid="select"/>
+		<include refid="conditions"/>
+		order by t.operator_id desc
+	</select>
+	
+	<insert id="insert" parameterType="MercUser" keyProperty="operator_id" useGeneratedKeys="true">
+		insert into t_operator (
+		   operator_login_name
+		  ,operator_name
+		  ,operator_login_password
+		  ,mobile
+		  ,phone
+		  ,email
+		  ,operator_status
+		  ,create_datetime
+		  ,merchant_id
+		  ,merchant_name
+		) VALUES (
+		   #{operatorLoginName}
+		  , #{operatorName}
+		  ,#{operatorLoginPassword}
+		  ,#{mobile}
+		  ,#{phone}
+		  ,#{email}
+		  ,'100'
+		  ,now()
+		  ,#{merchantId}
+		  ,#{merchantName}
+		)
+	</insert>
+	
+	<select id="getMercUserByMobile" resultMap="resultMercUser">
+		<include refid="select"/>
+		where t.mobile =#{mobile}
+	</select>
+	
+	<select id="getMercUserById" resultMap="resultMercUser">
+		<include refid="select"/>
+		where t.operator_id =#{operatorId}
+	</select>
+	
+	<update id="update"  parameterType="MercUser" >
+	update t_operator SET
+	   operator_login_name = #{operatorLoginName}
+	  ,operator_name = #{operatorName}
+	  ,phone = #{phone}
+	  ,email = #{email}
+	  ,update_datetime = now()
+	  ,operator_status =#{operatorStatus}
+	WHERE mobile = #{mobile}
+  </update>
+  
+  <update id="resetPassword"  parameterType="MercUser" >
+	update t_operator SET
+	   operator_login_password = #{operatorLoginPassword}
+	  ,update_datetime = now()
+	WHERE operator_id =#{operatorId}
+  </update>
+</mapper>

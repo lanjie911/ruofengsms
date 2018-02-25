@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Edit User</title>
+<link rel="stylesheet" type="text/css" href="../../themes/general.css">
+<link rel="stylesheet" type="text/css" href="../../themes/icon.css">
+<link rel="stylesheet" type="text/css" href="../../themes/default/easyui.css">
+<script type="text/javascript" src="../../scripts/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="../../scripts/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../../scripts/src/jquery.parser.js"></script>
+<script type="text/javascript"
+	src="../../scripts/locale/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="../../scripts/general.js"></script>
+<script type="text/javascript" src="../../scripts/sessionExpriation.js"></script>
+
+<script type="text/javascript">
+	$(function() {
+		var userId = $.getUrlParam('userId');
+		$.ajax({
+			url:'../../user/getAllRoles.ajax',
+			type:'get',
+			dataType:'JSON',
+			async:false,
+			cache: false,
+			data:{
+				userId:userId
+			},
+			success:function(data) {
+				$('#rolelist').datagrid('loadData',data);
+			}
+		});
+		
+		$('#edit_form').form({
+			url : '../../user/editUser.ajax',
+			cache: false,
+			async:false,
+			onSubmit : function() {
+				if ($(this).form('validate')) {
+					return extra_validate();
+				} else {
+					return false;
+				}
+			},
+			success : function(data) {
+				var obj = $.parseJSON(data);
+				if (obj.success) {
+					$('#btn_submit').css('display','none');
+					$.messager.alert('Info', '提交成功', 'info');
+				} else {
+					$.messager.alert('Error', '提交失败:' + obj.message, 'error');
+				}
+			}
+		});
+		
+		$('#btn_submit').bind('click', function() {
+			$("#edit_form").submit();
+		});
+		
+		$.ajax({
+			url : '../../user/getUserByUserId.ajax',
+			type : 'get',
+			dataType : 'JSON',
+			async:false,
+			cache: false,
+			data : {
+				userId : userId
+			},
+			success : function(data) {
+				init_view(data);
+			}
+		});
+		
+		$.ajax({
+			url:'../../user/getRolesByUserId.ajax',
+			type:'get',
+			dataType:'JSON',
+			async:false,
+			cache: false,
+			data:{
+				userId:userId
+			},
+			success:function(data) {
+				var rows = $('#rolelist').datagrid('getRows');
+				if(rows.length == 0){
+					location.reload();
+				}
+				for (var i=0; i<rows.length; i++) {
+					for (var j=0; j<data.length; j++) {
+						if (rows[i].id==data[j].id) {
+							$('#rolelist').datagrid('checkRow', i);
+						}
+					}
+				}
+			}
+		});
+		
+	});
+	
+	function init_view(data) {
+		$("#id").attr("value",data.id);
+		$("#loginName").attr("value",data.loginName);
+		$("#name").attr("value",data.name);
+		
+		$('#status').combobox({
+    		url:'../../bizdict/getDir.ajax?dirType=USER_STATUS',
+    			valueField:'dirCode',
+    			textField:'dirCodeDesc',
+    			panelHeight:'auto',
+    			editable:false 
+		});
+		$('#status').combobox("select", data.status);
+		
+		$("#email").attr("value",data.email);
+		$("#mobile").attr("value",data.mobile);
+		$("#phone").attr("value",data.phone);
+		$("#expirationDate").datebox("setValue", data.expirationDate);
+		$("#reamrk").text(data.reamrk);
+		$("#id").focus();	
+	}
+	
+	function extra_validate() {
+		var rows = $('#rolelist').datagrid('getSelections');
+		if(rows.length<=0) {
+			$.messager.alert('Info', '请选择用户角色。', 'info');
+			return false;	
+		}
+		
+		var str_roles="";
+		for(var i=0; i<rows.length; i++){
+		    str_roles = str_roles + rows[i].id + ",";
+		}
+		$("#roles").attr("value", str_roles);
+		return true;
+	}
+    
+	
+</script>
+</head>
+<body>
+	<form id="edit_form" method="post">
+		<table class="table_view">
+			<tr>
+				<td class="td_new_subtitle" colspan="2">基本信息</td>
+			</tr>
+			<tr>
+				<td class="td_new_name">用户编号<span class="red">*</span></td>
+				<td class="td_new_value"><input
+					class="input_140 gray" type="text" readonly="readonly" id="id" name="id">
+							
+				</td>
+			</tr>
+			<tr>
+				<td class="td_new_name">用户名<span class="red">*</span></td>
+				<td class="td_new_value"><input
+					class="input_140 gray" type="text" readonly="readonly"
+					data-options="required:true" id="loginName" name="loginName">
+							
+				</td>
+			</tr>
+			<tr>
+				<td class="td_new_name">姓名<span class="red">*</span></td>
+				<td class="td_new_value"><input
+					class="easyui-validatebox input_140" type="text"
+					data-options="required:true" id="name" name="name">
+							
+				</td>
+			</tr>
+			<tr>
+				<td class="td_new_name">状态<span class="red">*</span></td>
+				<td class="td_new_value"><input id="status" name="status"  style="width:142px;" editable="false">	</td>
+			</tr>
+			<tr>
+				<td class="td_new_name">有效期<span class="red">*</span></td>
+				<td class="td_new_value">
+					<input id="expirationDate" name="expirationDate" type="text" class="easyui-datebox" data-options="required:true" style="width:142px;" />
+				</td>
+			</tr>
+			<tr>
+				<td class="td_new_name">手机<span class="red">*</span></td>
+				<td class="td_new_value">
+					<input class="easyui-validatebox input_140" type="text" data-options="required:true" id="mobile" name="mobile" />
+				</td>
+			</tr>
+			<tr>
+				<td class="td_new_name">电话</td>
+				<td class="td_new_value">
+					<input class="input_140" type="text" id="phone" name="phone" /></td>
+			</tr>
+			<tr>
+				<td class="td_new_name">Email</td>
+				<td class="td_new_value">
+					<input id="email" name="email" class="easyui-validatebox input_140" data-options="validType:['email','length[3,30]']" />
+				</td>
+			</tr>
+			<tr>
+				<td class="td_new_name">角色<span class="red">*</span>	</td>
+				<td class="td_new_value">
+					<table class="easyui-datagrid" title="角色列表" id="rolelist" style="width:600px;"
+						data-options="singleSelect:true,pagination:false,rownumbers:false">
+						<thead>
+							<tr>
+								<th data-options="field:'ck', checkbox:true"></th>
+								<th data-options="field:'id',width:60" align="center">角色编号</th>
+								<th data-options="field:'name',width:120">角色名称</th>
+								<th data-options="field:'desc',width:280">描述</th>
+							</tr>
+						</thead>
+					</table>
+					<input type="hidden" id="roles" name="roles">
+				</td>
+			</tr>
+			<tr>
+				<td class="td_new_name">备注</td>
+				<td class="td_new_value">
+					<textarea name="reamrk" id="reamrk" style="height:60px;" cols="90"  class="easyui-validatebox"></textarea>
+				</td>
+			</tr>
+			<tr>
+				<td class="td_new_name"></td>
+				<td class="td_new_value">
+					<a id="btn_submit" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok">确认提交</a>
+				</td>
+			</tr>
+		</table>
+	</form>
+
+</body>
+</html>

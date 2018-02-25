@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.smsmanager.SmsDao">
+
+	<resultMap type="Sms"	id="resultSms">
+		<result property="recordId" 		column="record_id" />
+		<result property="batchNo" 			column="batch_no" />
+		<result property="channelId" 		column="channel_id" />
+		<result property="channelName" 		column="channel_name" />
+		<result property="accountNo" 		column="account_no" />
+		<result property="merchantNameAbbreviation" column="merchant_name_abbreviation" />
+		<result property="accountType" 		column="account_type" />
+		<result property="accountTypeDes" 	column="account_type_des" />
+		<result property="failedRetransmission" 	column="failed_retransmission" />
+		<result property="mobile" 			column="mobile" />
+		<result property="content" 			column="content"/>
+		<result property="reservationDatetime" 		column="reservation_datetime" />
+		<result property="sendStatus" 		column="send_status" />
+		<result property="sendStatusDes" 	column="send_status_des" />
+		<result property="sendMsg" 			column="send_msg" />
+		<result property="failedNum" 		column="failed_num" />
+		<result property="createDatetime" 	column="create_datetime" />
+		<result property="respDatetime" 	column="resp_datetime" />
+		<result property="sumNum" 			column="sum_num" />
+		<result property="successNum" 		column="success_num" />
+		<result property="sumSuccess" 		column="sum_success" />
+		<result property="blacklistNum" 	column="blacklist_num" />
+		<result property="appointmentFlag" 	column="appointment_flag" />
+		<result property="province" 		column="province" />
+		<result property="city" 			column="city" />
+		<result property="isp" 				column="isp" />
+		<result property="reqMsgId" 		column="req_msg_id" />
+		<result property="mercReqTime" 		column="merc_req_time" />
+	</resultMap>
+	
+	<sql id="select">
+		select r.record_id,
+			r.account_no, r.merchant_name_abbreviation, r.channel_id, r.channel_name,
+			date_format(r.create_datetime, '%Y-%m-%d %H:%i:%s') create_datetime,
+			date_format(r.resp_datetime, '%Y-%m-%d %H:%i:%s') resp_datetime,
+			r.account_type, r.reservation_datetime, CAST(r.batch_no AS CHAR) batch_no,
+			tat.account_type_des, r.send_status, tss.send_status_des,
+			r.send_msg, r.content, r.mobile, r.province, r.city, r.isp, 
+			r.req_msg_id, r.merc_req_time, '否' appointment_flag
+		from 
+			s_plain_send_record r
+		left join tk_account_type tat on tat.account_type = r.account_type
+		left join tk_send_status tss on tss.send_status = r.send_status
+  	</sql>
+  	
+  	<sql id="conditions">
+		<where>
+			<if test="mercAccountNo !=null">
+				and r.account_no = #{mercAccountNo} 
+			</if>
+			<if test="mercAccountType !=null">
+				and r.account_type = #{mercAccountType}
+			</if>
+			<if test="smsGroupId !=null">
+				and r.channel_id = #{smsGroupId}
+			</if>
+			<if test="smsStatus !=null">
+				and r.send_status = #{smsStatus} 
+			</if>
+			<if test="mobile !=null and mobile !='' ">
+				and r.mobile = #{mobile} 
+			</if>
+			<if test="batchNo != null">
+				and r.batch_no = #{batchNo} 
+			</if>
+		</where>
+	</sql>
+	
+	<select id="query" parameterType="SmsCriteria" resultMap="resultSms">
+		<include refid="select"/>
+		<include refid="conditions"/>
+		order by r.create_datetime desc
+	</select>
+</mapper>

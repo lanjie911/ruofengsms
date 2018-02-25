@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Merchant Info List</title>
+<link rel="stylesheet" type="text/css" href="../../themes/general.css">
+<link rel="stylesheet" type="text/css" href="../../themes/icon.css">
+<link rel="stylesheet" type="text/css" href="../../themes/default/easyui.css">
+<script type="text/javascript" src="../../scripts/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="../../scripts/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../../scripts/src/jquery.parser.js"></script>
+<script type="text/javascript" src="../../scripts/locale/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="../../scripts/sessionExpriation.js"></script>
+<script type="text/javascript" src="../../scripts/util/userformatter.js"></script>
+<script type="text/javascript">
+		$(function(){
+			var pg = $("#query_result").datagrid("getPager");
+			if (pg) {
+				$(pg).pagination({		
+					onBeforeRefresh : function() {
+					},
+					onRefresh : function(pageNumber, pageSize) {
+						do_submit(pageNumber, pageSize)
+					},
+					onChangePageSize : function() {
+					},
+					onSelectPage : function(pageNumber, pageSize) {
+						do_submit(pageNumber, pageSize);
+					}
+				});
+			}
+			
+			$('#btn_query').bind('click', function(){  
+				$(pg).pagination('select', 1);
+        	});
+			
+			$('#btn_reset').bind('click', function(){  
+				$('#query_search_Div').form('clear');
+        	});
+			
+			$("#query_result").datagrid('hideColumn', 'unsubscribeStatus');
+			$("#query_result").datagrid('hideColumn', 'transType');
+			
+			init_by_permission('ROLE_LIST','divBtnEdit');
+		});
+	
+	function do_submit(pageNumber, pageSize) {
+		$('#query_form').form('submit', {
+			url : '../../black/query.ajax',
+			cache: false,
+			onSubmit:function(param){
+				param.paging = true;
+				param.limit = pageSize;
+				param.offset = (pageNumber-1)*pageSize;
+				return $(this).form('validate');
+			},
+			success : function(data) {
+				var obj = $.parseJSON(data);
+				$('#query_result').datagrid('loadData', obj)
+			}
+		});
+	}
+	
+	function do_add() {
+		parent.addTabWithIcon("退订/黑名单用户新增", "./smsmanager/blackadd.htm", "icon-add");
+	}
+	function do_edit() {
+		var row = $('#query_result').datagrid('getSelected');
+		if(row){
+			parent.addTabWithIcon("退订/黑名单用户修改", "./smsmanager/blackedit.htm?unsubscribeId="+row.unsubscribeId, "icon-edit");
+		}else{
+			$.messager.alert('提示', '请选择要操作的记录。');
+		}
+		
+	}
+	function do_remove() {
+		var row = $('#query_result').datagrid('getSelected');
+		if(row){
+			if(row.unsubscribeStatus != 100){
+				$.messager.alert('Error', '只有退订/黑名单中的记录才能解除状态', 'error');
+				return;
+			}
+			$.ajax({
+				url : '../../black/updateStatus.ajax',
+				type : 'get',
+				dataType : 'JSON',
+				cache: false,
+				data : {
+					unsubscribeId : row.unsubscribeId,
+					beforeStatus : row.unsubscribeStatus,
+					afterStatus : 200
+				},
+				success : function(data) {
+					if (data.success) {
+						$.messager.alert('Info', '解除状态成功', 'info');
+						$("#query_result").datagrid("getPager").pagination('select', 1);
+					} else {
+						$.messager.alert('Error', '解除状态失败:' + data.message, 'error');
+					}
+				}
+			});
+		}else{
+			$.messager.alert('提示', '请选择要操作的记录。');
+		}
+	}
+	</script>
+</head>
+<body>
+
+	<form id="query_form" method="post">
+		<div style="margin: 5px 0"></div>
+		<div style="margin: 0 5px" id='query_search_Div'>
+			<table class="table_view" style="font-size: 12px; background: #F1F1F1;width:99.5%;">
+				<tr>
+					<td class="td_view_name">手机号</td>
+					<td class="td_view_value" colspan="3">
+						<input class="easyui-numberbox input_140" 	type="text" name="mobile" id="mobile" />
+					</td>
+				</tr>
+				<tr>
+					<td colspan="4" align="center" class="td_view_name">
+						<div align="center">
+							<a id="btn_query" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-search">查询</a> 
+							<a id="btn_reset" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-reset">重置</a>
+						</div>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div style="margin: 10px 0;"></div>
+		<div style="margin: 0 5px">
+			<table class="easyui-datagrid" title="查询结果" id="query_result"
+				data-options="singleSelect:true,pagination:true,rownumbers:true"
+				toolbar="#tb">
+				<thead>
+					<tr>
+						<th field="ck" checkbox="true"></th>
+						<th data-options="field:'unsubscribeStatus'"></th>
+						<th data-options="field:'transType'"></th>
+						<th data-options="field:'unsubscribeId'">编号</th>
+						<th data-options="field:'unsubscribeMobile'">手机号</th>
+						<th data-options="field:'transTypeDes'">交易类型</th>
+						<th data-options="field:'createDatetime',align:'center'">提交时间</th>
+						<th data-options="field:'unsubscribeStatusDes',align:'center'">状态</th>
+					</tr>
+				</thead>
+			</table>
+
+			<div id="tb">
+				<div id="divBtnAdd" style="float:left">
+					<a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="javascript:do_add();">添加</a>
+				</div>
+				<div id="divBtnEdit" style="float:left">
+					<a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="javascript:do_edit();">修改</a>
+				</div>
+				<div id="divBtnRemove" style="float:left">
+					<a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="javascript:do_remove();">解除</a>
+				</div>
+			</div>
+		</div>
+	</form>
+</body>

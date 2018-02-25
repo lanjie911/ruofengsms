@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.systemParam.MobileOperatorDao">
+
+	<resultMap type="MobileOperator" id="resultMobileOperator">
+		<id property="phoneOperatorId" 	column="phone_operator_id" />
+		<result property="pref" 		column="pref" />
+		<result property="prefLength" 	column="pref_length" />
+		<result property="supportOperators" 	column="support_operators" />
+		<result property="supportOperatorsDes" 	column="support_operators_des" />
+	</resultMap>
+
+	<sql id="select">
+		select
+			t.phone_operator_id, t.pref, t.pref_length, t.support_operators,t.support_operators_des
+		from s_mobile_operator t
+	</sql>
+
+	<select id="getById" resultMap="resultMobileOperator" parameterType="java.lang.Integer">
+		<include refid="select" />
+		where t.phone_operator_id = #{phoneOperatorId}
+	</select>
+
+	<insert id="insert" parameterType="MobileOperator" useGeneratedKeys="true" keyProperty="phoneOperatorId">
+		insert into s_mobile_operator
+		(pref, pref_length, support_operators, support_operators_des)
+		values
+		(#{pref}, length(#{pref}), #{supportOperators}, #{supportOperatorsDes})
+	</insert>
+
+	<update id="update" parameterType="MobileOperator">
+		update
+			s_mobile_operator
+		set
+			pref = #{pref},
+			pref_length = length(#{pref}),
+			support_operators = #{supportOperators},
+			support_operators_des = #{supportOperatorsDes}
+		where
+			phone_operator_id = #{phoneOperatorId}
+	</update>
+
+	<select id="query" parameterType="MobileOperatorCriteria" resultMap="resultMobileOperator">
+		<include refid="select" />
+		<include refid="conditions" />
+		order by t.phone_operator_id desc
+	</select>
+	
+	<select id="countPrefNum" resultType="java.lang.Integer">
+		select count(0) from s_mobile_operator t where t.pref = #{pref}
+	</select>
+	
+	<select id="countPrefNumByID" resultType="java.lang.Integer">
+		select count(0) from s_mobile_operator t where t.pref = #{pref} and t.phone_operator_id != #{phoneOperatorId}
+	</select>
+
+	<sql id="conditions">
+		<where>
+			<if test="phoneOperatorId !=null">
+				and t.phone_operator_id = #{phoneOperatorId}
+			</if>
+			<if test="pref !=null and pref !=''">
+				and t.pref like concat('%',#{pref},'%')
+			</if>
+			<if test="supportOperators != null">
+				and t.support_operators = #{supportOperators}
+			</if>
+		</where>
+	</sql>
+
+</mapper>

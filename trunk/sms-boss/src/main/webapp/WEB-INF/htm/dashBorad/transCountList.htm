@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Merchant TransCount List</title>
+<link rel="stylesheet" type="text/css" href="../../themes/general.css">
+<link rel="stylesheet" type="text/css" href="../../themes/icon.css">
+<link rel="stylesheet" type="text/css" href="../../themes/default/easyui.css">
+<script type="text/javascript" src="../../scripts/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="../../scripts/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../../scripts/src/jquery.parser.js"></script>
+<script type="text/javascript" src="../../scripts/locale/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="../../scripts/sessionExpriation.js"></script>
+<script type="text/javascript" src="../../scripts/util/userformatter.js"></script>
+<script type="text/javascript">
+$(function(){
+	var pg = $("#query_result").datagrid("getPager");
+	if (pg) {
+		$(pg).pagination({		
+				onBeforeRefresh : function() {
+			},
+			onRefresh : function(pageNumber, pageSize) {
+				do_submit(pageNumber, pageSize)
+			},
+			onChangePageSize : function() {
+			},
+			onSelectPage : function(pageNumber, pageSize) {
+				do_submit(pageNumber, pageSize);
+			}
+		});
+	}
+	
+	$('#btn_query').bind('click', function(){  
+		$(pg).pagination('select', 1);
+	});
+	
+	$('#btn_reset').bind('click', function(){
+		document.getElementById("sumDiv").innerHTML="";
+		$('#query_search_Div').form('clear');
+	});
+	
+	$('#btn_redo').bind('click', function(){
+		do_expot();
+	});
+	
+});
+	
+function do_submit(pageNumber, pageSize) {
+	$('#query_form').form('submit', {
+		url : '../../dashBorad/queryTransCount.ajax',
+		cache: false,
+		onSubmit:function(param) {
+			param.paging = true;
+			param.limit = pageSize;
+			param.offset = (pageNumber-1)*pageSize;
+			return $(this).form('validate');
+		},
+		success : function(data) {
+			var obj = $.parseJSON(data);
+			$('#query_result').datagrid('loadData', obj);
+			
+			var displayHtml = '发送数：'+obj.transCount.sumTotal+'\t成功数：'+obj.transCount.sumSucc+'\t失败数：'+obj.transCount.sumFailure+'\t未知数：'+obj.transCount.sumUnknow+'\t成功率：'+obj.transCount.sumRateDes;
+			document.getElementById("sumDiv").innerHTML= displayHtml;
+		}
+	});
+}
+
+function do_expot() {
+ 	$('#query_form').form('submit',{
+		url : '../../dashBorad/expDataTransCount.ajax',
+		cache: false,
+		onSubmit:function(){
+			return $(this).form('validate');
+		},
+		success:function(data){
+			var obj = $.parseJSON(data);  
+            if(obj.success){  
+                window.location.href = "transCountList.htm";
+            }
+            else{  
+                $.messager.alert('Error',obj.message, 'error');  
+            }     
+		}
+	}); 
+}
+</script>
+</head>
+<body>
+
+<form id="query_form" method="post">
+	<div style="margin: 5px 0"></div>
+	<div style="margin: 0 5px" id='query_search_Div'>
+		<table class="table_view" style="font-size: 12px; background: #F1F1F1;width:99.5%;">
+			<tr>
+				<td class="td_view_name">商户编号</td>
+				<td class="td_view_value">
+					<input class="easyui-numberbox input_140" type="text" name="merchantId" id="merchantId" />
+				<td class="td_view_name">商户账号</td>
+				<td class="td_view_value">
+					<input class="easyui-numberbox input_140" type="text" name="accountNo" id="accountNo" />
+				</td>
+			</tr>
+			<tr>
+				<td class="td_view_name">起始时间</td>
+				<td class="td_view_value">
+					<input class="easyui-numberbox input_140" type="text" id="statisticalTimeStart" name="statisticalTimeStart" />
+				<td class="td_view_name">结束时间时间</td>
+				<td class="td_view_value">
+					<input class="easyui-numberbox input_140" type="text" id="statisticalTimeEnd" name="statisticalTimeEnd" />
+				</td>
+			</tr>
+			<tr>
+				<td colspan="4" align="center" class="td_view_name">
+				<div align="center">
+					<a id="btn_query" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-search">查询</a> 
+					<a id="btn_reset" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-reset">重置</a>
+				</div>
+				</td>
+			</tr>
+		</table>
+	</div>
+	<div style="margin: 10px 0;"></div>
+	<div style="text-align:right;">
+		<a id="btn_redo"  href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-redo" data-options="align:'right'">导出</a>
+	</div>
+	<div style="margin: 0 5px">
+		<table class="easyui-datagrid" title="查询结果" id="query_result" data-options="singleSelect:true,pagination:true,rownumbers:true" toolbar="#tb">
+		<thead>
+		<tr>
+			<th field="ck" checkbox="true"></th>
+			<th data-options="field:'statisticalTime',align:'center'">时间</th>
+			<th data-options="field:'merchantId',align:'center'">商户编号</th>
+			<th data-options="field:'merchantNameAbbreviation',align:'center'">商户简称</th>
+			<th data-options="field:'accountNo',align:'center'">商户账号</th>
+			<th data-options="field:'sendNum',align:'center'">发送数</th>
+			<th data-options="field:'successNum',align:'center'">成功数</th>
+			<th data-options="field:'failureNum',align:'center'">失败</th>
+			<th data-options="field:'unknownNum',align:'center'">未知数</th>
+			<th data-options="field:'missionSuccessRateDes',align:'center'">成功率</th>
+		</tr>
+		</thead>
+		</table>
+		<div id="tb">
+			<div  style="float:left">
+				<span id="sumDiv">&nbsp;</span>				
+			</div>
+		</div>
+	</div>
+</form>
+</body>

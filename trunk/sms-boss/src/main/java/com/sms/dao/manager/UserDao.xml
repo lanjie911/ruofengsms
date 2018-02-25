@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sms.dao.manager.UserDao">
+	
+	<resultMap type="User" 						id="resultMapUser">
+		<id column="operator_id" 					property="id" />
+        <result column="operator_name" 				property="name" />
+        <result column="operator_login_name" 		property="loginName" />
+        <result column="operator_login_password" 	property="loginPassword" />
+        <result column="operator_status" 				property="status" />
+        <result column="pwd_err_cnt" 			property="pwdErrCnt" />
+        <result column="expiration_date" 		property="expirationDate" />
+        <result column="mobile" 				property="mobile" />
+        <result column="phone" 					property="phone" />
+        <result column="email" 					property="email" />
+        <result column="create_datetime" 		property="createDatetime" />
+        <result column="update_datetime" 		property="updateDatetime" />
+        <result column="remark" 		property="remark" />
+	</resultMap>
+	
+	<sql id="selectALl">
+		select t.operator_id,t.operator_login_name,t.operator_name,t.operator_login_password,t.pwd_err_cnt,t.expiration_date,t.mobile ,t.
+ 				phone,t.email,t.operator_status,
+ 				date_format(t.create_datetime, '%Y-%m-%d %H:%i:%s') create_datetime,
+ 				date_format(t.update_datetime, '%Y-%m-%d %H:%i:%s') update_datetime,
+ 				t.remark
+			from t_operator t 
+	</sql>
+	
+	<sql id="queryWhere">
+		<where>
+			<if test="userId != null">
+				and t.operator_id = #{userId}
+			</if>
+			<if test="userName!=null and userName!=''">
+				and t.operator_name like  concat('%',#{userName},'%')
+			</if>
+			<if test="userLoginName !=null and userLoginName !=''">
+				and  t.operator_login_name like  concat('%',#{userLoginName},'%')
+			</if>
+			<if test="email!=null and email!=''">
+				and t.email like  concat('%',#{email},'%')
+			</if>
+		</where>
+	</sql>
+	
+	<select id="getById" parameterType="Long" resultMap="resultMapUser">
+		<include refid="selectALl"/>
+			where t.operator_id = #{id}
+	</select>
+	
+	<select id="checkUser" resultMap="resultMapUser">
+		<include refid="selectALl"/>
+			where  t.operator_login_name = #{userName} and t.operator_login_password = #{password} and t.operator_status='00100'
+	</select>
+	
+	<insert id="insert" parameterType="User" useGeneratedKeys="true" keyProperty="id">
+		insert into t_operator 
+			(operator_login_name,operator_name,operator_login_password,pwd_err_cnt,expiration_date,mobile,phone,email,operator_status,create_datetime ,update_datetime) 
+		values
+			(#{loginName},#{name},#{loginPassword},0,now(),#{mobile}, #{phone}, #{email},'00100',now(), now());
+    </insert>
+    
+    <update id="update" parameterType="User">
+    	update t_operator set operator_status = #{status}, 
+    	operator_name = #{name, jdbcType=VARCHAR}, 
+    	mobile = #{mobile, jdbcType=VARCHAR}, 
+    	phone = #{phone, jdbcType=VARCHAR}, 
+    	email = #{email, jdbcType=VARCHAR}, 
+    	expiration_date = #{expirationDate},
+    	update_datetime=now()
+    	
+    	where operator_id = #{id}
+    </update>
+    
+    <insert id="insertUserRole" useGeneratedKeys="true">
+    	insert into t_operator_role (operator_id, role_id)
+    	values (#{userId}, #{roleId})
+    </insert>
+    
+    <select id="query" parameterType="UserCriteria" resultMap="resultMapUser">
+    <include refid="selectALl"/>where 1=1
+			<if test="userId != null">
+				and t.operator_id = #{userId}
+			</if>
+			<if test="userName!=null and userName!=''">
+				and t.operator_name like  #{userName}||'%'
+			</if>
+			<if test="userLoginName !=null and userLoginName !=''">
+				and t.operator_login_name like  #{userLoginName}||'%'
+			</if>
+			<if test="email!=null and email!=''">
+				and t.email like  #{email}||'%'
+			</if>
+			order by t.create_datetime desc
+		    
+    </select>
+    
+    <delete id="deleteAllUserRole">
+    	delete from t_operator_role where operator_id = #{userId}
+    </delete>
+    
+    <delete id="deleteUserRole">
+    	delete from t_operator_role where operator_id = #{userId} and role_id = #{roleId}
+    </delete>
+    
+    <update id="updatePassword">
+    	update t_operator set operator_login_password = #{newPassword}, update_datetime=now()
+    	where operator_id = #{userId}
+    </update>
+
+	
+	<select id="getUserbyLoginname" resultMap="resultMapUser">
+		<include refid="selectALl"/>
+			where t.operator_login_name = #{userName}  and t.operator_status='00100'
+	</select>
+</mapper>

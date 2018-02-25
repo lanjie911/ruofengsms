@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.merccountrecord.ChannelCountRecordDao">
+
+	<resultMap type="ChannelCountRecord" id="resultChannelCountRecord">
+		
+		<result column="channel_id" property="channelId" />
+		<result column="channel_name" property="channelName" />
+		<result column="unit_price" property="unitPrice" />
+		<result column="channel_type"	property="channelType"/>
+		<result column="channel_type_des"	property="channelTypeDes"/>
+		<result column="payment_methods" property="paymentMethods" />
+		<result column="payment_methods_des" property="paymentMethodsDes" />
+		<result column="support_operators" property="supportOperators" />
+		<result column="support_operators_des" property="supportOperatorsDes" />
+		<result column="flow_sum" property="flowSum" />
+		<result column="resp_datetime" property="time" />
+	</resultMap>
+
+
+	<select id="query" parameterType="ChannelCountRecordCriteria" resultMap="resultChannelCountRecord">
+		select c.channel_id,c.channel_name,c.unit_price,
+				c.pay_method,if(c.pay_method=100,'预付费',if(c.pay_method=200,'后付费',''))  payment_methods_des,
+				c.channel_type,if(c.channel_type=100,'短信',if(c.pay_method=200,'彩信','语音'))  channel_type_des,
+			 	c.support_operators,
+			 	case 
+					when c.support_operators=100 then '电信'
+					when c.support_operators=200 then '联通'
+					when c.support_operators=300 then '移动'
+					when c.support_operators=500 then '第三方'
+					when c.support_operators=600 then '其他'
+					else ''	
+				end support_operators_des,
+			a.flow_sum,a.resp_datetime
+		FROM s_channel c
+		left join (select b.channel_id,b.resp_datetime, count(0) flow_sum from(
+					  select channel_id,resp_datetime from s_plain_send_record where send_status=200 
+					   <if test="recordDateBegin != null and recordDateBegin !=''">
+							and resp_datetime &gt;= str_to_date(#{recordDateBegin},'%Y-%m-%d %H:%i:%s')
+						</if>
+						<if test="recordDateEnd != null and recordDateEnd !=''">
+							and resp_datetime &lt;= str_to_date(#{recordDateEnd},'%Y-%m-%d %H:%i:%s') 
+						</if>) b
+					)  a on a.channel_id = c.channel_id
+		<where>
+			<if test="channelId !=null">
+				and c.channel_id = #{channelId}
+			</if>
+			<if test="channelName !=null and channelName !=''">
+				and c.channel_name like concat('%',#{channelName},'%')
+			</if>
+			<if test="paymentMethods !=null">
+				and c.pay_method = #{paymentMethods}
+			</if>
+			<if test="channelType !=null">
+				and c.channel_type = #{channelType}
+			</if>
+			<if test="supportOperators !=null">
+				and c.support_operators = #{supportOperators}
+			</if>
+		</where>
+	</select>
+
+
+</mapper>

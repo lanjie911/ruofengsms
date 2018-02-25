@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>New User</title>
+<link rel="stylesheet" type="text/css" href="../../themes/general.css">
+<link rel="stylesheet" type="text/css" href="../../themes/icon.css">
+<link rel="stylesheet" type="text/css" href="../../themes/default/easyui.css">
+<script type="text/javascript" src="../../scripts/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="../../scripts/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../../scripts/src/jquery.parser.js"></script>
+<script type="text/javascript" src="../../scripts/locale/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="../../scripts/general.js"></script>
+<script type="text/javascript" src="../../scripts/sessionExpriation.js"></script>
+<script type="text/javascript">
+	$(function() {
+		InitTreeData();
+		getPermissionAll();
+		$('#new_form').form({
+			url : '../../role/addRole.ajax',
+			onSubmit : function() {
+				if ($(this).form('validate')) {
+					return extra_validate();
+				} else {
+					return false;
+				}
+			},
+			success : function(data) {
+				var obj = $.parseJSON(data);
+				if (obj.success) {
+					$('#btn_submit').css('display','none');
+					$.messager.alert('Info', '提交成功', 'info');
+					//window.location.href = "main.htm";  
+				} else {
+					$.messager.alert('Error', '提交失败:' + obj.message, 'error');
+				}
+			}
+		});
+		
+		$('#btn_submit').bind('click', function() {
+			$("#new_form").submit();
+		});
+	});
+
+	function InitTreeData()
+    {
+     $('#roleMenuTree').tree({
+         url:'../../role/getAllMenuTreeNodes.ajax',
+         checkbox:true,
+         onCheck:function(node){
+         },
+         onContextMenu: function(e, node){  
+                       e.preventDefault();  
+                       $('#roleMenuTree').tree('select', node.target);  
+                       e.preventDefault();  
+                   }  
+       });
+    }
+
+
+	
+	function getPermissionAll(){
+		$.ajax({
+			url : '../../role/getPermissionAll.ajax',
+			type:'get',
+			dataType:'JSON',
+			cache: false,
+			success:function(data) {
+		    $('#permission_list').datagrid('loadData',data);
+			}
+		});
+	}
+
+	function extra_validate() {
+		var checkNodes = getChecked();
+		if('' == checkNodes){
+			$.messager.alert('Info', '请选择角色菜单', 'info');
+			return false;	
+		}
+		
+		var rows = $('#permission_list').datagrid('getSelections');
+		if(rows.length<=0) {
+			$.messager.alert('Info', '请选择角色权限', 'info');
+			return false;	
+		}
+		
+		var str_roles="";
+		for(var i=0; i<rows.length; i++){
+		    str_roles = str_roles + rows[i].id + ",";
+		}
+		$("#rolePermission").attr("value", str_roles);
+		
+		return true;
+	}
+	
+    function getChecked(){
+        var nodes = $('#roleMenuTree').tree('getChecked');
+        var s = '';
+        for (var i = 0; i < nodes.length; i++) {
+            if (s != '') 
+                s += ',';
+            s += nodes[i].id;
+        }
+        
+        var parentNodes = $('#roleMenuTree').tree('getChecked', 'indeterminate');
+    	for(var n = 0; n < parentNodes.length; n++){
+    		if('' !== parentNodes[n].id && null !== parentNodes[n].id ){
+    			if (s != '')
+    			s += ',';
+    			s += parentNodes[n].id;
+    		}
+    	}
+    	
+        $("#menuSelect").attr("value", s);
+        return s;
+    }
+	
+</script>
+</head>
+<body>
+	<form id="new_form" method="post">
+		<table class="table_view" >
+			<tr>
+				<td class="td_view_subtitle" colspan="4">基本信息</td>
+			</tr>
+			<tr>
+				<td class="td_new_name">角色名称<span class="red">*</span></td>
+				<td class="td_new_value">
+					<input class="easyui-validatebox input_140" type="text" data-options="required:true" id="name" name="name">
+					
+				</td>
+			</tr>
+			<tr>
+				<td class="td_new_name">状态<span class="red">*</span></td>
+				<td class="td_new_value">
+					<select id="status" class="easyui-combobox" data-options="panelHeight:'auto'" editable="false" name="status" style="width:140px;">
+    						<option value="00100">正常</option>
+    						<option value="00200">关闭</option>
+					</select>
+					
+				</td>
+			</tr>
+			<tr>
+				<td class="td_new_name">角色菜单<span class="red">*</span></td>
+				<td style="height: 0px;">
+					<ul id="roleMenuTree"></ul>
+					<input type="hidden" id="menuSelect" name="menuSelect">
+				</td>
+			</tr>
+			<tr>
+			  <td class="td_view_name">权限<span class="red">*</span></td>
+			  <td class="td_view_add" >
+	          <table class="easyui-datagrid" title="角色列表" id="permission_list" style=""
+							data-options="singleSelect:true,pagination:false,rownumbers:false">
+							<thead>
+								<tr>
+									<th field="ck" checkbox="true"></th>
+									<th data-options="field:'id',width:60" align="center">权限编号</th>
+									<th data-options="field:'name',width:120">权限名称</th>
+									<th data-options="field:'code',width:150">权限编码</th>
+									<th data-options="field:'urlFilter',width:600">URL拦截</th>
+								</tr>
+							</thead>
+				</table>
+				<input type="hidden" id="rolePermission" name="rolePermission">
+	          	</td>
+		  	</tr>
+			<tr>
+				<td class="td_new_name">备注</td>
+				<td class="tree-root-first">
+					<textarea class="textarea_360" id="desc" name="desc"></textarea>
+				</td>
+			</tr>
+			<tr>
+				<td></td>
+                <td>
+                	<a id="btn_submit" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok">确认提交</a>
+				</td>
+			</tr>
+		</table>
+       </form>
+</body>
+</html>

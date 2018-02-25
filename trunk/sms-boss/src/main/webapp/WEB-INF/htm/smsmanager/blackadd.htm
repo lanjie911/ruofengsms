@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Merchant Account Add</title>
+<link rel="stylesheet" type="text/css" href="../../themes/general.css">
+<link rel="stylesheet" type="text/css" href="../../themes/icon.css">
+<link rel="stylesheet" type="text/css" href="../../themes/default/easyui.css">
+<script type="text/javascript" src="../../scripts/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="../../scripts/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../../scripts/src/jquery.parser.js"></script>
+<script type="text/javascript" src="../../scripts/locale/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="../../scripts/sessionExpriation.js"></script>
+<script type="text/javascript" src="../../scripts/util/userformatter.js"></script>
+<script type="text/javascript">
+$(function() {
+	$('#add_form').form({
+		url : '../../black/addBlack.ajax',
+		onSubmit : function() {
+			return $(this).form('validate');
+		},
+		success : function(data) {
+			var obj = $.parseJSON(data);
+			if (obj.success) {
+				$('#btn_submit').css('display', 'none');
+				$.messager.alert('Info', '提交成功', 'info');
+			} else {
+				$.messager.alert('Error', '提交失败:' + obj.message, 'error');
+			}
+		}
+	});
+
+	$('#btn_submit').bind('click', function() {
+		$("#add_form").submit();
+	});
+	$('#btn_cancel').bind('click', function() {
+		parent.closeTabByTitle("退订/黑名单用户新增");
+	});
+});
+</script>
+</head>
+<body>
+	<form id="add_form" method="post">
+	<table class="table_view">
+		<tr>
+			<td class="td_new_subtitle" colspan="4">添加退订/黑名单用户</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">用户手机号：</td>
+			<td class="td_view_value">
+				<input type="text" name="unsubscribeMobile" id="unsubscribeMobile" class="easyui-validatebox input_140"  required="true">
+			</td>
+			<td class="td_view_name">退订类型：</td>
+			<td class="td_view_value">
+				<select id="transType" name="transType" class="easyui-combobox input_140" data-options="panelHeight:'auto'" editable="false">
+ 						<option value="100">退订</option>
+ 						<option value="200">黑名单</option>
+				</select>
+			</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">备注：</td>
+			<td class="td_view_value"  colspan="3">
+				<textarea rows="5" cols="80" id="remark" name="remark"  style="height:50px;width:772px;resize:none;" ></textarea> 
+			</td>
+		</tr>
+		<tr>
+			<td colspan="6" align="center">
+				<a id="btn_submit" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" >提交</a>
+				<a id="btn_cancel" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" >取消</a>
+			</td>
+		 </tr>
+		</table>
+	</form>
+	
+</body>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>View Param</title>
+<link rel="stylesheet" type="text/css" href="../../themes/general.css">
+<link rel="stylesheet" type="text/css" href="../../themes/icon.css">
+<link rel="stylesheet" type="text/css" href="../../themes/default/easyui.css">
+<script type="text/javascript" src="../../scripts/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="../../scripts/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../../scripts/src/jquery.parser.js"></script>
+<script type="text/javascript" src="../../scripts/locale/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="../../scripts/general.js"></script>
+<script type="text/javascript" src="../../scripts/sessionExpriation.js"></script>
+<script src="../../scripts/plugins/jquery.binarytransport.js"></script>
+<script type="text/javascript">
+$(function() {
+	var phoneOperatorId = $.getUrlParam('phoneOperatorId');
+	$.ajax({
+		url : '../../mobileOperator/getMobileOperatorById.ajax',
+		type : 'get',
+		dataType : 'JSON',
+		cache: false,
+		data : {
+			phoneOperatorId : phoneOperatorId
+		},
+		success : function(data) {
+			init_view(data);
+		}
+	});
+});
+
+function init_view(data) {
+	$('.table_view span').each(function(index,element){
+		var tr_id = $(this).attr('id');
+			$.each(data,function(k,v){
+				if(k == tr_id){
+					$('#'+ tr_id).text(v);
+				}
+			});
+	});
+}
+</script>
+</head>
+<body>
+<table class="table_view">
+	<tr>
+		<td class="td_view_subtitle" colspan="4">基本信息</td>
+	</tr>
+	<tr>
+		<td class="td_view_name">编号</td>
+		<td class="td_view_value"><span id="phoneOperatorId"></span></td>
+	</tr>
+	<tr>	
+		<td class="td_view_name">手机号段 </td>
+		<td class="td_view_value"><span id="pref"></span></td>
+	</tr>
+	<tr>
+		<td class="td_view_name">号段长度</td>
+		<td class="td_view_value"><span id="prefLength"></span></td>
+	</tr>
+	<tr>
+		<td class="td_view_name">支持运营商</td>
+		<td class="td_view_value"><span id="supportOperators"></span></td>
+	</tr>
+	<tr>
+		<td class="td_view_name">运营商描述</td>
+		<td colspan=3 class="td_view_value"><span id="supportOperatorsDes"></span></td>
+	</tr>
+</table>
+</body>
+</html>

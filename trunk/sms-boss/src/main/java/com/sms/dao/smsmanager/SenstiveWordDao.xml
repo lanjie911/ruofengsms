@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.smsmanager.SenstiveWordDao">
+
+	<resultMap type="SenstiveWord" 						id="resultSenstiveWord">
+		<result column="word_id"	property="wordId"/>
+		<result column="word_content"	property="wordContent"/>
+		<result column="word_status"	property="wordStatus"/>
+		<result column="word_status_des"	property="wordStatusDes"/>
+	</resultMap>
+	
+	<sql id="select">
+	select 
+		word_id, word_content, word_status,
+		if(word_status=100,'正常','禁用') word_status_des
+	 from s_sensitive_word
+  	</sql>
+  	
+  	<sql id="conditions">
+		<where>
+			<if test="sensWord !=null and sensWord !=''">
+				and t.word_content like concat('%',#{sensWord},'%')
+			</if>
+		</where>
+	</sql>
+	
+	<select id="query" parameterType="SenstiveWordCriteria" resultMap="resultSenstiveWord">
+		<include refid="select"/>
+		<include refid="conditions"/>
+		order by word_id
+	</select>
+	
+	<insert id="insert" parameterType="SenstiveWord">
+		insert into s_sensitive_word (
+		  word_content
+		  ,word_status
+		) VALUES (
+		   #{wordContent}
+		  ,100
+		)
+	</insert>
+	
+	<delete id="delete">
+	delete from s_sensitive_word where word_id = #{wordId}
+	</delete>
+	
+	
+</mapper>

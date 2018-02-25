@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Merchant Info View</title>
+<link rel="stylesheet" type="text/css" href="../../themes/general.css">
+<link rel="stylesheet" type="text/css" href="../../themes/icon.css">
+<link rel="stylesheet" type="text/css" href="../../themes/default/easyui.css">
+<script type="text/javascript" src="../../scripts/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="../../scripts/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../../scripts/src/jquery.parser.js"></script>
+<script type="text/javascript" src="../../scripts/locale/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="../../scripts/general.js"></script>
+<script type="text/javascript" src="../../scripts/sessionExpriation.js"></script>
+<script type="text/javascript" src="../../scripts/util/userformatter.js"></script>
+<script type="text/javascript">
+$(function() {
+	var channelId = $.getUrlParam('channelId');
+	
+	$.ajax({
+		url : '../../channel/getChannelByChannelId.ajax',
+		type : 'get',
+		dataType : 'JSON',
+		cache: false,
+		data : {
+			channelId : channelId
+		},
+		success : function(data) {
+			init_view(data);
+		}
+	});
+});
+function init_view(data) {
+	$("#channelCode").attr("value",data.channelCode);
+	$("#channelName").attr("value",data.channelName);
+	$("#channelTypeDes").attr("value",data.channelTypeDes);
+	$("#channelAttributeDes").attr("value",data.channelAttributeDes);
+	$("#supportOperatorsDes").attr("value",data.supportOperatorsDes);
+	$("#payMethodDes").attr("value",data.payMethodDes);
+	$("#channelStatusDes").attr("value",data.channelStatusDes);
+	$("#unitPrice").numberbox("setValue",data.unitPrice);
+	$("#priorityLevel").numberbox("setValue",data.priorityLevel);
+	$("#billingWordsize").numberbox("setValue",data.billingWordsize);
+	$("input[name='supportLongsmsFlag'][value="+data.supportLongsmsFlag+"]").attr("checked",true);
+	$("#componentSize").numberbox("setValue",data.componentSize);
+	$("#flowSize").numberbox("setValue",data.flowSize);
+	$("#fromTelephone").numberbox("setValue",data.fromTelephone);
+	$("#flowSizeOneday").numberbox("setValue",data.flowSizeOneday);
+	$("#maxSendSize").numberbox("setValue",data.maxSendSize);
+	$("#remark").text(data.remark);
+}
+
+</script>
+</head>
+<body>
+	<form id="edit_form" method="post">
+	<table class="table_view">
+		<tr>
+			<td class="td_new_subtitle" colspan="4">基本信息</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">通道名称 ：</td>
+			<td class="td_view_value">
+				<input type="text" name="channelName" id="channelName" class="easyui-validatebox input_140" maxlength="20" readonly="readonly">
+			</td>
+			<td class="td_view_name">通道编码 ：</td>
+			<td class="td_view_value">
+				<input type="text" name="channelCode" id="channelCode" class="easyui-validatebox input_140" maxlength="20" readonly="readonly">
+			</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">通道类型：</td>
+			<td class="td_view_value" >
+				<input type="text" name="channelTypeDes" id="channelTypeDes" class="easyui-validatebox input_140" maxlength="20" readonly="readonly">
+			</td>
+			<td class="td_view_name">通道属性：</td>
+			<td class="td_view_value" >
+				<input type="text" name="channelAttributeDes" id="channelAttributeDes" class="easyui-validatebox input_140" maxlength="20" readonly="readonly">
+			</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">运营商类型：</td>
+			<td class="td_view_value" >
+				<input type="text" name="supportOperatorsDes" id="supportOperatorsDes" class="easyui-validatebox input_140" maxlength="20" readonly="readonly">
+			</td>
+			<td class="td_view_name">付费方式：</td>
+			<td class="td_view_value" >
+				<input type="text" name="payMethodDes" id="payMethodDes" class="easyui-validatebox input_140" maxlength="20" readonly="readonly">
+			</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">单价： </td>
+			<td class="td_view_value">
+				<input type="text" name="unitPrice" id="unitPrice" class="easyui-numberbox input_140"  readonly="readonly" > 元
+			</td>
+			<td class="td_view_name">优先级： </td>
+			<td class="td_view_value">
+				<input type="text" name="priorityLevel" id="priorityLevel" class="easyui-numberbox input_140" readonly="readonly" > 数值越大的，优先级越高
+			</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">计费字数： </td>
+			<td class="td_view_value">
+				<input type="text" name="billingWordsize" id="billingWordsize" class="easyui-numberbox input_140" readonly="readonly">
+			</td>
+			<td class="td_view_name">是否支持长短信：</td>
+			<td class="td_view_value" >
+				<input type="radio" name="supportLongsmsFlag" class="easyui-validatebox"  value="100" checked="checked" disabled="disabled">是</input>
+		        <input  type="radio" name="supportLongsmsFlag" class="easyui-validatebox" value="200" disabled="disabled">否</input>
+			</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">分量包： </td>
+			<td class="td_view_value">
+				<input type="text" name="componentSize" id="componentSize" class="easyui-numberbox input_140" readonly="readonly" > 条/包
+			</td>
+			<td class="td_view_name">流量： </td>
+			<td class="td_view_value">
+				<input type="text" name="flowSize" id="flowSize" class="easyui-numberbox input_140" readonly="readonly"  > 条/秒
+			</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">下发号码： </td>
+			<td class="td_view_value">
+				<input type="text" name="fromTelephone" id="fromTelephone" class="easyui-numberbox input_140"  readonly="readonly" > (如：1065XXXXX)
+			</td>
+			<td class="td_view_name">日流量限制： </td>
+			<td class="td_view_value">
+				<input type="text" name="flowSizeOneday" id="flowSizeOneday" class="easyui-numberbox input_140"  readonly="readonly" > 条
+			</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">最大并发数： </td>
+			<td class="td_view_value" colspan="3">
+				<input type="text" name="maxSendSize" id="maxSendSize" class="easyui-numberbox input_140"  readonly="readonly" > 最大并发数主要用于HTTP协议的通道，提高发送速度，最小为1。过大时可能导致对方通道瘫痪，请酌情修改。
+			</td>
+		</tr>
+		<tr>
+		<td class="td_view_name">状态</td>
+			<td class="td_view_value" colspan="3">
+				<input type="text" name="channelStatusDes" id="channelStatusDes" class="easyui-validatebox input_140" maxlength="20" readonly="readonly">
+			</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">备注：</td>
+			<td class="td_view_value"  colspan="3">
+				<textarea rows="5" cols="80" id="remark" name="remark"  style="height:50px;width:772px;resize:none;" readonly="readonly" ></textarea> 
+			</td>
+		</tr>
+		</table>
+	</form>
+	
+</body>

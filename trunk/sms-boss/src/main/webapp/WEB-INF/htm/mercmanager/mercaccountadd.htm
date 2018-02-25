@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Merchant Account Add</title>
+<link rel="stylesheet" type="text/css" href="../../themes/general.css">
+<link rel="stylesheet" type="text/css" href="../../themes/icon.css">
+<link rel="stylesheet" type="text/css" href="../../themes/default/easyui.css">
+<script type="text/javascript" src="../../scripts/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="../../scripts/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../../scripts/src/jquery.parser.js"></script>
+<script type="text/javascript" src="../../scripts/locale/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="../../scripts/sessionExpriation.js"></script>
+<script type="text/javascript" src="../../scripts/util/userformatter.js"></script>
+<script type="text/javascript">
+$(function() {
+	$('#accountType').combobox({
+		url:'../../bizdict/getDir.ajax?dirType=MERC_ACCOUNT_TYPE',
+			valueField:'dirCode',
+			textField:'dirCodeDesc',
+			panelHeight:'auto',
+			editable:false,
+			value : '100',
+			onChange: function () {
+				var accountType = $('#accountType').combobox("getValue");
+				$('#smsGroupId').combobox({
+					url:'../../channel/getChannelByAttr.ajax?attr='+accountType,
+						valueField:'channelId',
+						textField:'channelName',
+						panelHeight:'auto',
+						editable:false 
+				});
+			}
+	});
+	
+	$('#paymentMethods').combobox({
+		url:'../../bizdict/getDir.ajax?dirType=ACCOUNT_PAY_METHOD',
+			valueField:'dirCode',
+			textField:'dirCodeDesc',
+			panelHeight:'auto',
+			editable:false 
+	});
+	$('#chargingMethods').combobox({
+		url:'../../bizdict/getDir.ajax?dirType=ACCOUNT_CHARG_METHOD',
+			valueField:'dirCode',
+			textField:'dirCodeDesc',
+			panelHeight:'auto',
+			editable:false 
+	});
+	$('#add_form').form({
+		url : '../../mercaccount/addMercAccount.ajax',
+		success : function(data) {
+			var obj = $.parseJSON(data);
+			if (obj.success) {
+				$('#btn_submit').css('display', 'none');
+				$.messager.alert('Info', '提交成功', 'info');
+			} else {
+				$.messager.alert('Error', '提交失败:' + obj.message, 'error');
+			}
+		}
+	});
+
+	$('#btn_submit').bind('click', function() {
+		$("#add_form").submit();
+	});
+	$('#btn_cancel').bind('click', function() {
+		parent.closeTabByTitle("商户账户新增");
+	});
+	bindingIp(200);
+});
+
+function getMerInfo(){
+	var merchantId = $("#merchantId").val();
+	if(merchantId ==''){
+		$.messager.alert('Error', '请输入商户编号。');
+		return;
+	}
+	$.ajax({
+		url : '../../mercinfo/getMercInfoByMercId.ajax',
+		type : 'get',
+		dataType : 'JSON',
+		cache: false,
+		data : {
+			merchantId : merchantId
+		},
+		success : function(data) {
+			init_view(data);
+		}
+	});
+}
+
+function init_view(data) {
+	$("#merchantName").attr("value",data.merchantName);
+	$("#merchantNameAbbreviation").attr("value",data.merchantNameAbbreviation);
+	$("#contactsName").attr("value",data.mercContacts.contactsName);
+	$("#contactAddress").attr("value",data.mercContacts.contactAddress);
+	$("#zipCode").attr("value",data.mercContacts.zipCode);
+	$("#telephone").attr("value",data.mercContacts.telephone);
+	$("#contactMobile").attr("value",data.mercContacts.contactMobile);
+	$("#email").attr("value",data.mercContacts.email);
+	$("#accountManager").attr("value",data.cusManagerName);
+	$("#accountManagerMobile").attr("value",data.cusManagerMobile);
+	$("#accountManagerId").attr("value",data.cusManager);
+}
+
+function generateAccountNo(){
+	$.ajax({
+		url : '../../mercaccount/generateAccountNo.ajax',
+		type : 'get',
+		dataType : 'JSON',
+		cache: false,
+		success : function(data) {
+			$("#accountNo").val(data);
+		}
+	});
+}
+function bindingIp(data){
+	if(data==200){
+		$("#bindingIp").hide();
+	}else{
+		$("#bindingIp").show();
+	}
+}
+function addTr(){
+	var id = jQuery("table").find("tr").length +1 ;
+	
+	var innerhtml = '<tr><td><input class="easyui-combobox input_140" type="text" name="supportOperators" id="supportOperators'+id+'" /></td>'+
+		'<td><input class="easyui-combobox input_140" type="text" name="smsGroupId" id="smsGroupId'+id+'"/></td>'+
+		'<td><input class="easyui-numberbox input_140" type="text" name="priority" value="1" /></td>'+
+		'<td><a id="btn_add" onclick="removeTr(this);" class="easyui-linkbutton" iconCls="icon-remove" href="javascript:void(0)">删除</a> </td></tr>';
+	$('#demo').append(innerhtml);
+	
+	$('#supportOperators'+id).combobox({
+		url:'../../bizdict/getDirWithAll.ajax?dirType=CHANNEL_SUPPORT_OPERATOR',
+		valueField:'dirCode',
+		textField:'dirCodeDesc',
+		panelHeight:'auto',
+		editable:false ,
+		onChange: function() {
+			var accountType = $('#accountType').combobox('getValue');
+			var supportOperators = $('#supportOperators'+id).combobox('getValue');
+			$('#smsGroupId'+id).combobox({
+				url:'../../channel/getChannelByAttrs.ajax?accountType='+accountType+'&supportOperators='+supportOperators,
+				valueField:'channelId',
+				textField:'channelName',
+				panelHeight:'auto',
+				editable:false
+			});
+		}
+	});
+}
+function removeTr(data){
+	 $(data).parent().parent().remove();
+}
+
+function hideSignature(validSignMethod){
+	if(validSignMethod ==200){
+		$("#signature").hide();
+	}else{
+		$("#signature").show();
+	}
+}
+</script>
+</head>
+<body>
+<form id="add_form" method="post">
+<input type="text" name="accountManagerId" id="accountManagerId" hidden >
+<table class="table_view">
+	<tr>
+		<td class="td_new_subtitle" colspan="4">商户基本信息</td>
+	</tr>
+	<tr>
+		<td class="td_view_name">商户编号：</td>
+		<td class="td_view_value">
+			<input type="text" name="merchantId" id="merchantId" class="easyui-validatebox input_140"  required="true">
+			<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-search" onclick="getMerInfo();">查询</a> 
+		</td>
+		<td class="td_view_name">商户简称：</td>
+		<td class="td_view_value" >
+			<input type="text" name="merchantNameAbbreviation" id="merchantNameAbbreviation" class="easyui-validatebox input_140"  readonly="readonly">
+		</td>
+	</tr>
+	<tr>
+		<td class="td_view_name">商户名称：</td>
+		<td class="td_view_value" colspan="3">
+			<input type="text" name="merchantName" id="merchantName" class="easyui-validatebox"  style="width:698px;resize:none;"  readonly="readonly">
+		</td>
+	</tr>
+	<tr>
+		<td class="td_view_name">联系人：  </td>
+		<td class="td_view_value" >
+			<input type="text" name="contactsName" id="contactsName" class="easyui-validatebox input_140"   readonly="readonly">
+		</td>
+		<td class="td_view_name">联系人电话：</td>
+		<td class="td_view_value">
+			<input type="text" name="telephone" id="telephone" class="easyui-validatebox input_140"  readonly="readonly" >
+		</td>
+	</tr>
+	<tr>
+		<td class="td_view_name">联系人手机号：</td>
+		<td class="td_view_value">
+			<input type="text" name="contactMobile" id="contactMobile" class="easyui-validatebox input_140"  readonly="readonly">
+		</td>
+		<td class="td_view_name">联系人邮箱：</td>
+		<td class="td_view_value">
+			<input type="text" name="email" id="email" class="easyui-validatebox input_140"  readonly="readonly">
+		</td>
+	</tr>
+	<tr>
+		<td class="td_view_name">我方客户经理：</td>
+		<td class="td_view_value">
+			<input type="text" name="accountManager" id="accountManager" class="easyui-validatebox input_140" readonly="readonly" >
+		</td>
+		<td class="td_view_name">我方客户经理电话：</td>
+		<td class="td_view_value">
+		<input type="text" name="accountManagerMobile" id="accountManagerMobile" class="easyui-validatebox input_140"  readonly="readonly" >
+		</td>
+	</tr>
+	<tr>
+		<td class="td_new_subtitle" colspan="4">费率及规则</td>
+	</tr>
+	<tr>
+		<td class="td_view_name">商户账号：</td>
+		<td class="td_view_value">
+			<input type="text" name="accountNo" id="accountNo" class="easyui-validatebox input_140"  readonly="readonly" >
+			<a href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" onclick="generateAccountNo();">生成</a> 
+		</td>
+		<td class="td_view_name">账号密码：</td>
+		<td class="td_view_value">
+			<input type="text" name="accountNoPass" id="accountNoPass" class="easyui-validatebox input_140" >
+		</td>
+		
+	</tr>
+	<tr>
+		<td class="td_view_name">账户类型：</td>
+		<td class="td_view_value" >
+			<input class="easyui-combobox input_140" type="text" name="accountType" id="accountType" />
+		</td>
+		<td class="td_view_name">付费方式：</td>
+		<td class="td_view_value" >
+			<input class="easyui-combobox input_140" type="text" name="paymentMethods" id="paymentMethods" />
+		</td>
+	</tr>
+	<tr>
+		<td class="td_view_name">扣费方式：</td>
+		<td class="td_view_value" >
+			<input class="easyui-combobox input_140" type="text" name="chargingMethods" id="chargingMethods" />
+		</td>
+		<td class="td_view_name">扣量比：</td>
+		<td class="td_view_value">
+			<input type="text" name="costQuantity" id="costQuantity" class="easyui-numberbox input_140" style="text-align:right;" data-options="required:true,max:10,precision:2" value="0" />%
+		</td>
+	</tr>
+	<tr>
+		<td class="td_view_name">短信单价：</td>
+		<td class="td_view_value">
+			<input type="text" name="unitPrice" id="unitPrice" class="easyui-numberbox input_140" style="text-align:right;" data-options="max:10,precision:2">元
+		</td>
+		<td class="td_view_name">初始可用条数：  </td>
+		<td class="td_view_value" >
+			<input type="text" name="initialValidSmscount" id="initialValidSmscount" class="easyui-numberbox input_140" value="0" />
+		</td>
+	</tr>
+	<tr>
+		<td class="td_view_name">单次提交最小限制：</td>
+		<td class="td_view_value">
+			<input type="text" name="onetimeMinLimit" id="onetimeMinLimit" class="easyui-numberbox input_140" value="0" >
+			<br>0表示不限制，小于提交条数将被拒绝
+		</td>
+		<td class="td_view_name">单次提交最大限制：  </td>
+		<td class="td_view_value" >
+			<input type="text" name="onetimeMaxLimit" id="onetimeMaxLimit" class="easyui-numberbox input_140" value="0" />
+			<br>0表示不限制,大于提交条数将被拒绝
+		</td>
+	</tr>
+	<tr>
+		<td class="td_view_name">单小时发送量：</td>
+		<td class="td_view_value">
+			<input type="text" name="sendNumHours" id="sendNumHours" class="easyui-numberbox input_140" value="0" />
+			<br>0表示不限制
+		</td>
+		<td class="td_view_name">单日发送量：  </td>
+		<td class="td_view_value" >
+			<input type="text" name="sendNumDays" id="sendNumDays" class="easyui-numberbox input_140" value="0" />
+			<br>0表示不限制
+		</td>
+	</tr>
+	<tr>
+		<td class="td_view_name">优先级：</td>
+		<td class="td_view_value" >
+			<input type="text" name="priorityLevel" id="priorityLevel" class="easyui-numberbox input_140" value="0" />
+			<br>必须为数字,可为负数,数字越多越高
+		</td>
+		<td class="td_view_name">是否启用黑名单：</td>
+		<td class="td_view_value" >
+			<input type="radio" name="startBlacklistFlag" class="easyui-validatebox"  value="100" checked="checked">是</input>
+	        <input  type="radio" name="startBlacklistFlag" class="easyui-validatebox" value="200">否</input>
+		</td>
+	</tr>
+	<tr>
+		<td class="td_view_name">是否发送审核：</td>
+		<td class="td_view_value" >
+			<input type="radio" name="sendAuditFlag" class="easyui-validatebox"  value="100">是</input>
+	        <input  type="radio" name="sendAuditFlag" class="easyui-validatebox" value="200" checked="checked">否</input>
+		</td>
+		<td class="td_view_name">是否失败补发：</td>
+		<td class="td_view_value" >
+			<input type="radio" name="auditResult" class="easyui-validatebox"  value="100">是</input>
+	        <input  type="radio" name="auditResult" class="easyui-validatebox" value="200" checked="checked">否</input>
+		</td>
+	</tr>
+	<tr>
+		<td class="td_view_name">是否进行敏感字过滤：</td>
+		<td class="td_view_value" >
+			<input type="radio" name="senseWordFlag" class="easyui-validatebox"  value="100" checked="checked">是</input>
+	        <input  type="radio" name="senseWordFlag" class="easyui-validatebox" value="200">否</input>
+		</td>
+		<td class="td_view_name">是否进行模板匹配：</td>
+		<td class="td_view_value" >
+			<input type="radio" name="templateMatchFlag" class="easyui-validatebox"  value="100" checked="checked">是</input>
+	        <input  type="radio" name="templateMatchFlag" class="easyui-validatebox" value="200">否</input>
+		</td>
+	</tr>
+	<tr>
+		<td class="td_view_name">短信通道：</td>
+		<td class="td_view_value" colspan="3">
+			<a id="btn_add" class="easyui-linkbutton" iconCls="icon-add" onclick="addTr();">添加</a> 
+			<table id="demo" class="table_view" style="font-size: 12px; background: #F1F1F1;width:99.5%;">
+				<tr>
+					<td>运营商选择：</td>
+					<td>通道选择：</td>
+					<td>优先级</td>
+					<td>移除</td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+	<tr>
+		<td class="td_view_name">是否验签：</td>
+		<td class="td_view_value" >
+			<input type="radio" name="validSignMethod" class="easyui-validatebox"  value="100" checked="checked"  onclick = "hideSignature(100);">是</input>
+	        <input  type="radio" name="validSignMethod" class="easyui-validatebox" value="200" onclick = "hideSignature(200);">否</input>
+		</td>
+	</tr>
+	<tr id ="signature">
+		<td class="td_view_name">签名内容：</td>
+		<td class="td_view_value"  colspan="3">
+			<textarea rows="5" cols="80" id="signatureContent" name="signatureContent"  style="height:50px;width:772px;resize:none;" ></textarea> 
+			<br>可设置多个强制签名内容，格式:【样例】，多个签名用英文逗号分隔，客户发送时自行选择，接口发送时默认选择第一个最多允许设置10个签名
+		</td>
+	</tr>
+	<tr>
+		<td class="td_view_name">是否绑定IP：</td>
+		<td class="td_view_value" colspan="3">
+			<input type="radio" name="bindingIpFlag" class="easyui-validatebox"  value="200" checked="checked" onclick="bindingIp(200);">不绑定</input>
+	        <input  type="radio" name="bindingIpFlag" class="easyui-validatebox" value="100" onclick="bindingIp(100);">绑定</input>
+		</td>
+	</tr>
+	<tr id="bindingIp">
+		<td class="td_view_name">客户端列表：</td>
+		<td class="td_view_value"  colspan="3">
+			<textarea rows="5" cols="80" id="authorizationIp" name="authorizationIp"  style="height:50px;width:772px;resize:none;" ></textarea> 
+			<br>可设置多个ip，多个IP之间以英文字幕逗号分隔
+		</td>
+	</tr>
+	<tr>
+		<td class="td_view_name">备注：</td>
+		<td class="td_view_value"  colspan="3">
+			<textarea rows="5" cols="80" id="remark" name="remark"  style="height:50px;width:772px;resize:none;"></textarea> 
+		</td>
+	</tr>
+	<tr>
+		<td colspan="6" align="center">
+			<a id="btn_submit" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" >提交</a>
+			<a id="btn_cancel" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" >取消</a>
+		</td>
+	</tr>
+	</table>
+</form>
+</body>

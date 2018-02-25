@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.mercmanager.SmsTemplateDao">
+
+	<resultMap type="SmsTemplate" 		id="resultSmsTemplate">
+		<id property="templateId" 					column="template_id" />
+		<result property="accountNo" 				column="account_no" />
+		<result property="merchantNameAbbreviation" column="merchant_name_abbreviation" />
+		<result property="merchantName" column="merchant_name" />
+		<result property="accountType" 				column="account_type" />
+		<result property="accountTypeDes" 				column="account_type_des" />
+		<result property="paymentMethods" 				column="payment_methods" />
+		<result property="paymentMethodsDes" 				column="payment_methods_des" />
+		<result property="templateContent" 			column="template_content" />
+		<result property="operator" 				column="operator" />
+		<result property="status" 					column="status" />
+		<result property="statusDes" 					column="status_des" />
+		<result property="remark" 					column="remark" />
+		<result property="extend_no" 					column="extendNo" />
+		<result property="createDatetime" 			column="create_datetime" />
+		<result property="templateLength" 			column="template_length" />
+	</resultMap>
+	
+	<sql id="select">
+		select t.template_id, t.account_no, t.merchant_name_abbreviation, m.merchant_name,a.extend_no,
+			t.account_type,if(t.account_type=100,'行业账户',if(t.account_type=200,'普通账户','')) account_type_des,
+			a.payment_methods,if(a.payment_methods=100,'预付费',if(a.account_type=200,'后付费',''))  payment_methods_des,
+			t.template_content, t.operator, 
+			t.status,if(t.status=100,'正常','禁用') status_des, 
+			t.remark,t.template_length,
+			date_format(t.create_datetime , '%Y-%m-%d %H:%i:%s') create_datetime
+		FROM s_template t
+		inner join s_merchant_account a on t.account_no = a.account_no
+    	inner join s_merchant_info m on m.merchant_id = a.merchant_id
+  	</sql>
+  	
+  	<sql id="conditions">
+		<where>
+			<if test="merchantId !=null">
+				and a.merchant_id = #{merchantId}
+			</if>
+			<if test="mercAccountType !=null ">
+				and t.account_type =#{mercAccountType}
+			</if>
+			<if test="mercAccountNo !=null">
+				and t.account_no = #{mercAccountNo}
+			</if>
+			<if test="templateStatus !=null">
+				and t.status  = #{templateStatus}
+			</if>
+		</where>
+	</sql>
+  	
+  	<select id="query" parameterType="SmsTemplateCriteria" resultMap="resultSmsTemplate">
+		<include refid="select"/>
+		<include refid="conditions"/>
+		order by t.template_id desc
+	</select>
+  	
+	<insert id="insert" parameterType="SmsTemplate">
+	insert into s_template (
+	   account_no
+	  ,merchant_name_abbreviation
+	  ,account_type
+	  ,template_content
+	  ,operator
+	  ,status
+	  ,remark
+	  ,template_length
+	  ,create_datetime
+	) VALUES (
+	  #{accountNo}
+	  ,#{merchantNameAbbreviation}
+	  , #{accountType}
+	  , #{templateContent}
+	  ,#{operator}
+	  ,100
+	  ,#{remark}
+	  ,#{templateLength}
+	  ,now()
+	)
+	</insert>
+	
+	<select id="getById" parameterType="Long" resultMap="resultSmsTemplate">
+		<include refid="select" />
+		where t.template_id = #{templateId}
+	</select>
+	
+	<update id="update"  parameterType="SmsTemplate">
+	update s_template SET
+	   template_content = #{templateContent}
+	  ,operator = #{operator}
+	  ,status =#{status}
+	  ,remark =#{remark}
+	  ,template_length =#{templateLength}
+	WHERE template_id = #{templateId}
+	</update>
+	
+</mapper>

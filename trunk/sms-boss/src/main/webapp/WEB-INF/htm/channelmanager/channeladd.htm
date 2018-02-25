@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Merchant Account Add</title>
+<link rel="stylesheet" type="text/css" href="../../themes/general.css">
+<link rel="stylesheet" type="text/css" href="../../themes/icon.css">
+<link rel="stylesheet" type="text/css" href="../../themes/default/easyui.css">
+<script type="text/javascript" src="../../scripts/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="../../scripts/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../../scripts/src/jquery.parser.js"></script>
+<script type="text/javascript" src="../../scripts/locale/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="../../scripts/sessionExpriation.js"></script>
+<script type="text/javascript" src="../../scripts/util/userformatter.js"></script>
+<script type="text/javascript">
+$(function() {
+	$('#channelType').combobox({
+		url:'../../bizdict/getDirWithAll.ajax?dirType=CHANNEL_TYPE',
+			valueField:'dirCode',
+			textField:'dirCodeDesc',
+			panelHeight:'auto',
+			editable:false 
+	});
+	$('#channelAttribute').combobox({
+		url:'../../bizdict/getDir.ajax?dirType=MERC_ACCOUNT_TYPE',
+			valueField:'dirCode',
+			textField:'dirCodeDesc',
+			panelHeight:'auto',
+			editable:false 
+	});
+	$('#supportOperators').combobox({
+		url:'../../bizdict/getDirWithAll.ajax?dirType=CHANNEL_SUPPORT_OPERATOR',
+			valueField:'dirCode',
+			textField:'dirCodeDesc',
+			panelHeight:'auto',
+			editable:false 
+	});
+	$('#payMethod').combobox({
+		url:'../../bizdict/getDirWithAll.ajax?dirType=ACCOUNT_PAY_METHOD',
+			valueField:'dirCode',
+			textField:'dirCodeDesc',
+			panelHeight:'auto',
+			editable:false 
+	});
+	$('#add_form').form({
+		url : '../../channel/addChannel.ajax',
+		onSubmit : function() {
+			return $(this).form('validate');
+		},
+		success : function(data) {
+			var obj = $.parseJSON(data);
+			if (obj.success) {
+				$('#btn_submit').css('display', 'none');
+				$.messager.alert('Info', '提交成功', 'info');
+			} else {
+				$.messager.alert('Error', '提交失败:' + obj.message, 'error');
+			}
+		}
+	});
+
+	$('#btn_submit').bind('click', function() {
+		$("#add_form").submit();
+	});
+	$('#btn_cancel').bind('click', function() {
+		parent.closeTabByTitle("通道新增");
+	});
+});
+</script>
+</head>
+<body>
+	<form id="add_form" method="post">
+	<table class="table_view">
+		<tr>
+			<td class="td_new_subtitle" colspan="4">基本信息</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">通道名称 ：</td>
+			<td class="td_view_value">
+				<input type="text" name="channelName" id="channelName" class="easyui-validatebox input_140" maxlength="20" required="true">
+			</td>
+			<td class="td_view_name">通道编码 ：</td>
+			<td class="td_view_value">
+				<input type="text" name="channelCode" id="channelCode" class="easyui-validatebox input_140" maxlength="20" required="true">
+			</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">通道类型：</td>
+			<td class="td_view_value" >
+				<input class="easyui-combobox input_140" type="text" name="channelType" id="channelType" />
+			</td>
+			<td class="td_view_name">通道属性：</td>
+			<td class="td_view_value" >
+				<input class="easyui-combobox input_140" type="text" name="channelAttribute" id="channelAttribute" />
+			</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">运营商类型：</td>
+			<td class="td_view_value" >
+				<input class="easyui-combobox input_140" type="text" name="supportOperators" id="supportOperators" />
+			</td>
+			<td class="td_view_name">付费方式：</td>
+			<td class="td_view_value" >
+				<input class="easyui-combobox input_140" type="text" name="payMethod" id="payMethod" />
+			</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">单价： </td>
+			<td class="td_view_value">
+				<input type="text" name="unitPrice" id="unitPrice" class="easyui-numberbox input_140"  data-options="max:10,precision:2"  > 元
+			</td>
+			<td class="td_view_name">优先级： </td>
+			<td class="td_view_value">
+				<input type="text" name="priorityLevel" id="priorityLevel" class="easyui-validatebox input_140"   > 数值越大的，优先级越高
+			</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">计费字数： </td>
+			<td class="td_view_value">
+				<input type="text" name="billingWordsize" id="billingWordsize" class="easyui-validatebox input_140" >
+			</td>
+			<td class="td_view_name">是否支持长短信：</td>
+			<td class="td_view_value" >
+				<input type="radio" name="supportLongsmsFlag" class="easyui-validatebox"  value="100" checked="checked">是</input>
+		        <input  type="radio" name="supportLongsmsFlag" class="easyui-validatebox" value="200">否</input>
+			</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">分量包： </td>
+			<td class="td_view_value">
+				<input type="text" name="componentSize" id="componentSize" class="easyui-validatebox input_140"   > 条/包
+			</td>
+			<td class="td_view_name">流量： </td>
+			<td class="td_view_value">
+				<input type="text" name="flowSize" id="flowSize" class="easyui-validatebox input_140"   > 条/秒
+			</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">下发号码： </td>
+			<td class="td_view_value">
+				<input type="text" name="fromTelephone" id="fromTelephone" class="easyui-validatebox input_140"   > (如：1065XXXXX)
+			</td>
+			<td class="td_view_name">日流量限制： </td>
+			<td class="td_view_value">
+				<input type="text" name="flowSizeOneday" id="flowSizeOneday" class="easyui-validatebox input_140"   > 条
+			</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">最大并发数： </td>
+			<td class="td_view_value" colspan="3">
+				<input type="text" name="maxSendSize" id="maxSendSize" class="easyui-validatebox input_140"   > 最大并发数主要用于HTTP协议的通道，提高发送速度，最小为1。过大时可能导致对方通道瘫痪，请酌情修改。
+			</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">备注：</td>
+			<td class="td_view_value"  colspan="3">
+				<textarea rows="5" cols="80" id="remark" name="remark"  style="height:50px;width:772px;resize:none;" ></textarea> 
+			</td>
+		</tr>
+		<tr>
+			<td colspan="6" align="center">
+				<a id="btn_submit" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" >提交</a>
+				<a id="btn_cancel" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" >取消</a>
+			</td>
+		</tr>
+		</table>
+	</form>
+	
+</body>

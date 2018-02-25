@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Merchant Info List</title>
+<link rel="stylesheet" type="text/css" href="../../themes/general.css">
+<link rel="stylesheet" type="text/css" href="../../themes/icon.css">
+<link rel="stylesheet" type="text/css" href="../../themes/default/easyui.css">
+<script type="text/javascript" src="../../scripts/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="../../scripts/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../../scripts/src/jquery.parser.js"></script>
+<script type="text/javascript" src="../../scripts/locale/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="../../scripts/sessionExpriation.js"></script>
+<script type="text/javascript" src="../../scripts/util/userformatter.js"></script>
+<script type="text/javascript">
+		$(function(){
+			var pg = $("#query_result").datagrid("getPager");
+			var showpg = $("#show_result").datagrid("getPager");
+			if (pg) {
+				$(pg).pagination({		
+					onBeforeRefresh : function() {
+					},
+					onRefresh : function(pageNumber, pageSize) {
+						do_submit(pageNumber, pageSize)
+					},
+					onChangePageSize : function() {
+					},
+					onSelectPage : function(pageNumber, pageSize) {
+						do_submit(pageNumber, pageSize);
+					}
+				});
+			}
+			
+			if (showpg) {
+				$(showpg).pagination({		
+					onBeforeRefresh : function() {
+					},
+					onRefresh : function(pageNumber, pageSize) {
+						do_showpg_submit(pageNumber, pageSize)
+					},
+					onChangePageSize : function() {
+					},
+					onSelectPage : function(pageNumber, pageSize) {
+						do_showpg_submit(pageNumber, pageSize);
+					}
+				});
+			}
+			
+			$('#btn_query').bind('click', function(){  
+				$(pg).pagination('select', 1);
+        	});
+			
+			$('#btn_reset').bind('click', function(){  
+				$('#query_search_Div').form('clear');
+        	});
+			
+			$('#viewmerc').bind('click', function(){  
+				var row = $('#query_result').datagrid('getSelected');
+				if(row){
+					$('#showDialog').dialog('open').dialog('setTitle', '查看对应商户');
+					$('#cusManagerId').val(row.cusManagerId);
+					
+					$(showpg).pagination('select', 1);
+				}else{
+					$.messager.alert('提示', '请选择要操作的记录。');
+				}
+        	});
+			
+		init_by_permission('ROLE_LIST','divBtnEdit');
+	});
+		
+	function do_submit(pageNumber, pageSize) {
+		$('#query_form').form('submit', {
+			url : '../../cusmanager/query.ajax',
+			cache: false,
+			onSubmit:function(param){
+				param.paging = true;
+				param.limit = pageSize;
+				param.offset = (pageNumber-1)*pageSize;
+				return $(this).form('validate');
+			},
+			success : function(data) {
+				var obj = $.parseJSON(data);
+				$('#query_result').datagrid('loadData', obj)
+			}
+		});
+	}
+		
+	function do_showpg_submit(pageNumber, pageSize) {
+		$('#show_form').form('submit', {
+			url : '../../cusmanager/querymerc.ajax',
+			cache: false,
+			onSubmit:function(param){
+				param.paging = true;
+				param.limit = pageSize;
+				param.offset = (pageNumber-1)*pageSize;
+				return $(this).form('validate');
+			},
+			success : function(data) {
+				var obj = $.parseJSON(data);
+				$('#show_result').datagrid('loadData', obj)
+			}
+		});
+	}
+	
+	function do_add() {
+		var row = $('#query_result').datagrid('getSelected');
+		parent.addTabWithIcon("客户经理新增", "./mercmanager/cusmanageradd.htm", "icon-add");
+	}
+	function do_edit() {
+		var row = $('#query_result').datagrid('getSelected');
+		if(row){
+			parent.addTabWithIcon("客户经理修改", "./mercmanager/cusmanageredit.htm?cusManagerId="+row.cusManagerId, "icon-edit");
+		}else{
+			$.messager.alert('提示', '请选择要操作的记录。');
+		}
+	}
+	function do_delete() {
+		var row = $('#query_result').datagrid('getSelected');
+		if(row){
+			$.ajax({
+				url : '../../cusmanager/delete.ajax',
+				type : 'get',
+				dataType : 'JSON',
+				cache: false,
+				data : {
+					cusManagerId : row.cusManagerId
+				},
+				success : function(data) {
+					if (data.success) {
+						$.messager.alert('Info', '删除客户经理成功', 'info');
+						$("#query_result").datagrid("getPager").pagination('select', 1);
+					} else {
+						$.messager.alert('Error', '删除客户经理失败:' + data.message, 'error');
+					}
+				}
+			});
+		}else{
+			$.messager.alert('提示', '请选择要操作的记录。');
+		}
+	}
+	</script>
+</head>
+<body>
+
+	<form id="query_form" method="post">
+		<div style="margin: 5px 0"></div>
+		<div style="margin: 0 5px" id='query_search_Div'>
+			<table class="table_view" style="font-size: 12px; background: #F1F1F1;width:99.5%;">
+				<tr>
+					<td class="td_view_name">客户经理姓名</td>
+					<td class="td_view_value">
+						<input class="easyui-numberbox input_140" 	type="text" name="managername" id="managername" />
+					</td>
+					<td class="td_view_name">客户经理手机号</td>
+					<td class="td_view_value" colspan="3">
+						<input class="easyui-validatebox input_140" type="text" name="managermobile" id="managermobile" />
+					</td>
+				</tr>
+				<tr>
+					<td colspan="4" align="center" class="td_view_name">
+						<div align="center">
+							<a id="btn_query" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-search">查询</a> 
+							<a id="btn_reset" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-reset">重置</a>
+						</div>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div style="margin: 10px 0;"></div>
+		<div style="margin: 0 5px">
+			<table class="easyui-datagrid" title="查询结果" id="query_result"
+				data-options="singleSelect:true,pagination:true,rownumbers:true"
+				toolbar="#tb">
+				<thead>
+					<tr>
+						<th field="ck" checkbox="true"></th>
+						<th data-options="field:'cusManagerId',align:'center'">客户经理编号</th>
+						<th data-options="field:'cusManagerName',align:'center'">客户经理名称</th>
+						<th data-options="field:'cusManagerMobile',align:'center'">客户经理手机号</th>
+						<th data-options="field:'cusManagerEmail',align:'center'">客户经理邮箱</th>
+					</tr>
+				</thead>
+			</table>
+
+			<div id="tb">
+				<div id="divBtnAdd" style="float:left">
+					<a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="javascript:do_add()">添加</a>
+				</div>
+				<div id="divBtnEdit" style="float:left">
+					<a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="javascript:do_edit()">修改</a>
+				</div>
+				<div id="divBtnView" style="float:left">
+					<a href="#" class="easyui-linkbutton" iconCls="icon-remove" plain="true" onclick="javascript:do_delete()">删除</a>
+				</div>
+				<div id="divBtnView" >
+					<a id="viewmerc" href="#" class="easyui-linkbutton" iconCls="icon-view" plain="true" >查看对应商户</a>
+				</div>
+			</div>
+		</div>
+	</form>
+	
+	 <div id="showDialog" class="easyui-dialog" data-options="closed:true,modal:true" style="width: 480px;  height:400px">
+		 <form id="show_form" method="post">
+		 	<input type="text" id="cusManagerId" name="cusManagerId" hidden/>
+		 </form>
+		<table class="easyui-datagrid" title="对应商户列表" id="show_result"
+				data-options="pagination:true,rownumbers:true">
+				<thead>
+					<tr>
+						<th data-options="field:'merchantId',align:'center'">商户id</th>
+						<th data-options="field:'merchantName',align:'center'">商户姓名</th>
+					</tr>
+				</thead>
+			</table>
+	</div> 
+</body>

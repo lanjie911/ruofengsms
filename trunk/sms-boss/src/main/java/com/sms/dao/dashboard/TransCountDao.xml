@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.dashboard.TransCountDao">
+
+	<resultMap type="TransCount" id="resultTransCount">
+		<id property="transCountId" 			column="trans_count_id" />
+		<result property="merchantId" 			column="merchant_id" />
+		<result property="accountNo" 			column="account_no" />
+		<result property="merchantNameAbbreviation" column="merchant_name_abbreviation" />
+		<result property="sendNum" 				column="send_num" />
+		<result property="successNum" 			column="success_num" />
+		<result property="failureNum" 			column="failure_num" />
+		<result property="unknownNum" 			column="unknown_num" />
+		<result property="missionSuccessRate" 	column="mission_success_rate" />
+		<result property="missionSuccessRateDes" 	column="mission_success_rate_des" />
+		<result property="statisticalTime" 		column="statistical_time" />
+		<result property="createDatetime" 		column="create_datetime" />
+		<result property="dataStatus" 			column="data_status" />
+		
+		<result property="sumTotal" 			column="sum_total" />
+		<result property="sumSucc" 				column="sum_succ" />
+		<result property="sumFailure" 			column="sum_failure" />
+		<result property="sumUnknow" 			column="sum_unknow" />
+		<result property="sumRateDes" 			column="sum_rate_des" />
+	</resultMap>
+	
+	<sql id="select">
+		select 
+			t.trans_count_id, t.merchant_id, t.account_no, t.merchant_name_abbreviation,
+			t.send_num, t.success_num, t.failure_num, t.unknown_num, t.mission_success_rate,
+			CONCAT(FORMAT(t.mission_success_rate*100,2),'%') as mission_success_rate_des,
+			t.statistical_time, t.create_datetime, t.data_status
+		from
+			s_trans_count t
+  	</sql>
+  	
+  	<select id="query" parameterType="TransCountCritreia" resultMap="resultTransCount">
+		<include refid="select"/>
+		<include refid="conditions"/>
+		order by t.create_datetime desc
+	</select>
+	
+	<select id="countLoadData" parameterType="TransCountCritreia" resultMap="resultTransCount">
+		select 
+			sum(t.send_num) sum_total, sum(t.success_num) sum_succ, 
+			sum(t.failure_num) sum_failure, sum(t.unknown_num) sum_unknow,
+			CONCAT(FORMAT((sum(t.success_num)/sum(t.send_num))*100,2),'%') as sum_rate_des
+		from
+			s_trans_count t
+		<include refid="conditions"/>
+	</select>
+	
+	<sql id="conditions">
+	<where>
+		<if test="merchantId !=null">
+			and t.merchant_id = #{merchantId}
+		</if>
+		<if test="accountNo !=null">
+			and t.account_no = #{accountNo}
+		</if>
+		<if test="statisticalTimeStart !=null">
+			<![CDATA[ and t.statistical_time >= #{statisticalTimeStart} ]]>
+		</if>
+		<if test="statisticalTimeEnd !=null">
+			<![CDATA[ and t.statistical_time <= #{statisticalTimeEnd} ]]>
+		</if>
+	</where>
+	</sql>
+	
+	<select id="getById" parameterType="java.lang.Integer" resultMap="resultTransCount">
+		<include refid="select" />
+		where t.trans_count_id = #{transCountId}
+	</select>
+	
+	<select id="getByAccountNo" resultType="java.lang.Long">
+		<include refid="select" />
+		where t.account_no = #{accountNo}
+	</select>
+	
+</mapper>

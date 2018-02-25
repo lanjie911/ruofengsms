@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.sms.dao.bizdict.CustomParamDao" >
+
+	<resultMap type="CustomParam" id="resultCustomParam">
+		<id property="paramId" 				column="param_id" 	/>
+    	<result property="paramCode" 		column="param_code"	/>
+    	<result property="paramValue" 		column="param_value"/>
+    	<result property="status" 			column="param_status"		/>
+    	<result property="remark" 			column="remark"	/>
+    	<result property="createDateTime" 	column="create_datetime"	/>
+    	<result property="updateDateTime" 	column="update_datetime"	/>
+  	</resultMap>
+	
+	<sql id="select">
+   	select
+      t.param_id , t.param_code,t.param_value ,t.file_name,t.param_file_url,t.remark ,t.param_status,
+      date_format(t.create_datetime, '%Y-%m-%d %H:%i:%s') create_datetime,
+	  date_format(t.update_datetime, '%Y-%m-%d %H:%i:%s') update_datetime
+    from t_param t
+	</sql>
+    
+    <select id="getById" resultMap="resultCustomParam" parameterType="long">
+    	<include refid="select"/>
+    	where t.param_id = #{id}
+    </select>
+    
+    <select id="getCustomParamByCode" resultMap="resultCustomParam">
+    	<include refid="select"/>
+    	where t.param_code = #{paramCode}
+    </select>
+    
+     <insert id="insert" parameterType="CustomParam" useGeneratedKeys="true" keyProperty="paramId">
+		insert into t_param
+			(param_id,param_code, param_value,param_status, remark,create_datetime,update_datetime)
+		values
+			(#{paramId},#{paramCode},#{paramValue}, '00100', #{remark},now(),now())
+	</insert>
+	
+	<update id="update" parameterType="CustomParam">
+    	update 
+    		t_param 
+    	set 
+    		param_code = #{paramCode}, 
+    		param_value = #{paramValue},
+    		param_status = #{status},
+    		remark = #{remark},
+    	    update_datetime = now()
+    	where 
+			param_id = #{paramId}
+    </update>
+    
+    <select id="query" parameterType="CustomParamCriteria" resultMap="resultCustomParam">
+		<include refid="select"/>
+		<include refid="conditions"/>
+		order by t.create_datetime desc
+	</select>
+	
+	<sql id="conditions">
+		<where>
+			<if test="paramId !=null and paramId !=''">
+				and t.param_id = #{paramId}
+			</if>
+			<if test="paramCode !=null and paramCode !=''">
+				and t.param_code like '%'||#{paramCode}||'%'
+			</if>
+			<if test="status !=null and status!=''">
+				and t.param_status = #{status}
+			</if>
+		</where>
+	</sql>
+    
+</mapper>

@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.sms.dao.mercmanager.MercAccountDao" >
+
+	<resultMap type="MercAccount" 	id="resultMercAccount">
+		<result property="accountNo" column="account_no"	/>
+		<result property="merchantId" column="merchant_id"	/>
+		<result property="merchantName" column="merchant_name"	/>
+		<result property="merchantNameAbbreviation" column="merchant_name_abbreviation"	/>
+		<result property="accountType" column="account_type"	/>
+		<result property="accountTypeDes" column="account_type_des"	/>
+		<result property="paymentMethods" column="payment_methods"	/>
+		<result property="paymentMethodsDes" column="pay_method_des"	/>
+		<result property="extendNo" column="extend_no"	/>
+		<result property="chargingMethods" column="charging_methods" />
+		<result property="unitPrice" column="unit_price" />
+		<result property="priorityLevel" column="priority_level" />
+		<result property="totalBalance" column="total_balance" />
+		<result property="freeBalance" column="free_balance" />
+		<result property="frozenBalance" column="frozen_balance" />
+		<result property="startBlacklistFlag" column="start_blacklist_flag" />
+		<result property="sendAuditFlag" column="send_audit_flag" />
+		<result property="failToReissueFlag" column="fail_to_reissue_flag" />
+		<result property="signatureContent" column="signature_content" />
+		<result property="bindingIpFlag" column="binding_ip_flag" />
+		<result property="authorizationIp" column="authorization_ip" />
+		<result property="remark" column="remark" />
+		<result property="accountStatus" column="account_status" />
+		<result property="accountStatusDes" column="account_status_des" />
+		<result property="createDatetime" column="create_datetime" />
+		<result property="operator" column="operator" />
+		<result property="initialValidSmscount" column="initial_valid_smscount" />
+		<result property="onetimeMinLimit" column="onetime_min_limit" />
+		<result property="onetimeMaxLimit" column="onetime_max_limit" />
+		<result property="validSignMethod" column="valid_sign_method" />
+		
+		<result property="accountManager" column="cus_manager_name" />
+		<result property="contactsName" column="contacts_name" />
+		<result property="telephone" column="telephone" />
+		<result property="billingWordsize" column="billing_wordsize" />
+		<result property="senseWordFlag" column="sense_word_flag" />
+		<result property="templateMatchFlag" column="template_match_flag" />
+		<result property="costQuantity" column="cost_quantity" />
+		<result property="sendNumHours" column="send_num_hours" />
+		<result property="sendNumDays" column="send_num_days" />
+		<result property="accountNoPass" column="account_no_password" />
+		<result property="accountPwdClearText" column="account_pwd_clear_text" />
+		<result property="passSalt" column="password_salt" />
+  	</resultMap>
+	
+	<sql id="select">
+		select 
+		    a.account_no, m.merchant_name, m.merchant_name_abbreviation, a.account_type, a.merchant_id,
+			a.payment_methods, a.account_pwd_clear_text, a.charging_methods, a.unit_price, a.initial_valid_smscount,
+			a.onetime_min_limit, a.onetime_max_limit, a.priority_level,a.start_blacklist_flag, a.send_audit_flag, 
+			a.fail_to_reissue_flag, a.sms_group_id, a.extend_no, a.signature_content, a.binding_ip_flag, a.authorization_ip,
+			a.remark, a.valid_sign_method, a.send_num_hours, a.send_num_days, a.free_balance, a.total_balance, a.frozen_balance,
+			a.account_status, c.contacts_name, c.telephone, cm.cus_manager_name, a.cost_quantity, 
+			DATE_FORMAT(a.create_datetime,'%Y-%m-%d %H:%i:%S') as create_datetime,
+	    	a.account_no_password, a.password_salt, mas.account_status_des, tat.account_type_des, tpm.pay_method_des 
+		from s_merchant_account a
+		inner join s_merchant_info m on a.merchant_id = m.merchant_id
+		inner join s_merchant_contacts c on a.merchant_id= c.merc_info_id
+		left join s_merc_cus_manger mc on mc.merc_id = a.merchant_id
+		left join s_customer_manager cm on cm.cus_manager_id = mc.cus_manager_id
+		left join tk_merchant_account_status mas on mas.account_status = a.account_status
+		left join tk_account_type tat on tat.account_type = a.account_type
+		left join tk_pay_method tpm on tpm.pay_method = a.payment_methods
+	</sql>
+	
+	<sql id="conditions">
+	<where>
+		<if test="merchantId !=null">
+			and a.merchant_id = #{merchantId}
+		</if>
+		<if test="merchantName !=null and merchantName !=''">
+			and m.merchant_name like concat('%',#{merchantName},'%')
+		</if>
+		<if test="mercAccountNo !=null">
+			and a.account_no = #{mercAccountNo}
+		</if>
+		<if test="mercAccountStatus !=null and merchantName !=''">
+			and a.account_status  = #{mercAccountStatus}
+		</if>
+	</where>
+	</sql>
+    
+    <select id="query" parameterType="MercAccountCriteria" resultMap="resultMercAccount">
+		<include refid="select"/>
+		<include refid="conditions"/>
+		order by a.account_no desc
+	</select>
+	
+	<insert id="insert" parameterType="MercAccount" >
+	insert into 
+		s_merchant_account 
+		(account_no, merchant_id, merchant_name_abbreviation, account_type, payment_methods, extend_no,
+		 charging_methods, unit_price, priority_level, start_blacklist_flag, send_audit_flag, fail_to_reissue_flag,
+		 signature_content, binding_ip_flag, authorization_ip, remark, account_status, create_datetime, operator,
+		 initial_valid_smscount, onetime_min_limit, onetime_max_limit, valid_sign_method, sense_word_flag,
+		 template_match_flag, cost_quantity, send_num_hours, send_num_days, account_no_password, password_salt, 
+		 account_pwd_clear_text
+		 ) 
+	values 
+		(#{accountNo}, #{merchantId}, #{merchantNameAbbreviation}, #{accountType}, #{paymentMethods}, #{extendNo},
+		 #{chargingMethods}, #{unitPrice}, #{priorityLevel}, #{startBlacklistFlag}, #{sendAuditFlag}, #{failToReissueFlag},
+		 #{signatureContent}, #{bindingIpFlag}, #{authorizationIp}, #{remark}, 100, DATE_FORMAT(NOW(),'%Y-%m-%d %H:%i:%S'), 
+		 #{operator}, #{initialValidSmscount}, #{onetimeMinLimit}, #{onetimeMaxLimit}, #{validSignMethod}, 
+		 #{senseWordFlag}, #{templateMatchFlag}, #{costQuantity}, #{sendNumHours}, #{sendNumDays}, #{accountNoPass}, 
+		 #{passSalt}, #{accountPwdClearText}
+		 )
+	</insert>
+	
+	<select id="getMercAccountByAccountNo" parameterType="Long" resultMap="resultMercAccount">
+		<include refid="select"/>
+		where a.account_no = #{mercAccountNo}
+	</select>
+	
+	<update id="update" parameterType="MercAccount">
+	update 
+		s_merchant_account 
+	set
+	   account_type = #{accountType},
+	   payment_methods = #{paymentMethods},
+	   extend_no = #{extendNo},
+	   charging_methods = #{chargingMethods},
+	   unit_price = #{unitPrice},
+	   priority_level = #{priorityLevel},
+	   start_blacklist_flag = #{startBlacklistFlag},
+	   send_audit_flag = #{sendAuditFlag},
+	   fail_to_reissue_flag = #{failToReissueFlag},
+	   signature_content = #{signatureContent},
+	   binding_ip_flag = #{bindingIpFlag},
+	   authorization_ip = #{authorizationIp},
+	   remark = #{remark},
+	   account_status = #{accountStatus},
+	   operator = #{operator},
+	   initial_valid_smscount = #{initialValidSmscount},
+	   onetime_min_limit = #{onetimeMinLimit},
+	   onetime_max_limit = #{onetimeMaxLimit},
+	   valid_sign_method = #{validSignMethod},
+	   sense_word_flag = #{senseWordFlag},
+	   template_match_flag = #{templateMatchFlag},
+	   cost_quantity = #{costQuantity},
+	   send_num_hours = #{sendNumHours},
+	   send_num_days = #{sendNumDays}
+	where 
+		account_no = #{accountNo}
+	</update>
+	
+	<update id="updateRrecharge" parameterType="Recharge">
+	update 
+		s_merchant_account 
+	set
+		total_balance = total_balance + #{depositNum},
+		free_balance = free_balance + #{depositNum}
+	where 
+		account_no = #{accountNo}
+	</update>
+	
+	<update id="doFrozenAmt">
+	update 
+		s_merchant_account 
+	set
+		free_balance = free_balance - #{sumCost},
+		frozen_balance = frozen_balance + #{sumCost}
+	where 
+		account_no = #{accountNo}
+	and 
+		free_balance - #{sumCost} >= 0
+	</update>
+	
+	<update id="resetPassword">
+	update
+		s_merchant_account
+	set
+		account_no_password = #{password},
+		account_pwd_clear_text = #{accountPwdClearText},
+		password_salt = #{salt}
+	where
+		account_no = #{accountNo}
+	</update>
+    
+</mapper>

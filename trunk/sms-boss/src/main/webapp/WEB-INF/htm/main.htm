@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<link rel="shortcut icon" type="image/x-icon" href="../images/login.png" media="screen" />
+	<link rel="stylesheet" type="text/css" href="../themes/general.css">
+	<link rel="stylesheet" type="text/css" href="../themes/icon.css">
+	<link rel="stylesheet" type="text/css" href="../themes/gray/easyui.css">
+	<script type="text/javascript" src="../scripts/jquery-1.8.0.min.js"></script>
+	<script type="text/javascript" src="../scripts/jquery.easyui.min.js"></script>
+	<script type="text/javascript" src="../scripts/locale/easyui-lang-zh_CN.js"></script>
+	<script type="text/javascript" src="../scripts/hchart/highcharts.js"></script>
+	<script type="text/javascript" src="../scripts/hchart/modules/exporting.js"></script>
+	<script type="text/javascript" src="../scripts/hchart/highcharts-zh_CN.js"></script>
+	<title>聚合信息 - 无线通讯服务专家</title>
+	<script>
+		$(function(){
+			$.getJSON("../login/getCurrentMenus.ajax", function(data){ 
+            	init_menu(data);
+            });
+            
+            $.getJSON("../login/getCurrentUserName.ajax", function(data){
+	            $("#cur_user").text(data.username); 
+	            $("#cur_userId").val(data.userId); 
+            });
+            
+            var channeloptions = {
+           		 chart: {
+                        renderTo: 'channelcount', //DIV容器ID
+                        type: 'column'//报表类型
+                      },
+                title:{
+                    	text:'通道日发送量',
+                   	  }, 
+               //补充说明
+               subtitle: {
+                       },
+              yAxis: {
+                  min: 0,
+                  title: {
+                          text: '单位(条)'
+                          }
+                   },
+             xAxis: {
+                 categories: ['成功', '失败']
+                   },
+             series: [{},{},{},{}]
+            }
+            
+            $.getJSON("../countrecord/getChannelRecord.ajax",function(data) { 
+                var i,len=data.recordList.length; 
+                channeloptions.subtitle.text = "日期："+data.countTime;
+                for( i=0;i<len;i++){
+                  //赋值 series
+                  channeloptions.series[i].data = data.recordList[i].columnValueGroup;    
+                  channeloptions.series[i].name =  data.recordList[i].columnName;
+                  //对报表X轴显示名称赋值
+                //  options.xAxis.categories[i]=data[i].columnType;
+              	}    
+          	 var chart1 = new Highcharts.Chart(channeloptions);
+            }); 
+            
+            var platformoptions = {
+           		 	chart: {
+                        renderTo: 'platformcount', //DIV容器ID
+                        type: 'line'//报表类型
+                      	},
+                   credits: { 
+                       enabled: false   //右下角不显示LOGO 
+                   }, 
+                   title:{
+                       	text:'平台日发送量'
+                      	  }, 
+                  //补充说明
+                  subtitle: {},
+                 yAxis: {
+                     min: 0,
+                     title: {
+                             text: '单位(条)'
+                             }
+                      },
+                xAxis: {
+                    categories: []
+                      },
+                plotOptions:{ //设置数据点 
+                    line:{ 
+                        dataLabels:{ 
+                            enabled:true  //在数据点上显示对应的数据值 
+                        }, 
+                        enableMouseTracking: false //取消鼠标滑向触发提示框 
+                    } 
+                }, 
+                legend: {  //图例 
+                    layout: 'horizontal',  //图例显示的样式：水平（horizontal）/垂直（vertical） 
+                    backgroundColor: '#ffc', //图例背景色 
+                    align: 'left',  //图例水平对齐方式 
+                    verticalAlign: 'top',  //图例垂直对齐方式 
+                    //x: 100,  //相对X位移 
+                   // y: 70,   //相对Y位移 
+                    floating: true, //设置可浮动 
+                    shadow: true  //设置阴影 
+                }, 
+                series: [{},{},{}]
+               }
+               
+               $.getJSON("../countrecord/getPlatformRecord.ajax",function(data) { 
+                   var i,len=data.recordList.length; 
+                   platformoptions.subtitle.text = "日期："+data.countTime;
+                   for( i=0;i<len;i++){
+                     //赋值 series
+                     platformoptions.series[i].data = data.recordList[i].columnValueGroup;    
+                     platformoptions.series[i].name = data.recordList[i].columnName;
+                  
+                 	}
+                   platformoptions.xAxis.categories=data.categories;
+             	 var chart2 = new Highcharts.Chart(platformoptions);
+               });  
+		});
+		
+		function init_menu(menu_data) {
+			$("#menu_container").empty();
+			
+		    for(var i=0; i<menu_data.menus.length; i++) {
+		        var n = menu_data.menus[i];
+		        
+		        var sub_menu_str = "";
+		        for (var j=0;j<n.submenus.length; j++){
+			    	var o = n.submenus[j];
+			    	sub_menu_str += "<div style=\"padding:0px;background:#fafafa;overflow:hidden\"><a href=\"javascript:void(0)\" class=\"easyui-linkbutton\"  plain=\"true\" iconCls=\"icon-menu-" + o.code + "\" style=\"width:100%;\" onclick=\"addTabWithIcon('" + o.name + "','" + ".." + o.url +"','icon-menu-" + o.code +"')\">"+o.name+"</a></div>";   	
+			    }
+		        
+		        $('#menu_container').accordion('add', {
+			        title: n.name,
+			        content: sub_menu_str,
+			        selected: false
+			    })
+		    }
+		    
+		    $("#menu_container").accordion("select", 0);
+		}
+		
+		function addTabWithIcon(title, href,icon){
+			 if (href){  
+		         var content = '<iframe scrolling="auto" frameborder="0"  src="'+href+'" style="width:100%;height:100%;"></iframe>';  
+		     } else {  
+		         var content = '未实现';  
+		     }  
+		    var tt = $('#tabs');  	   
+		    if (tt.tabs('exists', title)){//如果tab已经存在,则选中该tab，并更新内容          
+		        tt.tabs('select', title);  
+		        var tab = $('#tabs').tabs('getSelected'); 
+		        $('#tabs').tabs('update', {
+		        	tab: tab,
+		        	options: {
+		        		content:content
+		        	}
+		        });
+		    } else {
+		    	var tabcount = $('#tabs').tabs('tabs').length;
+		    	if (tabcount>10){
+			    	$.messager.alert("提示","对不起，最多只能同时打开10个菜单。","info");
+			    	return;
+			    }
+		        tt.tabs('add',{  
+		            title:title,  
+		            closable:true,  
+		            content:content,
+		            iconCls:icon||'icon-default'  
+		        });  
+		    }  
+		}
+		
+		function editTabTitle(title){
+		    var tt = $('#tabs');  	   
+		    if (tt.tabs('exists', title)){//如果tab已经存在,则选中该tab          
+		        tt.tabs('select', title);  
+		        var tab = $('#tabs').tabs('getSelected'); 
+		        $('#tabs').tabs('update', {
+		        	tab: tab,
+		        	options: {
+		        		title: ""
+		        	}
+		        });
+		    }  
+		}
+		
+		function closeTabByTitle(title){
+			var tt = $('#tabs');
+			if (tt.tabs('exists', title)){//如果tab已经存在,则选中该tab
+		        tt.tabs('close', title);
+			}
+		}
+		
+		function go_home() {
+			var tt = $('#tabs');  	    	    
+		    tt.tabs('select', '主页');
+		}
+		
+		function change_password() {
+			$("#dlg_change_password").dialog('open');
+		}
+		
+		function logout() {
+			//alert("logtou simulation")
+			//window.location.replace("./login.jsp");
+			$.ajax({
+				url : '../login/logout.ajax',
+				type : 'get',
+				dataType : 'JSON',
+				data : {
+					
+				},
+				success : function(data) {
+					if (data.success) {
+						//alert(data.url);
+						location.href = "login.htm";
+					} else {
+						
+					}
+				}
+			});
+		}
+		
+		function conformPassword(){
+			var password = $('#password').val();
+			if(null==password||password==""){
+				$.messager.alert('Info', '密码不能为空', 'info');
+				return;
+			}
+			var newPasswd = $('#newPasswd').val();
+			var newPasswdConfirm = $('#newPasswdConfirm').val();
+			if(null==newPasswd||newPasswd==""){
+				$.messager.alert('Info', '新密码不能为空', 'info');
+				return false;
+			}
+			
+			if(newPasswd !== newPasswdConfirm){
+				$.messager.alert('Info', '两次密码不一致', 'info');
+				return false;
+			} 
+			return true;
+		}
+		
+		function doSubmit(){
+			var password = $('#password').val();
+			var newPasswd = $('#newPasswd').val();
+			var id = $('#cur_userId').val();
+			$.ajax({
+				url : '../user/changePasswordForLoginUser.ajax?'+new Date().getTime(),
+				type : 'get',
+				dataType : 'JSON',
+				data:{
+					password:password,
+					newPasswd:newPasswd,
+					id:id
+				},
+				success : function(data) {
+					if(data.success){
+						alert(data.message);
+						$('#password').val('');
+						$('#newPasswd').val('');
+						$('#newPasswdConfirm').val('');
+						$('#dlg_change_password').dialog('close');
+					}else{
+						alert(data.message);
+					}
+				}
+			});
+		}
+		
+		function init_view_by_permission() {
+			$.ajax({
+				url : '../login/checkPermission.ajax',
+				type : 'get',
+				dataType : 'JSON',
+				data : {
+					permissionCode : 'CHANGE_LOGINPASSWORD'
+				},
+				success : function(data) {
+					if (data.success) {
+						$('#iconPassword').show();
+						$('#changePassword').show();
+					} else {
+						$('#iconPassword').hide();
+						$('#changePassword').hide();
+					}
+				}
+			});
+		}
+		init_view_by_permission();
+	</script>
+</head>
+<body class="easyui-layout" >
+	<div data-options="region:'north',border:true" style="height:90px;padding:5px 5px 0px 10px;background:#F9F9F9;">
+		<table width="100%">
+			<tr>
+				<td align="left" valign="bottom"> <img src="../images/logo.png" width="227px" height="74px"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></td>
+				<td align="right" valign="bottom">
+				 	<input type="text" name="cur_userId" id="cur_userId" style="display:none;"/>
+					<span class="icon-user">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>当前用户：<span id="cur_user"></span> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<span class="icon-home">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><a href="javascript:void(0)" onclick="go_home()">主页</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<span class="icon-password" id="iconPassword">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span><a href="javascript:void(0)" onclick="change_password()" id="changePassword" name="changePassword">修改密码</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+					<span class="icon-logout">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+					<a href="javascript:void(0)" onclick="logout();">退出</a>
+					&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+				</td>
+			</tr>
+		</table>
+	</div>
+	<div data-options="region:'west',split:true" title="菜单导航" style="width:200px;padding:0px;overflow:hidden;">
+		<div id="menu_container" class="easyui-accordion" data-options="fit:true,border:false"></div>
+		<div id="dlg_change_password" class="easyui-dialog" style="width:400px;height:280px;padding:10px 20px" data-options="  
+                title: '修改密码',
+                closed:true,
+                modal:true,  
+                buttons: [{  
+                    text:'确认',  
+                    iconCls:'icon-ok',  
+                    handler:function(){  
+                    	if(conformPassword()){
+                    		doSubmit();
+                    	};
+                    }  
+                },{  
+                    text:'取消',  
+                    handler:function(){ 
+                    	$('#dlg_change_password').dialog('close'); 
+                    }  
+                }]  
+            ">
+         <div id="pwd">  
+			<table class="table_new" >
+					<tr>
+						<td class="td_new_name">原密码</td>
+						<td class="td_new_value"><input
+							class="input_140" type="password" data-options="required:true" id="password" name="password"></td>
+					</tr>
+					<tr>
+						<td class="td_new_name">新密码</td>
+						<td class="td_new_value"><input
+							class="input_140" type="password"
+							data-options="required:true" id="newPasswd" name="newPasswd"></td>
+					</tr>
+					<tr>
+						<td class="td_new_name">确认密码</td>
+						<td class="td_new_value">
+							<input type="password" class="input_140" data-options="required:true" id="newPasswdConfirm" name="newPasswdConfirm"></td>
+					</tr>
+					<tr>
+			</table>	
+		</div>
+		</div>
+	</div>
+	<div id="content_region" data-options="region:'center'" style="overflow-y:hidden;">
+		 <div id="tabs" class="easyui-tabs" data-options="border:false,fit:true">
+			<div title="主页" data-options="closable:false"  style="padding:5px;">
+				 <table  style="width:99.5%;">
+					<tr>
+						<td><div id="platformcount" style="width:99.5%;"></div></td>
+					</tr>
+					<tr>
+						<td><div id="channelcount" style="width:99.5%;"></div></td>
+					</tr>
+				</table> 
+				<!-- <div id="platformcount"></div>
+				<div id="channelcount"></div> -->
+				</table>
+			</div> 
+				<!-- <table class="table_view" style="font-size: 12px; width:99.5%;">
+				<tr>
+					<td class="td_view_name">商户总数</td>
+					<td class="td_view_value">
+						<span id="mercInfoCount"></span>
+					</td>
+					<td class="td_view_name">商户日消费总数</td>
+					<td class="td_view_value">
+						<span></span>
+					</td>
+				</tr>
+				<tr>
+					<td class="td_view_name">昨日消费总额</td>
+					<td class="td_view_value">
+						<span></span>
+					</td>
+					<td class="td_view_name">平台总消费金额</td>
+					<td class="td_view_value">
+						<span></span>
+					</td> 
+				</tr>
+				<tr>
+					<td class="td_view_name">昨日失败总数</td>
+					<td class="td_view_value" colspan="3">
+						<span></span>
+					</td>
+				</tr>
+			</table> -->
+		</div>
+	</div>
+	 
+</body>
+</html>

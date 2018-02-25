@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+	
+	 <!-- 行业短信发送 -->
+    <bean id="tradeExcuteService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
+        <property name="serviceUrl" value="${tradeExcuteService}/sms-core/sms/TradeExcuteService" />
+        <property name="serviceInterface" value="com.sms.tradeservice.api.service.TradeExcuteService" />
+    </bean>
+    
+    <bean id="tradeForDispatchService" class="org.springframework.remoting.caucho.HessianProxyFactoryBean">
+        <property name="serviceUrl" value="${tradeExcuteService}/sms-core/sms/TradeForDispatchService" />
+        <property name="serviceInterface" value="com.sms.tradeservice.api.service.TradeForDispatchService" />
+    </bean>
+    
+</beans>

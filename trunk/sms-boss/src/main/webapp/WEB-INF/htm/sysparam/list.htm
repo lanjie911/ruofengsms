@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>System Param List</title>
+<link rel="stylesheet" type="text/css" href="../../themes/general.css">
+<link rel="stylesheet" type="text/css" href="../../themes/icon.css">
+<link rel="stylesheet" type="text/css" href="../../themes/default/easyui.css">
+<script type="text/javascript" src="../../scripts/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="../../scripts/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../../scripts/src/jquery.parser.js"></script>
+<script type="text/javascript" src="../../scripts/locale/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="../../scripts/sessionExpriation.js"></script>
+<script type="text/javascript" src="../../scripts/util/userformatter.js"></script>
+<script type="text/javascript">
+$(function(){
+	$('#query_result').datagrid({
+		onDblClickRow: function(rowIndex, rowData){
+			do_view();
+		}
+	});
+	
+	var pg = $("#query_result").datagrid("getPager");
+	if (pg) {
+		$(pg).pagination({		
+			onBeforeRefresh : function() {
+			},
+			onRefresh : function(pageNumber, pageSize) {
+				do_submit(pageNumber, pageSize)
+			},
+			onChangePageSize : function() {
+			},
+			onSelectPage : function(pageNumber, pageSize) {
+				do_submit(pageNumber, pageSize);
+			},
+			onSelectPage : function(pageNumber, pageSize) {
+				do_submit(pageNumber, pageSize);
+			}
+		});
+	}
+	
+	$('#btn_query').bind('click', function() {
+		$(pg).pagination('select', 1);
+	});
+	
+	$('#btn_reset').bind('click', function() {
+		$('#query_form').form('clear');
+	});
+});
+		
+function do_submit(pageNumber, pageSize) {
+	$('#query_form').form('submit', {
+		url : '../../systemParam/query.ajax',
+		onSubmit : function(param) {
+			param.paging = true;
+			param.offset = (pageNumber-1)*pageSize;
+			param.limit = pageSize;
+			return true;
+		},
+		success : function(data) {
+			var obj = $.parseJSON(data);
+			$('#query_result').datagrid('loadData', obj)
+		}
+	});
+}
+
+function do_view() {
+	var row = $('#query_result').datagrid('getSelected');
+	if(null == row){
+		$.messager.alert('提醒信息','请选择一条记录进行删除!');
+		return;
+	}
+	parent.addTabWithIcon("详细", "./sysparam/view.htm?paramid="+row.paramId, "icon-view");
+}
+
+function do_edit() {
+	var row = $('#query_result').datagrid('getSelected');
+	if(null == row){
+		$.messager.alert('提醒信息','请选择一条记录进行删除!');
+		return;
+	}
+	parent.addTabWithIcon("修改系统参数", "./sysparam/edit.htm?paramid="+row.paramId, "icon-edit");
+}
+function do_add() {	
+	parent.addTabWithIcon("添加系统参数", "./sysparam/add.htm","icon-add");
+}
+</script>
+</head>
+<body>
+<form id="query_form" method="post">
+<div style="margin: 5px 0"></div>
+<div style="margin: 0 5px">
+	<table class="table_view" style="font-size: 12px; background: #F1F1F1;width:99.5%;">
+	<tr>
+	<td class="td_view_name">编号</td>
+	<td class="td_view_value">
+		<input class="easyui-numberbox  input_140" type="text" name="paramId" id="paramId" />
+	</td>
+	<td class="td_view_name">参数编码</td>
+	<td class="td_view_value" colspan="3">
+		<input class="input_140" type="text" name="paramCode" id="paramCode">
+	</td>
+	</tr>
+
+	<tr>
+	<td colspan="4" align="center" class="td_view_name">
+	<div align="center">
+		<a id="btn_query" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-search">查询</a>
+		<a id="btn_reset" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-reset">重置</a>
+	</div>
+	</td>
+	</tr>
+	</table>
+</div>
+<div style="margin: 10px 0;"></div>
+<div style="margin: 0 5px">
+	<table class="easyui-datagrid" title="查询结果" id="query_result"
+		data-options="singleSelect:true,pagination:true,rownumbers:true" toolbar="#tb">
+		<thead>
+		<tr>
+		<th field="ck" checkbox="true"></th>
+		<th data-options="field:'paramId',width:60,align:'center'">编号</th>
+		<th data-options="field:'paramCode',width:150,align:'left'">参数编码</th>
+		<th data-options="field:'paramValue',width:320,align:'left'">参数值</th>
+		<th data-options="field:'remark',width:320,align:'center'">备注 </th>
+		</tr>
+		</thead>
+	</table>
+
+	<div id="tb">
+		<div id="divBtnView" style="float:left">
+			<a href="#" class="easyui-linkbutton" iconCls="icon-view" plain="true" onclick="javascript:do_view()">查看</a>
+		</div>
+		<div id="divBtnEdit" style="float:left">
+			<a href="#" class="easyui-linkbutton" iconCls="icon-edit" plain="true" onclick="javascript:do_edit()">修改</a>
+		</div>	
+		<div id="divBtnADD" style="float:left">
+			<a href="#" class="easyui-linkbutton" iconCls="icon-add" plain="true" onclick="javascript:do_add()">添加</a>
+		</div>			
+	</div>
+</div>
+</form>
+
+</body>

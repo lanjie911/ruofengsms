@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.bizdict.BizDictDao">
+
+	<resultMap type="Bizdict" 		id="resultBizdict">
+		<id column="dir_id" 		property="dirId" />
+		<result column="dir_code" 	property="dirCode" />
+		<result column="dir_code_desc" property="dirCodeDesc" />
+	</resultMap>
+	
+	<resultMap type="BatchType" 	id="resultBatchType">
+		<id property="batchTypeId"	column="batch_type_id" />
+		<result property="batchType" column="batch_type"/>
+		<result property="batchTypeDes" column="batch_type_des"/>
+	</resultMap>
+	
+	<resultMap type="AccountType" 	id="resultAccountType">
+		<id property="accountTypeId"		column="account_type_id" />
+		<result property="accountType" 		column="account_type"/>
+		<result property="accountTypeDes" 	column="account_type_des"/>
+	</resultMap>
+	
+	<resultMap type="OrderFlag" 	id="resultOrderFlag">
+		<id property="orderFlagId"			column="order_flag_id" />
+		<result property="orderFlag" 		column="order_flag"/>
+		<result property="orderFlagDes" 	column="order_flag_des"/>
+	</resultMap>
+	
+	<resultMap type="ApplayStatus" 	id="resultApplayStatus">
+		<id property="applayStatusId"			column="applay_status_id" />
+		<result property="applayStatus" 		column="applay_status"/>
+		<result property="applayStatusDes" 		column="applay_status_des"/>
+	</resultMap>
+	
+	<resultMap type="MobileOperatorType" 	id="resultMobileOperatorType">
+		<id property="mobileOperatorId"			column="mobile_operator_id" />
+		<result property="mobileOperator" 		column="mobile_operator"/>
+		<result property="mobileOperatorDes" 		column="mobile_operator_des"/>
+	</resultMap>
+
+	<select id="getDirs" resultMap="resultBizdict">
+		SELECT
+		dir_id,dir_code,dir_code_desc,dir_type
+		from fk_biz_dict
+		where dir_type = #{dirType}
+	</select>
+
+	<select id="getArea" resultMap="resultBizdict">
+		select
+		codeid dir_code, parentid, cityName dir_code_desc
+		from tb_da_area
+		where parentid = (select codeid FROM tb_da_area where cityName
+		=#{cityName})
+		order by codeid
+	</select>
+	
+	<select id="getBatchType" resultMap="resultBatchType">
+		select t.batch_type_id, t.batch_type, t.batch_type_des from tk_batch_type t
+	</select>
+	
+	<select id="getAccountType" resultMap="resultAccountType">
+		select t.account_type_id, t.account_type, t.account_type_des from tk_account_type t
+	</select>
+	
+	<select id="getOrderFlag" resultMap="resultOrderFlag">
+		select t.order_flag_id, t.order_flag, t.order_flag_des from tk_order_flag t
+	</select>
+	
+	<select id="getApplayStatus" resultMap="resultApplayStatus">
+		select t.applay_status_id, t.applay_status, t.applay_status_des from tk_applay_status t
+	</select>
+	
+	<select id="getMobileOperatorType" resultMap="resultMobileOperatorType">
+		select t.mobile_operator_id, t.mobile_operator, t.mobile_operator_des from tk_mobile_operator t
+	</select>
+
+</mapper>

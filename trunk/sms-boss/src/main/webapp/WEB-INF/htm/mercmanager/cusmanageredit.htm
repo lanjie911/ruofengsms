@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Merchant Info Edit</title>
+<link rel="stylesheet" type="text/css" href="../../themes/general.css">
+<link rel="stylesheet" type="text/css" href="../../themes/icon.css">
+<link rel="stylesheet" type="text/css" href="../../themes/default/easyui.css">
+<script type="text/javascript" src="../../scripts/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="../../scripts/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../../scripts/src/jquery.parser.js"></script>
+<script type="text/javascript" src="../../scripts/locale/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="../../scripts/general.js"></script>
+<script type="text/javascript" src="../../scripts/sessionExpriation.js"></script>
+<script type="text/javascript" src="../../scripts/util/userformatter.js"></script>
+<script type="text/javascript">
+$(function() {
+	var cusManagerId = $.getUrlParam('cusManagerId');
+	
+	$('#edit_form').form({
+		url : '../../cusmanager/editCusmanager.ajax',
+		onSubmit : function() {
+			return $(this).form('validate');
+		},
+		success : function(data) {
+			var obj = $.parseJSON(data);
+			if (obj.success) {
+				$('#btn_submit').css('display', 'none');
+				$.messager.alert('Info', '提交成功', 'info');
+			} else {
+				$.messager.alert('Error', '提交失败:' + obj.message, 'error');
+			}
+		}
+	});
+
+	$('#btn_submit').bind('click', function() {
+		$("#edit_form").submit();
+	});
+	$('#btn_cancel').bind('click', function() {
+		parent.closeTabByTitle("客户经理修改");
+	});
+	
+	$.ajax({
+		url : '../../cusmanager/getCusmanagerById.ajax',
+		type : 'get',
+		dataType : 'JSON',
+		cache: false,
+		data : {
+			cusManagerId : cusManagerId
+		},
+		success : function(data) {
+			init_view(data);
+		}
+	});
+});
+function init_view(data) {
+	$("#cusManagerName").attr("value",data.cusManagerName);
+	$("#cusManagerMobile").attr("value",data.cusManagerMobile);
+	$("#cusManagerEmail").attr("value",data.cusManagerEmail);
+	$("#cusManagerId").attr("value",data.cusManagerId);
+}
+	
+</script>
+</head>
+<body>
+	<form id="edit_form" method="post">
+	<table class="table_view">
+	<input type="text" name="cusManagerId" id="cusManagerId" hidden>
+		<tr>
+			<td class="td_new_subtitle" colspan="4">商户基本信息</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">客户经理姓名：  </td>
+			<td class="td_view_value" >
+				<input type="text" name="cusManagerName" id="cusManagerName" class="easyui-validatebox input_140"  >
+			</td>
+			<td class="td_view_name">客户经理手机号：</td>
+			<td class="td_view_value">
+				<input type="text" name="cusManagerMobile" id="cusManagerMobile" class="easyui-validatebox input_140" >
+			</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">客户经理邮箱：</td>
+			<td class="td_view_value" colspan="3">
+				<input type="text" name="cusManagerEmail" id="cusManagerEmail" class="easyui-validatebox input_140" >
+			</td>
+		</tr>
+		<tr>
+			<td colspan="6" align="center">
+				<a id="btn_submit" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" >提交</a>
+				<a id="btn_cancel" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" >取消</a>
+			</td>
+		</tr>
+		</table>
+	</form>
+	
+</body>

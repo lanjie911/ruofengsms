@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>New Param</title>
+<link rel="stylesheet" type="text/css" href="../../themes/general.css">
+<link rel="stylesheet" type="text/css" href="../../themes/icon.css">
+<link rel="stylesheet" type="text/css" href="../../themes/default/easyui.css">
+<script type="text/javascript" src="../../scripts/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="../../scripts/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../../scripts/src/jquery.parser.js"></script>
+<script type="text/javascript" src="../../scripts/locale/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="../../scripts/general.js"></script>
+<script type="text/javascript" src="../../scripts/sessionExpriation.js"></script>
+<script type="text/javascript">
+	$(function() {
+		$('#new_form').form({
+			url : '../../customParam/addParam.ajax',
+			onSubmit : function() {
+				return $(this).form('validate');
+			},
+			success : function(data) {
+				var obj = $.parseJSON(data);
+				if (obj.success) {
+					$('#btn_submit').css('display', 'none');
+					$.messager.alert('Info', '提交成功', 'info');
+				} else {
+					$.messager.alert('Error', '提交失败:' + obj.message, 'error');
+				}
+			}
+		});
+
+		$('#btn_submit').bind('click', function() {
+			$("#new_form").submit();
+		});
+	});
+</script>
+</head>
+<body>
+	<form id="new_form" method="post">
+		<table class="table_new">
+			<tr>
+				<td class="td_view_subtitle"><h5>基本信息</h5></td>
+			</tr>
+			<tr>
+				<td class="td_new_name">参数代码<span class="red">*</span></td>
+				<td class="td_new_value">
+					<input class="easyui-validatebox input_140" type="text" data-options="required:true" id="paramCode" name="paramCode" />
+				</td>
+			</tr>
+			<tr>
+				<td class="td_new_name">参数值<span class="red">*</span></td>
+				<td class="td_new_value">
+					<input class="easyui-validatebox input_140" type="text" data-options="required:true" id="paramValue" name="paramValue" />
+				</td>
+			</tr>
+			<tr>
+				<td class="td_new_name">备注</td>
+				<td class="tree-root-first">
+					<textarea name="remark" id="remark" style="height: 60px;" cols="90" class="easyui-validatebox"></textarea>
+				</td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+				<td>
+					<a id="btn_submit" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok">确认提交</a>
+				</td>
+			</tr>
+		</table>
+	</form>
+</body>
+</html>

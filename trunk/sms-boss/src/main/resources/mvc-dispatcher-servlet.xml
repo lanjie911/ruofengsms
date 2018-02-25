@@ -1,0 +1,104 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans     
+        http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context-4.0.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd">
+
+	<context:component-scan base-package="com.sms.controller" />
+
+	<mvc:annotation-driven>
+		<mvc:message-converters>
+			<bean
+				class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+				<property name="supportedMediaTypes">
+					<list>
+						<value>text/html;charset=UTF-8</value>
+					</list>
+				</property>
+			</bean>
+		</mvc:message-converters>
+	</mvc:annotation-driven>
+
+	<mvc:resources mapping="/htm/**" location="/WEB-INF/htm/" />
+	<mvc:resources mapping="/images/**" location="/WEB-INF/images/" />
+	<mvc:resources mapping="/scripts/**" location="/WEB-INF/scripts/" />
+	<mvc:resources mapping="/themes/**" location="/WEB-INF/themes/" />
+
+	<mvc:default-servlet-handler />
+
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix">
+			<value>/WEB-INF/jsp/</value>
+		</property>
+		<property name="suffix">
+			<value>.jsp</value>
+		</property>
+	</bean>
+
+	<mvc:interceptors>
+		<!-- session check -->
+		<mvc:interceptor>
+			<!-- 需拦截的地址 -->
+			<!-- 一级目录 -->
+			<mvc:mapping path="/*.do" />
+			<mvc:mapping path="/*.ajax" />
+			<mvc:mapping path="/*.htm" />
+			<!-- 二级目录 -->
+			<mvc:mapping path="/*/*.do" />
+			<mvc:mapping path="/*/*.ajax" />
+			<mvc:mapping path="/*/*.htm" />
+			<!-- 三级目录 -->
+			<mvc:mapping path="/*/*/*.do" />
+			<mvc:mapping path="/*/*/*.ajax" />
+			<mvc:mapping path="/*/*/*.htm" />
+			<!-- 需排除拦截的地址 -->
+			<mvc:exclude-mapping path="/index.htm" />
+			<mvc:exclude-mapping path="/htm/login.htm" />
+			<mvc:exclude-mapping path="/login/login.ajax" />
+			<mvc:exclude-mapping path="/login/logout.ajax" />
+			<bean class="com.sms.interceptor.SessionCheckInterceptor" />
+		</mvc:interceptor>
+
+		<!-- permission check -->
+		<mvc:interceptor>
+			<!-- 需拦截的地址 -->
+			<!-- 一级目录 -->
+			<mvc:mapping path="/*.do" />
+			<mvc:mapping path="/*.ajax" />
+			<mvc:mapping path="/*.htm" />
+			<!-- 二级目录 -->
+			<mvc:mapping path="/*/*.do" />
+			<mvc:mapping path="/*/*.ajax" />
+			<mvc:mapping path="/*/*.htm" />
+			<!-- 三级目录 -->
+			<mvc:mapping path="/*/*/*.do" />
+			<mvc:mapping path="/*/*/*.ajax" />
+			<mvc:mapping path="/*/*/*.htm" />
+			<!-- 需排除拦截的地址 -->
+			<mvc:exclude-mapping path="/index.htm" />
+			<mvc:exclude-mapping path="/htm/main.htm" />
+			<mvc:exclude-mapping path="/htm/login.htm" />
+			<mvc:exclude-mapping path="/login/login.ajax" />
+			<mvc:exclude-mapping path="/login/checkPermission.ajax" />
+			<mvc:exclude-mapping path="/login/logout.ajax" />
+			<mvc:exclude-mapping path="/login/getCurrentUserName.ajax" />
+			<mvc:exclude-mapping path="/login/getCurrentMenus.ajax" />
+			<bean class="com.sms.interceptor.PermissionCheckInterceptor" />
+		</mvc:interceptor>
+		<!-- SQL注入拦截 -->
+		<mvc:interceptor>
+			<mvc:mapping path="/**" />
+			<mvc:exclude-mapping path="/smstemplate/addSmsTemplate.ajax" />
+			<mvc:exclude-mapping path="/smstemplate/editSmsTemplate.ajax" />
+			<bean class="com.sms.interceptor.XssInterceptor"/>
+		</mvc:interceptor>
+
+	</mvc:interceptors>
+
+</beans>

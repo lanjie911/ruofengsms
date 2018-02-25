@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Merchant Info View</title>
+<link rel="stylesheet" type="text/css" href="../../themes/general.css">
+<link rel="stylesheet" type="text/css" href="../../themes/icon.css">
+<link rel="stylesheet" type="text/css" href="../../themes/default/easyui.css">
+<script type="text/javascript" src="../../scripts/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="../../scripts/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../../scripts/src/jquery.parser.js"></script>
+<script type="text/javascript" src="../../scripts/locale/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="../../scripts/general.js"></script>
+<script type="text/javascript" src="../../scripts/sessionExpriation.js"></script>
+<script type="text/javascript" src="../../scripts/util/userformatter.js"></script>
+<script type="text/javascript">
+$(function() {
+	var depositId = $.getUrlParam('depositId');
+	
+	$.ajax({
+		url : '../../recharge/getRechargeById.ajax',
+		type : 'get',
+		dataType : 'JSON',
+		cache: false,
+		data : {
+			depositId : depositId
+		},
+		success : function(data) {
+			init_view(data);
+		}
+	});
+});
+function init_view(data) {
+	$.ajax({
+		url : '../../mercaccount/getMercAccountByAccountNo.ajax',
+		type : 'get',
+		dataType : 'JSON',
+		cache: false,
+		data : {
+			mercAccountNo : data.accountNo
+		},
+		success : function(data) {
+			init_mercAccount_view(data);
+		}
+	});
+	$("#rechargeTypeDes").attr("value",data.rechargeTypeDes);
+	$("#amount").attr("value",data.amount);
+	$("#depositNum").attr("value",data.depositNum);
+	$("#outRechargeNo").attr("value",data.outRechargeNo);
+	$("#remark").text(data.remark);
+}
+
+function init_mercAccount_view(data) {
+	$("#accountNo").attr("value",data.accountNo);
+	$("#merchantName").attr("value",data.merchantName);
+	$("#accountTypeDes").attr("value",data.accountTypeDes);
+	$("#freeBalance").attr("value",data.freeBalance);
+	$("#contactsName").attr("value",data.contactsName);
+	$("#telephone").attr("value",data.telephone);
+	$("#unitPrice").attr("value",data.unitPrice);
+}
+
+</script>
+</head>
+<body>
+	<form id="edit_form" method="post">
+	<table class="table_view">
+		<tr>
+			<td class="td_new_subtitle" colspan="4">基本信息</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">商户账号：</td>
+			<td class="td_view_value">
+				<input type="text" name="accountNo" id="accountNo" class="easyui-validatebox input_140"  required="true" readonly="readonly">
+			</td>
+			<td class="td_view_name">商户名称：</td>
+			<td class="td_view_value" >
+				<input type="text" name="merchantName" id="merchantName" class="easyui-validatebox input_140"  readonly="readonly">
+			</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">账户类型：</td>
+			<td class="td_view_value" >
+				<input  class="easyui-validatebox input_140" type="text" name="accountTypeDes" id="accountTypeDes" readonly="readonly">
+			</td>
+			<td class="td_view_name">当前可用条数：</td>
+			<td class="td_view_value" >
+				<input  class="easyui-validatebox input_140" type="text" name="freeBalance" id="freeBalance" readonly="readonly">
+			</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">联系人： </td>
+			<td class="td_view_value">
+				<input type="text" name="contactsName" id="contactsName" class="easyui-validatebox input_140"   readonly="readonly">
+			</td>
+			<td class="td_view_name">联系人电话： </td>
+			<td class="td_view_value">
+				<input type="text" name="telephone" id="telephone" class="easyui-validatebox input_140"   readonly="readonly">
+			</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">短信单价：</td>
+			<td class="td_view_value" colspan="3">
+				<input class="easyui-validatebox input_140" type="text" name="unitPrice" id="unitPrice" readonly="readonly"/>
+			</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">充值类型：</td>
+			<td class="td_view_value" >
+				<input class="easyui-validatebox input_140" type="text" name="rechargeTypeDes" id="rechargeTypeDes" readonly="readonly"/>
+			</td>
+			<td class="td_view_name">充值金额：</td>
+			<td class="td_view_value" colspan="3">
+				<input class="easyui-validatebox input_140" type="text" name="amount" id="amount" readonly="readonly" />
+			</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">充值数量：</td>
+			<td class="td_view_value">
+				<input class="easyui-validatebox input_140" type="text" name="depositNum" id="depositNum"readonly="readonly"/>
+			</td>
+			<td class="td_view_name">外部订单号：</td>
+			<td class="td_view_value">
+				<input class="easyui-validatebox input_140" type="text" name="outRechargeNo" id="outRechargeNo" readonly="readonly"/>
+			</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">备注：</td>
+			<td class="td_view_value"  colspan="3">
+				<textarea rows="5" cols="80" id="remark" name="remark"  style="height:50px;width:772px;resize:none;" readonly="readonly"></textarea> 
+			</td>
+		</tr>
+		</table>
+	</form>
+	
+</body>

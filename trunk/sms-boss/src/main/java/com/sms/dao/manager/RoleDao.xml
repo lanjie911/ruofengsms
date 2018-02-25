@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sms.dao.manager.RoleDao">
+	
+	<resultMap type="Role" id="resultMapRole">
+		<id column="role_id" property="id" />
+        <result column="role_name" property="name" />
+        <result column="role_desc" property="desc" />
+        <result column="status" property="status" />
+        <result column="status_name" property="statusName" />
+        <result column="module_code" property="moduleCode" />
+        <result column="create_datetime" property="createDatetime" />
+        <result column="update_datetime" property="updateDatetime" />
+	</resultMap>
+	
+	<select id="getRolesByModuleCode" parameterType="String" resultMap="resultMapRole">
+		select role_id, role_name, role_desc, status, module_code, 
+			date_format(create_datetime, '%Y-%m-%d %H:%i:%s') create_datetime,
+			date_format(update_datetime, '%Y-%m-%d %H:%i:%s') update_datetime
+			from t_role
+  			where module_code=#{moduleCode} and status='00100'
+          	order by role_id
+	</select>
+	
+	<insert id="insert" parameterType="Role" useGeneratedKeys="true" keyProperty="id">
+    		insert into t_role
+    			( role_name, status, role_desc,module_code, create_datetime, update_datetime)
+    		values
+    			( #{name}, #{status}, #{desc}, 'boss', now(), now())
+   </insert>
+    
+   <update id="update" parameterType="Role">
+    	update t_role set role_name = #{name}, 
+    	status = #{status, jdbcType=VARCHAR}, 
+    	role_desc = #{desc, jdbcType=VARCHAR}, 
+    	update_datetime=now()
+    	where role_id = #{id}
+   </update>
+    
+    <delete id="deleteAllRoleMenu">
+    	delete from t_role_menu where role_id = #{roleId}
+    </delete>
+    
+    <delete id="deleteAllRolePermission">
+    	delete from t_role_permission where role_id = #{roleId}
+    </delete>
+    
+    <insert id="insertRoleMenu" useGeneratedKeys="true" >
+    	insert into t_role_menu (role_id, menu_id)
+    	values ( #{roleId}, #{menuId})
+    </insert>
+    
+    <insert id="insertRolePermission" useGeneratedKeys="true">
+    	insert into t_role_permission (role_id, permission_id)
+    	values (#{roleId}, #{permissionId})
+    </insert>
+    
+	<select id="getRolesByUserId" parameterType="long" resultMap="resultMapRole">
+		select r.role_id, r.role_name, r.role_desc, r.status, r.module_code,
+			date_format(r.create_datetime, '%Y-%m-%d %H:%i:%s') create_datetime,
+			if(r.update_datetime != null,date_format(r.update_datetime, '%Y-%m-%d %H:%i:%s'),'') update_datetime
+		from t_role r, t_operator_role ur
+  		where r.role_id=ur.role_id and ur.operator_id=#{userId} and r.status='00100'
+        order by r.role_id
+	</select>
+	
+	<select id="query" parameterType="UserCriteria" resultMap="resultMapRole">
+    	select r.role_id, r.role_name, r.status, r.role_desc, r.module_code, 
+    		date_format(r.create_datetime, '%Y-%m-%d %H:%i:%s') create_datetime,
+			date_format(r.update_datetime, '%Y-%m-%d %H:%i:%s') update_datetime
+		from t_role r 
+		<include refid="queryWhere"/>	
+		order by r.role_id desc
+		   
+    </select>
+    
+    <select id="getRolesByRoleName" parameterType="String" resultMap="resultMapRole">
+    	select r.role_id, r.role_name, r.status, r.role_desc, r.module_code, 
+    		date_format(r.create_datetime, '%Y-%m-%d %H:%i:%s') create_datetime,
+			date_format(r.update_datetime, '%Y-%m-%d %H:%i:%s') update_datetime
+		from t_role r 
+		   where r.role_name =#{name}
+    </select>
+    
+    <select id="queryCount" parameterType="UserCriteria" resultType="int">
+    	select count(*) from t_role r 
+		<include refid="queryWhere"/>
+    </select>
+    
+    <select id="getById" parameterType="Long" resultMap="resultMapRole">
+		select r.role_id, r.role_name, r.role_desc, r.status, r.module_code,
+			date_format(r.create_datetime, '%Y-%m-%d %H:%i:%s') create_datetime,
+			if(r.update_datetime != null,date_format(r.update_datetime, '%Y-%m-%d %H:%i:%s'),'') update_datetime
+		from t_role r where r.role_id= #{id}
+	</select>
+	
+	<sql id="queryWhere">
+		<where>
+			<choose>
+		        <when test="roleId != null">  
+		            and r.role_id = #{roleId}  
+		        </when>  
+		        <when test="roleName != null and roleName != '' ">  
+		            and r.role_name like  #{roleName}||'%'
+		        </when>   
+		    </choose>
+		</where>
+	</sql>
+</mapper>

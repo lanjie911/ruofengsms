@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Merchant Info List</title>
+<link rel="stylesheet" type="text/css" href="../../themes/general.css">
+<link rel="stylesheet" type="text/css" href="../../themes/icon.css">
+<link rel="stylesheet" type="text/css" href="../../themes/default/easyui.css">
+<script type="text/javascript" src="../../scripts/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="../../scripts/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../../scripts/src/jquery.parser.js"></script>
+<script type="text/javascript" src="../../scripts/locale/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="../../scripts/sessionExpriation.js"></script>
+<script type="text/javascript" src="../../scripts/util/userformatter.js"></script>
+<script type="text/javascript">
+		$(function(){
+			$('#paymentMethods').combobox({
+				url:'../../bizdict/getDir.ajax?dirType=ACCOUNT_PAY_METHOD',
+					valueField:'dirCode',
+					textField:'dirCodeDesc',
+					panelHeight:'auto',
+					editable:false 
+			});
+			$('#supportOperators').combobox({
+	    		url:'../../bizdict/getDirWithAll.ajax?dirType=CHANNEL_SUPPORT_OPERATOR',
+	    			valueField:'dirCode',
+	    			textField:'dirCodeDesc',
+	    			panelHeight:'auto',
+	    			editable:false 
+			});
+			$('#channelType').combobox({
+				url:'../../bizdict/getDirWithAll.ajax?dirType=CHANNEL_TYPE',
+					valueField:'dirCode',
+					textField:'dirCodeDesc',
+					panelHeight:'auto',
+					editable:false 
+			});
+		
+			var pg = $("#query_result").datagrid("getPager");
+			if (pg) {
+				$(pg).pagination({		
+					onBeforeRefresh : function() {
+					},
+					onRefresh : function(pageNumber, pageSize) {
+						do_submit(pageNumber, pageSize)
+					},
+					onChangePageSize : function() {
+					},
+					onSelectPage : function(pageNumber, pageSize) {
+						do_submit(pageNumber, pageSize);
+					}
+				});
+			}
+			
+			$('#btn_query').bind('click', function(){  
+				$(pg).pagination('select', 1);
+        	});
+			
+			$('#btn_reset').bind('click', function(){  
+				$('#query_search_Div').form('clear');
+        	});
+			
+			init_by_permission('ROLE_LIST','divBtnEdit');
+		});
+	
+	function do_submit(pageNumber, pageSize) {
+		$('#query_form').form('submit', {
+			url : '../../channelcountrecord/query.ajax',
+			cache: false,
+			onSubmit:function(param){
+				param.paging = true;
+				param.limit = pageSize;
+				param.offset = (pageNumber-1)*pageSize;
+				return $(this).form('validate');
+			},
+			success : function(data) {
+				var obj = $.parseJSON(data);
+				$('#query_result').datagrid('loadData', obj)
+			}
+		});
+	}
+	
+	function do_view() {
+		var row = $('#query_result').datagrid('getSelected');
+		if(row){
+			parent.addTabWithIcon("查看通道信息", "./channelmanager/channelview.htm?channelId="+row.channelId, "icon-view");
+		}else{
+			$.messager.alert('提示', '请选择要操作的记录。');
+		}
+	}
+	</script>
+</head>
+<body>
+
+	<form id="query_form" method="post">
+		<div style="margin: 5px 0"></div>
+		<div style="margin: 0 5px" id='query_search_Div'>
+			<table class="table_view" style="font-size: 12px; background: #F1F1F1;width:99.5%;">
+				<tr>
+					<td class="td_view_name">通道编号</td>
+					<td class="td_view_value">
+						<input class="easyui-numberbox input_140" 	type="text" name="channelId" id="channelId" />
+					</td>
+					<td class="td_view_name">通道名称</td>
+					<td class="td_view_value">
+						<input class="easyui-validatebox input_140" 	type="text" name="channelName" id="channelName" />
+					</td>
+				</tr>
+				<tr>
+					<td class="td_view_name">付费方式</td>
+					<td class="td_view_value">
+						<input class="easyui-combobox input_140" type="text" name="paymentMethods" id="paymentMethods" />
+					</td>
+					<td class="td_view_name">通道类型</td>
+					<td class="td_view_value">
+						<input class="easyui-combobox input_140" type="text" name="channelType" id="channelType" />
+					</td>
+				</tr>
+				<tr>
+					<td class="td_view_name">运营商类型</td>
+					<td class="td_view_value">
+						<input class="easyui-numberbox input_140" 	type="text" name="supportOperators" id="supportOperators" />
+					</td>
+					<td class="td_view_name">报表日期</td>
+					<td class="td_view_value">
+						 <input id="recordDateBegin" name="recordDateBegin" type="text" class="easyui-datetimebox" data-options="editable:false,formatter:fmtwithhms">
+						至
+						<input id="recordDateEnd" name="recordDateEnd" type="text" class="easyui-datetimebox"  data-options="editable:false,formatter:fmtwithhms">
+					</td>
+				</tr>
+				<tr>
+					<td colspan="4" align="center" class="td_view_name">
+						<div align="center">
+							<a id="btn_query" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-search">查询</a> 
+							<a id="btn_reset" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-reset">重置</a>
+						</div>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div style="margin: 10px 0;"></div>
+		<div style="margin: 0 5px">
+			<table class="easyui-datagrid" title="查询结果" id="query_result"
+				data-options="singleSelect:true,pagination:true,rownumbers:true"
+				toolbar="#tb">
+				<thead>
+					<tr>
+						<th field="ck" checkbox="true"></th>
+						<th data-options="field:'channelId'">通道编号</th>
+						<th data-options="field:'channelName'">通道名称</th>
+						<th data-options="field:'unitPrice',align:'center',formatter:formatAmt">单价（元）</th>
+						<th data-options="field:'paymentMethodsDes'">付费方式</th>
+						<th data-options="field:'flowSum'">流量</th>
+						<th data-options="field:'channelTypeDes'">通道类型</th>
+						<th data-options="field:'supportOperatorsDes',align:'center'">运营商类型</th>
+						<th data-options="field:'time',align:'center'">时间</th>
+					</tr>
+				</thead>
+			</table>
+
+			<div id="tb">
+				<div id="divBtnView" >
+					<a href="#" class="easyui-linkbutton" iconCls="icon-view" plain="true" onclick="javascript:do_view()">查看</a>
+				</div>
+			</div>
+		</div>
+	</form>
+</body>

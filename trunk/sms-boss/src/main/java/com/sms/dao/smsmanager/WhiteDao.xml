@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.smsmanager.WhiteDao">
+
+	<resultMap type="White" 				id="resultWhite">
+		<result column="white_id"	property="whiteId"/>
+		<result column="mobile"	property="mobile"/>
+		<result column="status"	property="status"/>
+		<result column="status_des"	property="statusDes"/>
+		<result column="create_datetime"	property="createDatetime"/>
+		<result column="update_datetime"	property="updateDatetime"/>
+		<result column="remark"	property="remark"/>
+	</resultMap>
+	
+	<sql id="select">
+		select t.white_id, t.mobile, t.status, t.remark,
+			if(t.status=100,'启用','停用')  status_des,
+			date_format(t.create_datetime, '%Y-%m-%d %H:%i:%s') create_datetime, 
+		 	date_format(t.update_datetime , '%Y-%m-%d %H:%i:%s') update_datetime
+		 from s_white_list t
+  	</sql>
+  	
+  	<sql id="conditions">
+		<where>
+			<if test="mobile !=null ">
+				and t.mobile = #{mobile}
+			</if>
+		</where>
+	</sql>
+	
+	 <select id="query" parameterType="WhiteCriteria" resultMap="resultWhite">
+		<include refid="select"/>
+		<include refid="conditions"/>
+		order by t.create_datetime
+	</select>
+	
+	<select id="getByMobile" parameterType="String" resultMap="resultWhite">
+		<include refid="select"/>
+		where t.mobile = #{mobile}
+	</select>
+	
+	
+	<insert id="insert" parameterType="White">
+	insert into s_white_list (
+	   mobile
+	  ,status
+	  ,remark
+	  ,create_datetime
+	  ,update_datetime
+	) values (
+	   #{mobile}
+	  ,100
+	  ,#{remark}
+	  ,now()
+	  ,now()
+	)
+	</insert>
+	
+	<update id="update"  parameterType="White">
+	update s_white_list SET
+	   status =  #{status}
+	  ,remark =  #{remark} 
+	  ,update_datetime = now()
+	where white_id = #{whiteId}
+	</update>
+	
+	<delete id="deleteByMobile">
+		delete from s_white_list WHERE  mobile =  #{mobile}
+	</delete>
+	
+</mapper>

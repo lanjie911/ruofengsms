@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Merchant Info Edit</title>
+<link rel="stylesheet" type="text/css" href="../../themes/general.css">
+<link rel="stylesheet" type="text/css" href="../../themes/icon.css">
+<link rel="stylesheet" type="text/css" href="../../themes/default/easyui.css">
+<script type="text/javascript" src="../../scripts/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="../../scripts/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../../scripts/src/jquery.parser.js"></script>
+<script type="text/javascript" src="../../scripts/locale/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="../../scripts/general.js"></script>
+<script type="text/javascript" src="../../scripts/sessionExpriation.js"></script>
+<script type="text/javascript" src="../../scripts/util/userformatter.js"></script>
+<script type="text/javascript">
+$(function() {
+	var operatorId = $.getUrlParam('operatorId');
+	
+	$('#operatorStatus').combobox({
+		url:'../../bizdict/getDir.ajax?dirType=BASE_STATUS',
+			valueField:'dirCode',
+			textField:'dirCodeDesc',
+			panelHeight:'auto',
+			editable:false 
+	});
+	
+	$('#edit_form').form({
+		url : '../../mercuser/editMercUser.ajax',
+		onSubmit : function() {
+			return $(this).form('validate');
+		},
+		success : function(data) {
+			var obj = $.parseJSON(data);
+			if (obj.success) {
+				$('#btn_submit').css('display', 'none');
+				$.messager.alert('Info', '提交成功', 'info');
+			} else {
+				$.messager.alert('Error', '提交失败:' + obj.message, 'error');
+			}
+		}
+	});
+
+	$('#btn_submit').bind('click', function() {
+		$("#edit_form").submit();
+	});
+	$('#btn_cancel').bind('click', function() {
+		parent.closeTabByTitle("商户用户修改");
+	});
+	
+	$.ajax({
+		url : '../../mercuser/getMercUserById.ajax',
+		type : 'get',
+		dataType : 'JSON',
+		cache: false,
+		data : {
+			operatorId : operatorId
+		},
+		success : function(data) {
+			init_view(data);
+		}
+	});
+});
+function init_view(data) {
+	$("#merchantId").attr("value",data.merchantId);
+	$("#merchantName").attr("value",data.merchantName);
+	$("#operatorLoginName").attr("value",data.operatorLoginName);
+	$("#operatorName").attr("value",data.operatorName);
+	$("#operatorStatus").combobox("setValue",data.operatorStatus);
+	$("#mobile").numberbox("setValue",data.mobile);
+	$("#phone").numberbox("setValue",data.phone);
+	$("#email").attr("value",data.email);
+	
+	
+}
+</script>
+</head>
+<body>
+	<form id="edit_form" method="post">
+	<table class="table_view">
+		<tr>
+			<td class="td_new_subtitle" colspan="4">商户基本信息</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">商户编号：</td>
+			<td class="td_view_value">
+				<input type="text" name="merchantId" id="merchantId" class="easyui-validatebox input_140"  readonly="readonly">
+			</td>
+			<td class="td_view_name">商户名称：</td>
+			<td class="td_view_value">
+				<input type="text" name="merchantName" id="merchantName" class="easyui-validatebox input_140"  readonly="readonly">
+			</td>
+		</tr>
+		<tr>
+			<td class="td_new_subtitle" colspan="4">商户用户信息</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">用户账号：</td>
+			<td class="td_view_value">
+				<input type="text" name="operatorLoginName" id="operatorLoginName" class="easyui-validatebox input_140"  readonly="readonly">
+			</td>
+			<td class="td_view_name">用户名：</td>
+			<td class="td_view_value" >
+				<input type="text" name="operatorName" id="operatorName" class="easyui-validatebox input_140" >
+			</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">手机号：</td>
+			<td class="td_view_value">
+				<input class="easyui-numberbox input_140" type="text" name="mobile" id="mobile" />
+			</td>
+			<td class="td_view_name">办公号码 ：</td>
+			<td class="td_view_value">
+				<input type="text" name="phone" id="phone" class="easyui-numberbox input_140"  data-options="required:true">
+			</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">邮箱：  </td>
+			<td class="td_view_value" >
+				<input type="text" name="email" id="email" class="easyui-validatebox input_140" required="true">
+			</td>
+			<td class="td_view_name">账号状态：  </td>
+			<td class="td_view_value" >
+				<input type="text" name="operatorStatus" id="operatorStatus" class="easyui-combobox input_140" required="true">
+			</td>
+		</tr>
+		<tr>
+			<td colspan="6" align="center">
+				<a id="btn_submit" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" >提交</a>
+				<a id="btn_cancel" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" >取消</a>
+			</td>
+		</tr>
+		</table>
+	</form>
+	
+</body>

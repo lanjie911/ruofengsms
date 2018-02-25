@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Change Password</title>
+<link rel="stylesheet" type="text/css" href="../../themes/general.css">
+<link rel="stylesheet" type="text/css" href="../../themes/icon.css">
+<link rel="stylesheet" type="text/css" href="../../themes/default/easyui.css">
+<script type="text/javascript" src="../../scripts/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="../../scripts/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../../scripts/src/jquery.parser.js"></script>
+<script type="text/javascript"
+	src="../../scripts/locale/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="../../scripts/general.js"></script>
+<script type="text/javascript" src="../../scripts/sessionExpriation.js"></script>
+<script type="text/javascript">
+	$(function() {
+		var userId = $.getUrlParam('userId');
+		
+		$('#pwd_form').form({
+			url : '../../user/changePassword.ajax',
+			onSubmit : function() {
+				if ($(this).form('validate')) {
+					return extra_validate();
+				} else {
+					return false;
+				}
+			},
+			success : function(data) {
+				var obj = $.parseJSON(data);
+				if (obj.success) {
+					$.messager.alert('Info', '提交成功', 'info');
+				} else {
+					$.messager.alert('Error', '提交失败:' + obj.message, 'error');
+				}
+			}
+		});
+		
+		$('#btn_submit').bind('click', function() {
+			$("#pwd_form").submit();
+			$("#btn_submit").linkbutton("disable");//按钮不可用
+		});
+		
+		$.ajax({
+			url : '../../user/getUserByUserId.ajax',
+			type : 'get',
+			dataType : 'JSON',
+			cache: false,
+			data : {
+				userId : userId
+			},
+			success : function(data) {
+				init_view(data);
+			}
+		});
+		
+	});
+
+	function init_view(data) {
+		$("#id").attr("value",data.id);
+		$("#loginName").attr("value",data.loginName);
+		$("#name").attr("value",data.name);	
+	}
+	
+	function extra_validate() {
+		var pwd = $.trim($("#password").val());
+		var pwd2 = $.trim($("#confirmPassword").val());
+		
+		if (pwd != pwd2) {
+			$.messager.alert('Info', '两次密码输入不一致，请检查。', 'info');
+			return false;
+		}
+		
+		return true;
+	}
+	
+</script>
+</head>
+<body>
+	<form id="pwd_form" method="post">
+		<table class="table_new">
+			<tr>
+				<td class="td_new_subtitle" colspan="2">基本信息</td>
+			</tr>
+			<tr>
+				<td class="td_new_name">用户编号</td>
+				<td class="td_new_value"><input
+					class="input_120" type="text" readonly="readonly" id="id" name="id"></td>
+			</tr>
+			<tr>
+				<td class="td_new_name">用户名</td>
+				<td class="td_new_value"><input
+					class="input_120" type="text" readonly="readonly" id="loginName" name="loginName"></td>
+			</tr>
+			<tr>
+				<td class="td_new_name">姓名</td>
+				<td class="td_new_value"><input
+					class="input_120" type="text" readonly="readonly" id="name" name="name"></td>
+			</tr>
+			<tr>
+				<td class="td_new_name">新的登录密码</td>
+				<td class="td_new_value"><input id="password" name="password"
+					type="password" class="easyui-validatebox input_120"
+					data-options="required:true"></td>
+			</tr>
+			<tr>
+				<td class="td_new_name">确认密码</td>
+				<td class="td_new_value"><input id="confirmPassword"
+					name="confirmPassword" type="password"
+					class="easyui-validatebox input_120" data-options="required:true">
+				</td>
+			</tr>
+			<tr>
+				<td class="td_new_name"></td>
+				<td class="td_new_value"><a id="btn_submit"
+					href="javascript:void(0)" class="easyui-linkbutton"
+					iconCls="icon-ok">确认提交</a></td>
+			</tr>
+		</table>
+	</form>
+
+</body>
+</html>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.sms.dao.serialnumber.SerialNumberDao" >
+
+    <select id="getBytableName" parameterType="String" resultType="Long">
+    	select serial_number+1 FROM s_serial_number where table_name =#{tableaName}
+	</select>
+	
+	
+	<update id="updateSerialNumber" >
+	update s_serial_number SET
+   		serial_number =#{accountNo}
+	WHERE table_name = #{tableaName}
+	</update>
+	
+</mapper>

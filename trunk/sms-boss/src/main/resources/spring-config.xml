@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
+
+	<!-- 开发环境 -->
+	<beans profile="dev">
+		<bean id="propertyConfigurer"
+			class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+			<property name="locations">
+				<list>
+					<!-- 数据库配置 -->
+					<value>classpath:properties/dev/db-config-dev.properties</value>
+					<!-- 其他配置 -->
+					<value>classpath:properties/dev/other-config-dev.properties</value>
+				</list>
+			</property>
+		</bean>
+		<!-- spring config -->
+		<import resource="classpath*:applicationContext-core.xml"/>
+	</beans>
+	
+	<!-- 测试环境 -->
+	<beans profile="test">
+		<bean id="propertyConfigurer"
+			class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+			<property name="locations">
+				<list>
+					<!-- 数据库配置 -->
+					<value>classpath:properties/test/db-config-test.properties</value>
+					<!-- 其他配置 -->
+					<value>classpath:properties/test/other-config-test.properties</value>
+				</list>
+			</property>
+		</bean>
+		<!-- spring config -->
+		<import resource="classpath*:applicationContext-core.xml"/>
+	</beans>
+	
+	<!-- 生产环境 -->
+	<beans profile="pro">
+		<bean id="propertyConfigurer"
+			class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+			<property name="locations">
+				<list>
+					<!-- 数据库配置 -->
+					<value>classpath:properties/pro/db-config-pro.properties</value>
+					<!-- 其他配置 -->
+					<value>classpath:properties/pro/other-config-pro.properties</value>
+				</list>
+			</property>
+		</bean>
+		<!-- spring config -->
+		<import resource="classpath*:applicationContext-core.xml"/>
+	</beans>
+
+</beans>  

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.smsmanager.IpDao">
+
+	<resultMap type="Ip" 				id="resultIp">
+		<result column="ip_id"	property="ipId"/>
+		<result column="ip_addr"	property="ipAddress"/>
+	</resultMap>
+	
+	<sql id="select">
+		select ip_id, ip_addr FROM s_convince_ip
+  	</sql>
+  	
+  	<sql id="conditions">
+		<where>
+			<if test="ipAddr !=null and ipAddr !=''">
+				and ip_addr = #{ipAddr}
+			</if>
+		</where>
+	</sql>
+	
+	 <select id="query" parameterType="IpCriteria" resultMap="resultIp">
+		<include refid="select"/>
+		<include refid="conditions"/>
+	</select>
+	
+	<select id="getByIpAddr" parameterType="String" resultMap="resultIp">
+		<include refid="select"/>
+		where ip_addr = #{ipAddress}
+	</select>
+	
+	
+	<insert id="insert" parameterType="Ip">
+	insert into s_convince_ip (
+	   ip_addr
+	) VALUES (
+	   #{ipAddress}
+	)
+	</insert>
+	
+	<delete id="deleteByIpAddr">
+		delete from s_convince_ip WHERE ip_addr = #{ipAddress}
+	</delete>
+	
+</mapper>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Edit User</title>
+<link rel="stylesheet" type="text/css" href="../../themes/general.css">
+<link rel="stylesheet" type="text/css" href="../../themes/icon.css">
+<link rel="stylesheet" type="text/css" href="../../themes/default/easyui.css">
+<script type="text/javascript" src="../../scripts/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="../../scripts/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../../scripts/src/jquery.parser.js"></script>
+<script type="text/javascript" src="../../scripts/locale/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="../../scripts/general.js"></script>
+<script type="text/javascript" src="../../scripts/sessionExpriation.js"></script>
+
+<script type="text/javascript">
+	$(function() {
+		var paramid = $.getUrlParam('paramid');
+		$('#edit_form').form({
+			url : '../../customParam/editParam.ajax',
+			cache: false,
+			onSubmit : function() {
+				return $(this).form('validate');
+			},
+			success : function(data) {
+				var obj = $.parseJSON(data);
+				if (obj.success) {
+					$('#btn_submit').css('display','none');
+					$.messager.alert('Info', '提交成功', 'info');
+				} else {
+					$.messager.alert('Error', '提交失败:' + obj.message, 'error');
+				}
+			}
+		});
+		
+		
+		$('#btn_submit').bind('click', function() {
+			$("#edit_form").submit();
+		});
+		
+		$.ajax({
+			url : '../../customParam/getParamByParamId.ajax',
+			type : 'get',
+			dataType : 'JSON',
+			cache: false,
+			data : {
+				paramid : paramid
+			},
+			success : function(data) {
+				init_view(data);
+			}
+		});
+	});
+
+	function init_view(data) {
+		$("#paramId").attr("value",data.paramId);
+		$("#paramId2").attr("value",data.paramId);
+		$("#paramCode").attr("value",data.paramCode);
+		$("#paramValue").attr("value",data.paramValue);
+		$('#status').combobox("select", data.status);
+		$("#remark").text(data.remark);
+		$("#paramId").focus();	
+	}
+	
+</script>
+</head>
+<body>
+	<form id="edit_form" method="post">
+		<table class="table_view">
+			<tr>
+				<td><h5>基本信息</h5></td>
+			</tr>
+			<tr>
+				<td class="td_view_name">编号<span class="red">*</span></td>
+				<td class="td_view_value">
+					<input class="easyui-validatebox input_140" type="text" data-options="required:true" id="paramId"  disabled="disabled" />
+				</td>
+			</tr>
+			<tr>
+				<td class="td_view_name">参数编码<span class="red">*</span></td>
+				<td class="td_view_value">
+					<input class="easyui-validatebox input_240" type="text" data-options="required:true"  id="paramCode"  name="paramCode" />
+				    <input  type="hidden" data-options="required:true" id="paramId2"  name="paramId" />
+				</td>
+			</tr>
+			<tr>
+				<td class="td_view_name">参数值<span class="red">*</span></td>
+				<td class="td_view_value">
+					<input class="easyui-validatebox input_240" type="text" data-options="required:true"  id="paramValue"  name="paramValue" />
+						
+				</td>
+			</tr>
+			<tr>
+				<td class="td_view_name">状态</td>
+				<td class="tree-root-first">
+						<select id="status" class="easyui-combobox" data-options="panelHeight:'auto'" editable="false" name="status" style="width:140px;">
+   						<option value="00100">使用</option>
+   						<option value="00200">禁用</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<td class="td_view_name">备注</td>
+				<td class="tree-root-first">
+					<textarea name="remark" id="remark" style="height:60px;" cols="90"  class="easyui-validatebox"></textarea>
+				</td>
+			</tr>
+			<tr>
+				<td></td>
+                <td><a id="btn_submit" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok">确认提交</a></div></td>
+			</tr>
+		</table>
+	</form>
+
+</body>
+</html>

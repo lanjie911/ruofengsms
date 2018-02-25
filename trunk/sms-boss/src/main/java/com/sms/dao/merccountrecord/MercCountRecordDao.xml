@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.merccountrecord.MercCountRecordDao">
+
+	<resultMap type="MercCountRecord" id="resultMercCountRecord">
+		
+		<result column="merchant_id" property="merchantId" />
+		<result column="account_no" property="accountNo" />
+		<result column="merchant_name" property="merchantName" />
+		<result column="account_type"	property="accountType"/>
+		<result column="account_type_des"	property="accountTypeDes"/>
+		<result column="payment_methods" property="paymentMethods" />
+		<result column="payment_methods_des" property="paymentMethodsDes" />
+		<result column="deposit_sum" property="depositSum" />
+		<result column="pay_sum" property="paySum" />
+		<result column="sms_group_desc" property="smsGroupDesc" />
+		<result column="pay_sum_success" property="paySumSuccess" />
+		<result column="pay_sum_fail" property="paySumFail" />
+	</resultMap>
+
+
+	<select id="query" parameterType="MercCountRecordCriteria" resultMap="resultMercCountRecord">
+		select a.merchant_id,a.account_no,i.merchant_name, 
+		a.payment_methods,if(a.payment_methods=100,'预付费',if(a.account_type=200,'后付费',''))  payment_methods_des,
+		a.account_type,if(a.account_type=100,'行业账户',if(a.account_type=200,'普通账户',''))  account_type_des,
+		a.sms_group_desc,d.deposit_sum, ps.pay_sum, pss.pay_sum_success,psf.pay_sum_fail,ps.resp_datetime
+	  from s_merchant_account a
+	  inner join s_merchant_info i on a.merchant_id = i.merchant_id
+	  left join (select account_no,create_datetime,sum(deposit_num) deposit_sum
+	               from s_deposit
+	              where deposit_status = 100 
+	              <if test="mercAccountNo !=null">
+					and account_no = #{mercAccountNo}
+				 </if> 
+				 <if test="recordDateBegin != null and recordDateBegin !=''">
+					and create_datetime &gt;= str_to_date(#{recordDateBegin},'%Y-%m-%d %H:%i:%s')
+				</if>
+				<if test="recordDateEnd != null and recordDateEnd !=''">
+					and create_datetime &lt;= str_to_date(#{recordDateEnd},'%Y-%m-%d %H:%i:%s') 
+				</if>
+			group by account_no, create_datetime) d
+	    on d.account_no = a.account_no
+	  left join (select account_no, resp_datetime, sum(pay_count) pay_sum
+	               from (select account_no, resp_datetime, count(0) pay_count
+	                       from s_plain_send_record
+	                      group by account_no, resp_datetime) c
+	              where 1=1
+	                <if test="mercAccountNo !=null">
+						and c.account_no = #{mercAccountNo}
+				 	</if> 
+				 	<if test="recordDateBegin != null and recordDateBegin !=''">
+						and c.resp_datetime &gt;= str_to_date(#{recordDateBegin},'%Y-%m-%d %H:%i:%s')
+					</if>
+					<if test="recordDateEnd != null and recordDateEnd !=''">
+						and c.resp_datetime &lt;= str_to_date(#{recordDateEnd},'%Y-%m-%d %H:%i:%s') 
+					</if>
+				 	group by c.account_no
+				 ) ps
+	    on ps.account_no = a.account_no
+	  left join (select account_no,resp_datetime,sum(pay_count) pay_sum_success
+	               from (select account_no, resp_datetime, count(0) pay_count
+	                       from s_plain_send_record
+	                      where send_status = 200
+	                      group by account_no, resp_datetime) c
+	              where 1=1
+	              	<if test="mercAccountNo !=null">
+						and c.account_no = #{mercAccountNo}
+				 	</if> 
+				 	<if test="recordDateBegin != null and recordDateBegin !=''">
+						and c.resp_datetime &gt;= str_to_date(#{recordDateBegin},'%Y-%m-%d %H:%i:%s')
+					</if>
+					<if test="recordDateEnd != null and recordDateEnd !=''">
+						and c.resp_datetime &lt;= str_to_date(#{recordDateEnd},'%Y-%m-%d %H:%i:%s') 
+					</if>
+				 	group by c.account_no) pss
+	    on pss.account_no = a.account_no
+	  left join (select account_no, resp_datetime, sum(pay_count) pay_sum_fail
+	               from (select account_no, resp_datetime, count(0) pay_count
+	                       from s_plain_send_record
+	                      where send_status = 300
+	                      group by account_no, resp_datetime) c
+	              where 1=1
+	              	<if test="mercAccountNo !=null">
+						and c.account_no = #{mercAccountNo}
+				 	</if> 
+				 	<if test="recordDateBegin != null and recordDateBegin !=''">
+						and c.resp_datetime &gt;= str_to_date(#{recordDateBegin},'%Y-%m-%d %H:%i:%s')
+					</if>
+					<if test="recordDateEnd != null and recordDateEnd !=''">
+						and c.resp_datetime &lt;= str_to_date(#{recordDateEnd},'%Y-%m-%d %H:%i:%s') 
+					</if>
+				 	group by c.account_no) psf
+	    on psf.account_no = a.account_no
+		<where>
+			<if test="merchantId !=null">
+				and a.merchant_id = #{merchantId}
+			</if>
+			<if test="merchantName !=null and merchantName !=''">
+				and i.merchant_name like concat('%',#{merchantName},'%')
+			</if>
+			<if test="mercAccountNo !=null">
+				and a.account_no = #{mercAccountNo}
+			</if>
+			<if test="accountType !=null">
+				and a.account_type = #{accountType}
+			</if>
+			<if test="paymentMethods !=null">
+				and a.payment_methods = #{paymentMethods}
+			</if>
+			<if test="smsGroupId !=null">
+				and a.sms_group_id = #{smsGroupId}
+			</if>
+			<if test="recordDateBegin != null and recordDateBegin !=''">
+				and a.create_datetime &gt;= str_to_date(#{recordDateBegin},'%Y-%m-%d %H:%i:%s')
+			</if>
+			<if test="recordDateEnd != null and recordDateEnd !=''">
+				and a.create_datetime &lt;= str_to_date(#{recordDateEnd},'%Y-%m-%d %H:%i:%s') 
+			</if>
+		</where>
+	</select>
+
+
+</mapper>

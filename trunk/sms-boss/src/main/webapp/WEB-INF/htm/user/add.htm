@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>New User</title>
+<link rel="stylesheet" type="text/css" href="../../themes/general.css">
+<link rel="stylesheet" type="text/css" href="../../themes/icon.css">
+<link rel="stylesheet" type="text/css" href="../../themes/default/easyui.css">
+<script type="text/javascript" src="../../scripts/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="../../scripts/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../../scripts/src/jquery.parser.js"></script>
+<script type="text/javascript" src="../../scripts/locale/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="../../scripts/general.js"></script>
+<script type="text/javascript" src="../../scripts/sessionExpriation.js"></script>
+<script type="text/javascript">
+	$(function() {
+		$('#new_form').form({
+			url : '../../user/addUser.ajax',
+			onSubmit : function() {
+				if ($(this).form('validate')) {
+					return extra_validate();
+				} else {
+					return false;
+				}
+			},
+			success : function(data) {
+				var obj = $.parseJSON(data);
+				if (obj.success) {
+					$('#btn_submit').css('display','none');
+					$.messager.alert('Info', '提交成功', 'info');
+				} else {
+					$.messager.alert('Error', '提交失败:' + obj.message, 'error');
+				}
+			}
+		});
+
+		$('#btn_submit').bind('click', function() {
+			$("#new_form").submit();
+		});
+	});
+	
+	function extra_validate() {
+		var pwd = $.trim($("#loginPassword").val());
+		var pwd2 = $.trim($("#confirmPassword").val());
+		var loginName = $.trim($("#loginName").val());
+		$('#loginName').val(loginName);
+		
+		if (pwd != pwd2) {
+			$.messager.alert('Info', '两次密码输入不一致，请检查。', 'info');
+			return false;
+		}
+		
+		var rows = $('#rolelist').datagrid('getSelections');
+		if(rows.length<=0) {
+			$.messager.alert('Info', '请选择用户角色。', 'info');
+			return false;	
+		}
+
+		var str_roles="";
+		for(var i=0; i<rows.length; i++){
+		    str_roles = str_roles + rows[i].id + ",";
+		}
+		$("#roles").attr("value", str_roles);
+		
+		return true;
+	}
+</script>
+</head>
+<body>
+	<form id="new_form" method="post">
+		<table class="table_view">
+			<tr>
+				<td  colspan="2"><h5>基本信息</h5></td>
+			</tr>
+			<tr>
+				<td class="td_new_name">用户名<span class="red">*</span></td>
+				<td class="td_new_value">
+					<input class="easyui-validatebox input_140" type="text" data-options="required:true" id="loginName" name="loginName" />
+				</td>
+			</tr>
+			<tr>
+				<td class="td_new_name">姓名<span class="red">*</span></td>
+				<td class="td_new_value"><input
+					class="easyui-validatebox input_140" type="text"
+					data-options="required:true" id="name" name="name">
+						
+				</td>
+			</tr>
+			<tr>
+				<td class="td_new_name">登录密码<span class="red">*</span></td>
+				<td class="td_new_value"><input id="loginPassword" name="loginPassword"
+					type="password" class="easyui-validatebox input_140"
+					data-options="required:true">
+							
+				</td>
+			</tr>
+			<tr>
+				<td class="td_new_name">确认密码<span class="red">*</span></td>
+				<td class="td_new_value"><input id="confirmPassword"
+					name="confirmPassword" type="password"
+					class="easyui-validatebox input_140" data-options="required:true">
+						
+				</td>
+			</tr>
+			<tr>
+				<td class="td_new_name">手机<span class="red">*</span></td>
+				<td class="td_new_value">
+					<input class="easyui-validatebox input_140" type="text" data-options="required:true" id="mobile" name="mobile" maxlength="11" />
+				</td>
+			</tr>
+			<tr>
+				<td class="td_new_name">电话</td>
+				<td class="td_new_value"><input class="input_140" type="text" id="phone" name="phone"></td>
+			</tr>
+			<tr>
+				<td class="td_new_name">Email</td>
+				<td class="td_new_value">
+					<input id="email" name="email" class="easyui-validatebox input_140" data-options="validType:['email','length[3,30]']" />
+				</td>
+			</tr>
+			<tr>
+				<td class="td_new_name">角色<span class="red">*</span>	</td>
+				<td class="td_new_value">
+					<table class="easyui-datagrid" title="角色列表" id="rolelist" style="width:600px;"
+						data-options="url:'../../user/getAllRoles.ajax',singleSelect:true,pagination:false,rownumbers:true">
+						<thead>
+							<tr>
+								<th data-options="field:'ck',checkbox:true"></th>
+								<th data-options="field:'id',width:60">角色编号</th>
+								<th data-options="field:'name',width:120">角色名称</th>
+								<th data-options="field:'desc',width:280">描述</th>
+							</tr>
+						</thead>
+					</table>
+					<input type="hidden" id="roles" name="roles">
+				</td>
+			</tr>
+			<tr>
+				<td class="td_new_name">备注</td>
+				<td class="tree-root-first">
+					<textarea name="remark" id="remark" style="height:60px;" cols="90"  class="easyui-validatebox"></textarea>
+				</td>
+			</tr>
+			<tr>
+				<td></td>
+                <td><a id="btn_submit"
+					href="javascript:void(0)" class="easyui-linkbutton"
+					iconCls="icon-ok">确认提交</a></div></td>
+			</tr>
+		</table>
+       </form>
+</body>
+</html>

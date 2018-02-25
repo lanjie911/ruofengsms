@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>View User Detail</title>
+<link rel="stylesheet" type="text/css" href="../../themes/general.css">
+<link rel="stylesheet" type="text/css" href="../../themes/icon.css">
+<link rel="stylesheet" type="text/css" href="../../themes/default/easyui.css">
+<script type="text/javascript" src="../../scripts/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="../../scripts/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../../scripts/src/jquery.parser.js"></script>
+<script type="text/javascript" src="../../scripts/locale/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="../../scripts/general.js"></script>
+<script type="text/javascript" src="../../scripts/sessionExpriation.js"></script>
+<script type="text/javascript" src="../../scripts/util/userformatter.js"></script>
+
+<script type="text/javascript">
+	$(function() {
+		var userId = $.getUrlParam('userId');
+		$("#previousUserId").val(userId);
+		$.ajax({
+			url : '../../user/getUserByUserId.ajax',
+			type : 'get',
+			dataType : 'JSON',
+			cache: false,
+			data : {
+				userId : userId
+			},
+			success : function(data) {
+				init_view(data);
+			}
+		});
+		getRolesByUserId(userId);
+	});
+	
+	function checkNext(){
+		var userId=null;
+		var nextUserId = $("#previousUserId").val();
+		$.ajax({
+			url : '../../user/getNextUserByUserId.ajax',
+			type : 'get',
+			dataType : 'JSON',
+			cache: false,
+			data : {
+				userId : nextUserId
+			},
+			success : function(data) {
+				if(null == data.id || "" == data.id){
+					alert("已经是最后一条记录");
+					$("#btn_query").linkbutton("disable");//按钮不可用
+				}else{
+					getRolesByUserId(data.id);
+					init_view(data);
+				}
+			}
+		});
+	}
+	
+	function getRolesByUserId(userId){
+		$.ajax({
+			url:'../../user/getRolesByUserId.ajax',
+			type:'get',
+			dataType:'JSON',
+			cache: false,
+			data:{
+				userId:userId
+			},
+			success:function(data) {
+				$('#rolelist').datagrid('loadData',data);
+			}
+		});
+	}
+	
+	function init_view(data) {
+		$("#id").text(data.id);
+		$("#name").text(data.name);
+		$("#loginName").text(data.loginName);
+		$("#status").text(statusFormatter(data.status));
+		$("#email").text(data.email);
+		$("#mobile").text(data.mobile);
+		$("#phone").text(data.phone);
+		$("#createDatetime").text(data.createDatetime);
+		$("#updateDatetime").text(data.updateDatetime);
+		$("#expirationDate").text(data.expirationDate);
+		$("#memo").text(data.remark);
+		$("#previousUserId").val(data.id);
+	}
+	
+	
+</script>
+</head>
+<body>
+	<input type="hidden" id="previousUserId">
+	<table class="table_view">
+		<tr>
+			<td class="td_view_subtitle" colspan="4">基本信息</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">用户编号</td>
+			<td class="td_view_value"><span id="id"></span></td>
+			<td class="td_view_name">用户名</td>
+			<td class="td_view_value"><span id="loginName"></span></td>
+		</tr>
+		<tr>
+			<td class="td_view_name">姓名</td>
+			<td class="td_view_value"><span id="name"></span></td>
+			
+			<td class="td_view_name">状态</td>
+			<td class="td_view_value"><span id="status"></span></td>
+		</tr>
+		<tr>
+			<td class="td_view_name">手机</td>
+			<td class="td_view_value"><span id="mobile"></span></td>
+			<td class="td_view_name">电话</td>
+			<td class="td_view_value"><span id="phone"></span></td>
+		</tr>
+		<tr>
+			<td class="td_view_name">Email</td>
+			<td class="td_view_value"><span id="email"></span></td>
+			<td class="td_view_name">有效期</td>
+			<td class="td_view_value"><span id="expirationDate"></span></td>
+		</tr>
+		<tr>
+			<td class="td_view_name">创建时间</td>
+			<td class="td_view_value"><span id="createDatetime"></span></td>
+			<td class="td_view_name">更新时间</td>
+			<td class="td_view_value"><span id="updateDatetime"></span></td>
+		</tr>
+		<tr>
+			<td class="td_view_name">角色</td>
+			<td colspan=3 class="td_view_value">
+			<table class="easyui-datagrid" title="角色列表" id="rolelist" style="width:600px;" data-options="singleSelect:true,pagination:false,rownumbers:false">
+			<thead>
+				<tr>
+					<th data-options="field:'id',width:60" align="center">角色编号</th>
+					<th data-options="field:'name',width:120">角色名称</th>
+					<th data-options="field:'desc',width:280">描述</th>
+				</tr>
+			</thead>
+			</table>
+          </td>
+	  	</tr>
+		<tr>
+			<td class="td_view_name">备注</td>
+			<td colspan=3 class="td_view_value"><span id="remark"></span></td>
+		</tr>
+	</table>
+</body>
+</html>

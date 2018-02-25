@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.smsmanager.SmsAuditDao">
+
+	<resultMap type="SmsAudit" 						id="resultSmsAudit">
+		<result column="auditing_id"	property="auditingId"/>
+		<result column="account_no"	property="accountNo"/>
+		<result column="merchant_name_abbreviation"	property="merchantNameAbbreviation"/>
+		<result column="account_type"	property="accountType"/>
+		<result column="account_type_des"	property="accountTypeDes"/>
+		<result column="channel_id"	property="channelId"/>
+		<result column="channel_name"	property="channelName"/>
+		<result column="order_flag"	property="orderFlag"/>
+		<result column="order_flag_des"	property="orderFlagDes"/>
+		<result column="reservation_datetime"	property="reservationDatetime"/>
+		<result column="batch_no"	property="batchNo"/>
+		<result column="mobile"	property="mobile" />
+		<result column="sms_content"	property="smsContent"/>
+		<result column="sms_count"	property="smsCount"/>
+		<result column="sms_unit_count"	property="smsUnitCount"/>
+		<result column="sms_account_num"	property="smsAccountNum"/>
+		<result column="auditing_status"	property="auditingStatus"/>
+		<result column="auditing_status_des"	property="auditingStatusDes"/>
+		<result column="auditing_operator"	property="auditingOperator"/>
+		<result column="registrars"	property="registrars"/>
+		<result column="create_datetime"	property="createDatetime"/>
+		<result column="auditing_datetime"	property="auditingDatetime"/>
+	</resultMap>
+	
+	<sql id="select">
+	select t.auditing_id, t.account_no, t.merchant_name_abbreviation, t.account_type, 
+		   if(t.account_type=100,'行业账户',if(t.account_type=200,'普通账户',''))  account_type_des,
+		c.channel_id,c.channel_name, 
+		t.order_flag, if(t.order_flag=100,'否','是')  order_flag_des,
+		date_format(t.reservation_datetime, '%Y-%m-%d %H:%i:%s') reservation_datetime,
+		 t.batch_no, t.mobile, t.sms_content, t.sms_count, t.sms_unit_count, 
+		t.sms_account_num, t.auditing_operator, t.registrars,
+		date_format(t.create_datetime, '%Y-%m-%d %H:%i:%s') create_datetime, 
+		date_format(t.auditing_datetime, '%Y-%m-%d %H:%i:%s') auditing_datetime,
+		t.auditing_status,
+		 case
+	          WHEN t.auditing_status = 100 THEN '待审核'
+	          WHEN t.auditing_status = 200 THEN '审核通过'
+	          WHEN t.auditing_status = 201 THEN '发送处理中'
+	          WHEN t.auditing_status = 202 THEN '发送成功'
+	          WHEN t.auditing_status = 203 THEN '发送失败'
+	          WHEN t.auditing_status = 300 THEN '审核拒绝'
+	          ELSE ''
+	       end
+	          auditing_status_des
+	from s_auditing t
+	inner join s_merchant_account a on a.account_no = t.account_no
+    inner join s_mercaccount_channel mc on mc.merc_account_no = t.account_no
+	inner join s_channel c on mc.channel_id = c.channel_id
+  	</sql>
+  	
+  	<sql id="conditions">
+		<where>
+			<if test="mercAccountNo !=null">
+				and t.account_no = #{mercAccountNo} 
+			</if>
+			<if test="mercAccountType !=null ">
+				and t.account_type = #{mercAccountType}
+			</if>
+			<if test="smsGroupId !=null">
+				and c.channel_id = #{smsGroupId}
+			</if>
+			<if test="smsAuditStatus !=null ">
+				and t.auditing_status = #{smsAuditStatus} 
+			</if>
+		</where>
+	</sql>
+	
+	<select id="query" parameterType="SmsAuditCriteria" resultMap="resultSmsAudit">
+		select temp.*,c.channel_id,c.channel_name from 
+		(
+		SELECT t.auditing_id,t.account_no,t.merchant_name_abbreviation,t.account_type,
+		 if(t.account_type=100,'行业账户',if(t.account_type=200,'普通账户',''))  account_type_des,
+		       t.order_flag,if(t.order_flag=100,'否','是')  order_flag_des,
+		      date_format(t.reservation_datetime, '%Y-%m-%d %H:%i:%s') reservation_datetime,
+		       t.batch_no,t.mobile,t.sms_content,t.upload_content,t.sms_count,t.sms_unit_count,t.sms_account_num,
+		         t.create_datetime,t.auditing_status,
+			    case
+			          WHEN t.auditing_status = 100 THEN '待审核'
+			          WHEN t.auditing_status = 200 THEN '审核通过'
+			          WHEN t.auditing_status = 201 THEN '发送处理中'
+			          WHEN t.auditing_status = 202 THEN '发送成功'
+			          WHEN t.auditing_status = 203 THEN '发送失败'
+			          WHEN t.auditing_status = 300 THEN '审核拒绝'
+			          ELSE ''
+			       end
+			          auditing_status_des
+		FROM s_auditing t
+		GROUP BY t.batch_no) temp
+		
+		inner join s_merchant_account a on a.account_no = temp.account_no
+		inner join s_mercaccount_channel mc on mc.merc_account_no = temp.account_no
+		inner join s_channel c on mc.channel_id = c.channel_id
+		<where>
+			<if test="mercAccountNo !=null">
+				and temp.account_no = #{mercAccountNo} 
+			</if>
+			<if test="mercAccountType !=null ">
+				and temp.account_type = #{mercAccountType}
+			</if>
+			<if test="smsGroupId !=null">
+				and c.channel_id = #{smsGroupId}
+			</if>
+			<if test="smsAuditStatus !=null ">
+				and temp.auditing_status = #{smsAuditStatus} 
+			</if>
+		</where>
+		order by temp.auditing_status,temp.create_datetime desc
+	</select>
+	
+	<select id="getByBatchNo" parameterType="String" resultMap="resultSmsAudit">
+		<include refid="select"/>
+		where t.batch_no = #{batchNo}
+	</select>
+	
+	<insert id="insert" parameterType="SmsAudit">
+	insert into s_auditing (
+	   account_no
+	  ,merchant_name_abbreviation
+	  ,account_type
+	  ,order_flag
+	  <if test="reservationDatetime !=null and reservationDatetime !=''">,reservation_datetime</if>
+	  ,batch_no
+	  ,mobile
+	  ,sms_content
+	  ,sms_count
+	  ,sms_unit_count
+	  ,sms_account_num
+	  ,auditing_status
+	  ,auditing_operator
+	  ,registrars
+	  ,sign_tip
+	  ,create_datetime
+	) VALUES (
+	   #{accountNo}
+	  ,#{merchantNameAbbreviation}
+	  ,#{accountType}
+	  ,#{orderFlag}
+	   <if test="reservationDatetime !=null and reservationDatetime !=''">,#{reservationDatetime}</if>
+	  ,#{batchNo}
+	  ,#{mobile}
+	  ,#{smsContent}
+	  ,#{smsCount}
+	  ,#{smsUnitCount}
+	  ,#{smsAccountNum}
+	  ,#{auditingStatus}
+	  ,''  
+	  ,#{registrars}
+	  ,#{signTip}
+	  ,now()
+	)
+	</insert>
+	
+	<insert id="insertBatch" >
+		insert into
+			s_auditing (account_no, merchant_name_abbreviation, account_type, order_flag,
+			 <if test="smsAudit.reservationDatetime !=null and smsAudit.reservationDatetime !=''">,reservation_datetime</if>
+			batch_no,mobile,sms_content,
+			sms_count,sms_unit_count,sms_account_num,auditing_status,auditing_operator,registrars,create_datetime,auditing_datetime,sign_tip,cost_tip)
+		values
+		<foreach collection="strs" item="str" index="index" separator=",">
+			(#{smsAudit.accountNo}, #{smsAudit.merchantNameAbbreviation}, #{smsAudit.accountType},#{smsAudit.orderFlag},
+			<if test="smsAudit.reservationDatetime !=null and smsAudit.reservationDatetime !=''">#{smsAudit.reservationDatetime},</if>
+			#{smsAudit.batchNo},
+			#{str},#{smsAudit.smsContent},#{smsAudit.smsCount},#{smsAudit.smsUnitCount},#{smsAudit.smsAccountNum},100,#{smsAudit.auditingOperator},
+			#{smsAudit.registrars},CURRENT_TIMESTAMP(),#{smsAudit.auditingDatetime},#{smsAudit.signTip},#{smsAudit.costTip})
+		</foreach>
+	</insert>
+	
+	<update id="updteStatus">
+	update s_auditing SET
+	   auditing_status = #{auditStatus}
+	  ,auditing_operator = #{operator}
+	  ,auditing_datetime = now()
+	where batch_no =#{batchNo} and auditing_status = #{beforeStatus}
+	
+	</update>
+	
+</mapper>

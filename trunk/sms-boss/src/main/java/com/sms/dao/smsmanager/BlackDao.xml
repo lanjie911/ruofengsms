@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.smsmanager.BlackDao">
+
+	<resultMap type="Black" 						id="resultBlack">
+		<result column="unsubscribe_id"	property="unsubscribeId"/>
+		<result column="trans_type"	property="transType"/>
+		<result column="trans_type_des"	property="transTypeDes"/>
+		<result column="unsubscribe_mobile"	property="unsubscribeMobile"/>
+		<result column="unsubscribe_status"	property="unsubscribeStatus"/>
+		<result column="unsubscribe_status_des"	property="unsubscribeStatusDes"/>
+		<result column="create_datetime"	property="createDatetime"/>
+		<result column="remark"	property="remark"/>
+	</resultMap>
+	
+	<sql id="select">
+	select t.unsubscribe_id, 
+		t.trans_type,if(t.trans_type=100,'退订','黑名单')  trans_type_des,
+		 t.unsubscribe_mobile, 
+		 t.unsubscribe_status,if(t.unsubscribe_status=100,'退订中','取消退订 ')  unsubscribe_status_des,
+		date_format(t.create_datetime, '%Y-%m-%d %H:%i:%s') create_datetime, 
+		t.remark FROM s_unsubscribe t
+  	</sql>
+  	
+  	<sql id="conditions">
+		<where>
+			<if test="mobile !=null and mobile !=''">
+				and t.unsubscribe_mobile = #{mobile}
+			</if>
+		</where>
+	</sql>
+	
+	<select id="query" parameterType="BlackCriteria" resultMap="resultBlack">
+		<include refid="select"/>
+		<include refid="conditions"/>
+		order by t.create_datetime
+	</select>
+	
+	<select id="getByMobile" parameterType="String" resultMap="resultBlack">
+		<include refid="select"/>
+		where t.unsubscribe_mobile = #{unsubscribeMobile}
+		and t.unsubscribe_status =100
+	</select>
+	
+	<select id="getById" parameterType="Long" resultMap="resultBlack">
+		<include refid="select"/>
+		where t.unsubscribe_id = #{unsubscribeId}
+	</select>
+	
+	<update id="updteStatus">
+	update  s_unsubscribe SET
+	  unsubscribe_status = #{afterStatus}
+	WHERE unsubscribe_id = #{unsubscribeId} and  unsubscribe_status = #{beforeStatus}
+	</update>
+	
+	<insert id="insert" parameterType="Black">
+	insert into s_unsubscribe (
+	   trans_type
+	  ,unsubscribe_mobile
+	  ,unsubscribe_status
+	  ,create_datetime
+	  ,remark
+	) VALUES (
+	   #{transType}
+	  ,#{unsubscribeMobile}
+	  ,100
+	  ,now()
+	  ,#{remark}
+	)
+	</insert>
+	
+	<update id="update"  parameterType="Black">
+	update s_unsubscribe SET
+	   trans_type =#{transType}
+	  ,unsubscribe_status = #{unsubscribeStatus}
+	  ,remark = #{remark}
+	WHERE unsubscribe_id = #{unsubscribeId}
+	</update>
+	
+</mapper>

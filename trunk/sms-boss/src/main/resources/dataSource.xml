@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
+        
+     <bean id="bossdataSource" class="org.apache.commons.dbcp.BasicDataSource">
+      	<property name="driverClassName" value="${boss.db.driverClassName}"/>
+		<property name="url" value="${boss.db.url}" />
+		<property name="username" value="${boss.db.username}" />
+		<property name="password" value="${boss.db.password}" />
+		<property name="maxActive" value="100"></property>
+		<property name="maxIdle" value="30"></property>
+		<property name="maxWait" value="10"></property>
+		<property name="defaultAutoCommit" value="false"></property>
+		<property name="validationQuery" value="select 1 from dual"/> 
+    </bean> 
+    
+     <bean id="tradedataSource" class="org.apache.commons.dbcp.BasicDataSource">
+      	<property name="driverClassName" value="${trade.db.driverClassName}"/>
+		<property name="url" value="${trade.db.url}" />
+		<property name="username" value="${trade.db.username}" />
+		<property name="password" value="${trade.db.password}" />
+		<property name="maxActive" value="100"></property>
+		<property name="maxIdle" value="30"></property>
+		<property name="maxWait" value="10"></property>
+		<property name="defaultAutoCommit" value="false"></property>
+		<property name="validationQuery" value="select 1 from dual"/> 
+    </bean> 
+    
+     <bean id="protaldataSource" class="org.apache.commons.dbcp.BasicDataSource">
+      	<property name="driverClassName" value="${protal.db.driverClassName}"/>
+		<property name="url" value="${protal.db.url}" />
+		<property name="username" value="${protal.db.username}" />
+		<property name="password" value="${protal.db.password}" />
+		<property name="maxActive" value="100"></property>
+		<property name="maxIdle" value="30"></property>
+		<property name="maxWait" value="10"></property>
+		<property name="defaultAutoCommit" value="false"></property>
+		<property name="validationQuery" value="select 1 from dual"/> 
+    </bean> 
+    
+    <!-- sms-boss库配置  start-->
+	<bean id="dataSource" class="com.sms.util.datasouce.DynamicDataSource">
+		<property name="targetDataSources">    
+              <map key-type="java.lang.String">    
+                  <!-- boss -->  
+                 <entry key="boss" value-ref="bossdataSource"/> 
+                  <!-- trade -->  
+                 <entry key="trade" value-ref="tradedataSource"/>
+                 <!-- trade -->  
+                 <entry key="protal" value-ref="protaldataSource"/>      
+              </map>    
+        </property> 
+         <property name="defaultTargetDataSource" ref="bossdataSource"/>     
+	</bean>
+	
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		 <property name="dataSource" ref="dataSource"/>
+	</bean>
+	
+
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!--指定要用到的连接池 -->
+		<property name="dataSource" ref="dataSource" />
+		<!-- 多个package用逗号或分号隔开 -->
+		<property name="typeAliasesPackage"
+			 value="com.sms.entity,
+			com.sms.criteria"/>
+		<!-- 所有配置的mapper文件 -->
+		<property name="mapperLocations" value="classpath*:com/sms/dao/**/*.xml" />
+		<property name="configLocation" value="classpath:/mybatis-config.xml" />
+	</bean>
+	
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<!-- 多个package用逗号或分号隔开 -->
+		<property name="basePackage" value="com.sms.dao.**" />
+	</bean>
+        
+</beans>

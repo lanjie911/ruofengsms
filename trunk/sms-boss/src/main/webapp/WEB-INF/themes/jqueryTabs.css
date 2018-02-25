@@ -1,0 +1,41 @@
+.tabs {
+	float: left;
+	background-image: url(themes/images/nav_bg.jpg);
+	width: 100%;
+}
+
+.tabs ul {
+	list-style: none outside none;
+	margin: 0;
+	padding: 0;
+}
+
+.tabs ul li {
+	float: left;
+	line-height: 24px;
+	margin: 0;
+	padding: 2px 20px 0 15px;
+}
+
+.tab-nav {
+	background: url(themes/images/manage_r2_c14.jpg) no-repeat;
+	cursor: pointer;
+}
+
+.tab-nav-action {
+	background: url(themes/images/manage_r2_c13.jpg) no-repeat;
+	cursor: pointer;
+}
+
+.tabs-body {
+	border-bottom: 1px solid #B4C9C6;
+	border-left: 1px solid #B4C9C6;
+	border-right: 1px solid #B4C9C6;
+	float: left;
+	padding: 5px 0 0;
+	width: 100%;
+}
+
+.tabs-body div {
+	padding: 10px;
+}

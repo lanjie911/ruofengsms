@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Add MobileOperator</title>
+<link rel="stylesheet" type="text/css" href="../../themes/general.css">
+<link rel="stylesheet" type="text/css" href="../../themes/icon.css">
+<link rel="stylesheet" type="text/css" href="../../themes/default/easyui.css">
+<script type="text/javascript" src="../../scripts/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="../../scripts/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../../scripts/src/jquery.parser.js"></script>
+<script type="text/javascript" src="../../scripts/locale/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="../../scripts/general.js"></script>
+<script type="text/javascript" src="../../scripts/sessionExpriation.js"></script>
+<script type="text/javascript">
+$(function() {
+	$('#supportOperators').combobox({
+   		url:'../../bizdict/getMobileOperatorType.ajax',
+		valueField:'mobileOperator',
+		textField:'mobileOperatorDes',
+		panelHeight:'auto',
+		editable:false 
+	});
+	
+	$('#new_form').form({
+		url : '../../mobileOperator/addMobileOperator.ajax',
+		onSubmit : function() {
+			return $(this).form('validate');
+		},
+		success : function(data) {
+			var obj = $.parseJSON(data);
+			if (obj.success) {
+				$.messager.alert('Info', '提交成功', 'info');
+			} else {
+				$('#btn_submit').show();
+				$.messager.alert('Error', '提交失败:' + obj.message, 'error');
+			}
+		}
+	});
+
+	$('#btn_submit').bind('click', function() {
+		$('#btn_submit').hide();
+		$('#supportOperatorsDes').val($('#supportOperators').combobox('getText'));
+		$("#new_form").submit();
+	});
+	
+	$('#btn_cancel').bind('click', function(){
+		$.messager.confirm('警告','你确定要取消本次操作吗?',function(r) { 
+			if (r){ 
+				parent.$('#tabs').tabs('close','添加手机归属地');
+			} 
+		});
+	});
+});
+
+</script>
+</head>
+<body>
+<form id="new_form" method="post">
+<table class="table_view">
+	<tr>
+		<td colspan="4"><h5>基本信息</h5></td>
+	</tr>
+	<tr>
+		<input type="hidden" name="supportOperatorsDes" id="supportOperatorsDes" />
+		<td class="td_new_name">手机号段<span class="red">*</span></td>
+		<td class="td_new_value">
+			<input class="easyui-validatebox input_140" type="text" data-options="required:true" id="pref" name="pref" />
+		</td>
+		<td class="td_new_name">归属运营商</td>
+		<td class="td_new_value">
+			<input class="easyui-combobox input_140" type="text" data-options="required:true" id="supportOperators" name="supportOperators" />
+		</td>
+	</tr>
+	<tr>
+		<td colspan="4"  style="text-align:center;vertical-align:middle;">
+			<a id="btn_submit" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok">确认</a>
+			&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            <a id="btn_cancel" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel">取消</a>
+		</td>
+	</tr>
+</table>
+</form>
+</body>
+</html>

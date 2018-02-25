@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.sms.dao.mercmanager.CusManagerDao" >
+
+	<resultMap type="CusManager" id="resultCusManager">
+		<result column="cus_manager_id"	property="cusManagerId"/>
+		<result column="cus_manager_name"	property="cusManagerName"/>
+		<result column="cus_manager_mobile"	property="cusManagerMobile"/>
+		<result column="cus_manager_email"	property="cusManagerEmail"/>
+		<result column="merchant_id"	property="merchantId"/>
+		<result column="merchant_name"	property="merchantName"/>
+  	</resultMap>
+	
+	<sql id="select">
+		SELECT t.cus_manager_id,
+	       t.cus_manager_name,
+	       t.cus_manager_mobile,
+	       t.cus_manager_email
+		FROM s_customer_manager t
+	</sql>
+	
+	<sql id="conditions">
+		<where>
+			<if test="managermobile !=null">
+				and t.cus_manager_mobile = #{managermobile}
+			</if>
+			<if test="managername !=null and managername !=''">
+				and t.cus_manager_name like concat('%',#{managername},'%')
+			</if>
+		</where>
+	</sql>
+    
+    <select id="query" parameterType="CusManagerCriteria" resultMap="resultCusManager">
+		<include refid="select"/>
+		<include refid="conditions"/>
+		order by t.cus_manager_id desc
+	</select>
+	
+	 <select id="querymerc" parameterType="CusManagerCriteria" resultMap="resultCusManager">
+		SELECT t.cus_manager_id,
+	       t.cus_manager_name,
+	       t.cus_manager_mobile,
+	       t.cus_manager_email,
+	       m.merchant_id,
+	       m.merchant_name
+		FROM s_customer_manager   t
+		     left JOIN s_merc_cus_manger c ON t.cus_manager_id = c.cus_manager_id
+		     left join s_merchant_info m on c.merc_id = m.merchant_id
+		where  t.cus_manager_id = #{cusManagerId}
+		order by t.cus_manager_id desc
+	</select>
+	
+	 <insert id="insert" parameterType="CusManager" >
+		insert into s_customer_manager (
+		   cus_manager_name
+		  ,cus_manager_mobile
+		  ,cus_manager_email
+		) VALUES (
+		   #{cusManagerName}
+		  ,#{cusManagerMobile}
+		  ,#{cusManagerEmail}
+		)
+	</insert>
+	
+	<select id="getCusmanagerById" parameterType="Long" resultMap="resultCusManager">
+		<include refid="select"/>
+		where t.cus_manager_id = #{cusManagerId}
+	</select>
+	
+	<update id="update" parameterType="CusManager">
+		update s_customer_manager SET
+		   cus_manager_name =  #{cusManagerName}
+		  ,cus_manager_mobile =#{cusManagerMobile}
+		  ,cus_manager_email = #{cusManagerEmail}
+		WHERE cus_manager_id =#{cusManagerId}
+	</update>
+	
+	<delete id="delete">
+		delete from s_customer_manager WHERE cus_manager_id =#{cusManagerId}
+	</delete>
+	
+	<select id="getCusmanagers" parameterType="Long" resultMap="resultCusManager">
+		<include refid="select"/>
+	</select>
+    
+</mapper>

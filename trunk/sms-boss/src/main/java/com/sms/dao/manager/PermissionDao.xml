@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.sms.dao.manager.PermissionDao">
+	
+	<resultMap type="Permission" id="resultPermission">
+		<id property="id"                 column="permission_id" />
+        <result property="name"           column="permission_name" />
+        <result property="moduleCode"     column="module_code" />
+        <result property="permissionCode" column="permission_code" />
+        <result property="urlFilter"      column="url_filter" />
+        <result property="status"         column="status" />
+        <result property="statusName"     column="status_name" />
+        <result property="createDatetime" column="create_datetime" />
+        <result property="updateDatetime" column="create_datetime" />
+	</resultMap>
+	
+	<select id="getPermissionsByUserId" parameterType="long" resultMap="resultPermission">
+		select distinct p.permission_id, p.permission_name, p.permission_code, p.module_code, p.url_filter, p.status,
+			date_format(p.create_datetime, '%Y-%m-%d %H:%i:%s') create_datetime,
+			date_format(p.update_datetime, '%Y-%m-%d %H:%i:%s') update_datetime
+		from t_permission p, t_role_permission rp
+		where p.permission_id = rp.permission_id and p.status = '00100' 
+ 			and rp.role_id in
+   				(select r.role_id from t_role r, t_operator_role ur 
+       				where r.role_id=ur.role_id and r.status = '00100' and ur.operator_id=#{userId})
+	</select>
+	
+	<select id="getPermissionByRoleId" parameterType="long" resultMap="resultPermission">
+		select distinct p.permission_id, p.permission_name, p.permission_code, p.module_code, p.url_filter, p.status, 
+			date_format(p.create_datetime, '%Y-%m-%d %H:%i:%s') create_datetime,
+			date_format(p.update_datetime, '%Y-%m-%d %H:%i:%s') update_datetime
+		from t_permission p, t_role_permission rp
+		where p.permission_id = rp.permission_id and p.status = '00100'  
+ 			and rp.role_id =#{roleId}
+	</select>
+	
+	<sql id="query_permission">
+		select
+			t.permission_id, t.permission_name, t.permission_code, t.module_code, 
+			t.url_filter, t.status, 
+			date_format(t.create_datetime, '%Y-%m-%d %H:%i:%s') create_datetime,
+			date_format(t.update_datetime, '%Y-%m-%d %H:%i:%s') update_datetime
+		from
+			t_permission t 
+		where	
+			t.status = '00100' 
+	</sql>
+	
+	<sql id="conditions">
+		<where>
+			<if test="name 		!= null and name 	!= ''">and t.permission_name like #{name}||'%' 	</if>
+    		<if test="code 		!= null and code 	!= ''">and t.permission_code like  #{code}||'%' </if>
+    		<if test="status 	!= null and status 	!= ''">and t.status = #{status}					</if>
+    	</where>
+	</sql>
+	
+	<select id="query" parameterType="PermissionCriteria" resultMap="resultPermission">
+		<include refid="query_permission"/>
+		<include refid="conditions"/>
+    	order by t.create_datetime desc
+    	
+    </select>
+</mapper>
