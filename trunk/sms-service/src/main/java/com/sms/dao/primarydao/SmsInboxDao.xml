@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.primarydao.SmsInboxDao">
+
+	<resultMap type="SmsInbox" 					id="resultSmsInbox">
+		<id property="smsId" 					column="sms_id" />
+		<result property="mobile" 				column="mobile" />
+		<result property="content" 				column="content" />
+		<result property="status" 				column="status" />
+		<result property="types" 				column="types" />
+		<result property="updateDatetime" 		column="update_datetime" />
+		<result property="createDatetime" 		column="create_datetime" />
+	</resultMap>
+	
+	<sql id="select">
+		select
+			t.sms_id, t.mobile, t.content, t.status,t.types,t.update_datetime,t.create_datetime
+		from
+			s_sms_inbox t
+  	</sql>
+  	
+	<insert id="insert" parameterType="SmsInbox" useGeneratedKeys="true" keyProperty="smsId">
+		insert into
+			s_sms_inbox (mobile, content,types)
+		values (#{mobile}, #{content}, #{types})
+	</insert>
+	
+	<select id="getById" parameterType="long" resultMap="resultSmsInbox">
+		<include refid="select" />
+		where t.sms_id = #{id}
+	</select>
+	
+</mapper>

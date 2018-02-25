@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.sms.dao.primarydao.ReservationSendRecordDao" >
+
+	<resultMap type="java.util.Map" 				id="resultReservationSendRecord">
+		<result column="record_id"					property="recordId" />   
+		<result column="channel_id"					property="channelId" />
+		<result column="channel_name"				property="channelName" />
+		<result column="account_no"					property="accountNo" />
+		<result column="merchant_name_abbreviation"	property="merchantNameAbbreviation" />
+		<result column="account_type"				property="accountType" />
+		<result column="failed_retransmission"		property="failedRetransmission" />
+		<result column="mobile"						property="mobile" />
+		<result column="content"					property="content" />
+		<result column="reservation_datetime"		property="reservationDatetime" />
+		<result column="send_status"				property="sendStatus" />
+		<result column="send_msg"					property="sendMsg" />
+		<result column="failed_num"					property="failedNum" />
+		<result column="create_datetime"			property="createDatetime" />
+		<result column="resp_datetime"				property="respDatetime" />
+		<result column="message_id"					property="messageId" />
+		<result column="sign_tip"					property="signTip" />
+  	</resultMap>
+	
+	<sql id="select">
+		select
+			t.record_id,t.channel_id,t.channel_name,t.account_no,t.merchant_name_abbreviation,t.account_type,t.failed_retransmission,
+			t.mobile,t.content,t.reservation_datetime,t.send_status,t.send_msg,t.failed_num,t.create_datetime,t.resp_datetime,t.message_id,t.sign_tip
+		from
+			s_reservation_send_record t
+	</sql>
+	
+	<insert id="insert" parameterType="ReservationSendRecord" useGeneratedKeys="true" keyProperty="recordId">
+		insert into
+			s_reservation_send_record (channel_id, channel_name, account_no, merchant_name_abbreviation,account_type,failed_retransmission,
+			mobile,content,reservation_datetime,send_status,send_msg,failed_num,create_datetime,resp_datetime,message_id,sign_tip)
+		values (#{channelId}, #{channelName}, #{accountNo},#{merchantNameAbbreviation},#{accountType},#{failedRetransmission},
+			#{mobile},#{content},#{reservationDatetime},#{sendStatus},#{sendMsg},#{failedNum},current_timestamp(),#{respDatetime},#{messageId},#{signTip})
+	</insert>
+	
+	<insert id="insertBatch" >
+		insert into
+			s_reservation_send_record (channel_id, channel_name, account_no, merchant_name_abbreviation,account_type,failed_retransmission,
+			mobile,content,reservation_datetime,send_status,send_msg,failed_num,create_datetime,resp_datetime,message_id,sign_tip)
+		values
+		<foreach collection="strs" item="str" index="index" separator=",">
+			(#{reservationSendRecord.channelId}, #{reservationSendRecord.channelName}, #{reservationSendRecord.accountNo},#{reservationSendRecord.merchantNameAbbreviation},#{reservationSendRecord.accountType},#{reservationSendRecord.failedRetransmission},
+			#{str},#{reservationSendRecord.content},#{reservationSendRecord.reservationDatetime},#{reservationSendRecord.sendStatus},#{reservationSendRecord.sendMsg},#{reservationSendRecord.failedNum},current_timestamp(),#{reservationSendRecord.respDatetime},#{reservationSendRecord.messageId},#{reservationSendRecord.signTip})
+		</foreach>
+	</insert>
+    
+    <select id="queryResult" parameterType="ReservationSendRecordCriteria"  resultMap="resultReservationSendRecord">
+		select
+			t.record_id,t.mobile,t.content,t.send_status,t.send_msg,t.failed_num,t.resp_datetime
+		from
+			s_plain_send_record t
+		where 
+			message_id = #{messageId} and account_no = #{accountNo}
+	</select>
+	
+	<select id="getById" parameterType="Long" resultMap="resultReservationSendRecord">
+		<include refid="select" />
+		where t.record_id = #{recordId}
+	</select>
+	
+	<select id="loadAppointmentSms" resultMap="resultReservationSendRecord" >
+    	<include refid="select"/>
+		where 
+			t.send_status = 100
+		and 
+			current_timestamp() - t.reservation_datetime >= 0
+		and 
+			3 > t.failed_num
+		order by 
+			t.create_datetime
+		limit 0,500
+    </select>
+    
+    <update id="update">
+    	update 
+    		s_reservation_send_record t
+    	set
+    		t.send_status = #{sendStatus},
+    		t.send_msg = #{sendMsg},
+    		t.resp_datetime = current_timestamp()
+    	where 
+    		where t.record_id = #{recordId}
+    </update>
+</mapper>

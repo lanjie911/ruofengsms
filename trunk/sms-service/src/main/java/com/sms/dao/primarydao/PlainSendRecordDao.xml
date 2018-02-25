@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.sms.dao.primarydao.PlainSendRecordDao" >
+
+	<resultMap type="PlainSendRecord" 				id="resultPlainSendRecord">
+		<result column="record_id"					property="recordId" />   
+		<result column="channel_id"					property="channelId" />
+		<result column="channel_name"				property="channelName" />
+		<result column="account_no"					property="accountNo" />
+		<result column="merchant_name_abbreviation"	property="merchantNameAbbreviation" />
+		<result column="account_type"				property="accountType" />
+		<result column="failed_retransmission"		property="failedRetransmission" />
+		<result column="mobile"						property="mobile" />
+		<result column="content"					property="content" />
+		<result column="send_status"				property="sendStatus" />
+		<result column="send_msg"					property="sendMsg" />
+		<result column="failed_num"					property="failedNum" />
+		<result column="create_datetime"			property="createDatetime" />
+		<result column="resp_datetime"				property="respDatetime" />
+		<result column="message_id"					property="messageId" />
+		<result column="reservation_datetime"		property="reservationDatetime" />
+		<result column="sign_tip"					property="signTip" />
+		<result column="province"					property="province" />
+		<result column="city"						property="city" />
+		<result column="isp"						property="isp" />
+		<result column="reqMsgId"					property="req_msg_id" />
+  	</resultMap>
+	
+	<sql id="select">
+		select
+			t.record_id,t.channel_id,t.channel_name,t.account_no,t.merchant_name_abbreviation,t.account_type,t.failed_retransmission,
+			t.mobile,t.content,t.send_status,t.send_msg,t.failed_num,t.create_datetime,t.resp_datetime,t.message_id,t.reservation_datetime,t.sign_tip,t.province,t.city,isp,t.req_msg_id
+		from
+			s_plain_send_record t
+	</sql>
+	
+	<insert id="insert" parameterType="ReservationSendRecord" useGeneratedKeys="true" keyProperty="recordId">
+		insert into
+			s_plain_send_record (channel_id, channel_name, account_no, merchant_name_abbreviation,account_type,failed_retransmission,
+			mobile,content,send_status,send_msg,failed_num,merc_req_time,create_datetime,message_id,reservation_datetime,sign_tip,province,city,isp,req_msg_id)
+		values (#{channelId}, #{channelName}, #{accountNo},#{merchantNameAbbreviation},#{accountType},#{failedRetransmission},
+			#{mobile},#{content},#{sendStatus},#{sendMsg},#{failedNum},#{createDatetime},current_timestamp(),#{messageId},#{reservationDatetime},#{signTip},#{province},#{city},#{isp},#{reqMsgId})
+	</insert>
+	
+	<select id="getById" parameterType="long" resultMap="resultPlainSendRecord">
+		<include refid="select" />
+		where t.record_id = #{id}
+	</select>
+	
+	<select id="getByreqMsgId" parameterType="String" resultMap="resultPlainSendRecord">
+		<include refid="select" />
+		where t.req_msg_id = #{reqMsgId}
+	</select>
+	
+	<insert id="insertBatch" >
+		insert into
+			s_plain_send_record (channel_id, channel_name, account_no, merchant_name_abbreviation,account_type,failed_retransmission,
+			mobile,content,send_status,send_msg,failed_num,create_datetime,resp_datetime,message_id,reservation_datetime,sign_tip)
+		values
+		<foreach collection="strs" item="str" index="index" separator=",">
+			(#{channelId}, #{channelName}, #{accountNo},#{merchantNameAbbreviation},#{accountType},#{failedRetransmission},
+			#{str},#{content},#{sendStatus},#{sendMsg},#{failedNum},current_timestamp(),#{respDatetime},#{messageId},#{reservationDatetime},#{signTip})
+		</foreach>
+	</insert>
+	
+	<update id="updateStatusByReport">
+		update 
+			s_plain_send_record t
+		set 
+			t.send_status = #{status},
+			t.send_msg = #{respMsg},
+			t.resp_datetime = #{respTime}
+		where 
+			req_msg_id = #{reqMsgId}
+		and 
+			t.send_status = 200
+	</update>
+	
+	<update id="batchUpdaetSmsSucc" parameterType="java.util.List">
+		update 
+			s_plain_send_record t
+		set 
+			t.send_status = 500,
+			t.send_msg = '发送成功',
+			t.resp_datetime = current_timestamp()
+		where 
+			t.send_status = 200
+		<foreach collection="reqMsgIdArray" item="item" open="and req_msg_id in(" separator="," close=")">
+        	#{item}
+		</foreach>
+	</update>
+	
+	<update id="batchUpdaetSmsFailure" parameterType="java.util.List">
+		update 
+			s_plain_send_record t
+		set 
+			t.send_status = 400,
+			t.send_msg = '发送失败',
+			t.resp_datetime = current_timestamp()
+		where 
+			t.send_status = 200
+		<foreach collection="reqMsgIdArray" item="item" open="and req_msg_id in(" separator="," close=")">
+        	#{item}
+		</foreach>
+	</update>
+	
+	<update id="batchUpdateByJuMeng" parameterType="java.util.List">
+		<foreach collection="planList" item="item" index="index" open="" close="" separator=";">
+		update 
+			s_plain_send_record
+		<set>
+			send_status = #{item.sendStatus},
+			send_msg = #{item.sendMsg},
+			failed_num = #{item.failedNum},
+			resp_datetime = #{item.respDatetime}
+		</set>
+		where 
+			send_status = 200
+		and 
+			req_msg_id = #{item.reqMsgId}
+		and 
+			mobile = #{item.mobile}
+		</foreach>
+	</update>
+    
+</mapper>

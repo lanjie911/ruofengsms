@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.sms.dao.UtilDao" >
+
+    <select id="getCurrentTimestamp" resultType="java.sql.Timestamp">
+		select current_timestamp from dual
+	</select>
+	
+	<select id="getCurrentDate" resultType="java.sql.Date">
+		select current_date from dual
+	</select>
+	
+	<select id="getBeforeDate" resultType="java.sql.Date">
+		select current_date-1 from dual
+	</select>
+	
+	<select id="getAfterDate" resultType="java.sql.Date">
+		select current_date+1 from dual
+	</select>
+</mapper>

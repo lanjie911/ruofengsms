@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.primarydao.MercChannelDao">
+
+	<resultMap type="MercChannel" id="resultMercChannel">
+		<result property="recordId" column="record_id" />
+		<result property="accountNo" column="merc_account_no" />
+		<result property="channelId" column="channel_id" />
+		<result property="supportOperators" column="support_operators" />
+		<result property="supportOperatorsDes" column="support_operators_des" />
+		<result property="channelDes" column="channel_code" />
+		<result property="channelAttribute" column="channel_attribute" />
+	</resultMap>
+	
+	<sql id="select">
+		select t.merc_account_no, t.channel_id, a.support_operators, a.channel_code,a.channel_attribute
+		from s_mercaccount_channel t
+		left join s_channel a on a.channel_id = t.channel_id
+  	</sql>
+  	
+	<select id="qrybyAccountNo" resultMap="resultMercChannel">
+		select 
+			t.merc_account_no, t.channel_id, a.channel_code, a.channel_attribute, 
+			a.support_operators, tso.support_operators_des
+		from 
+			s_mercaccount_channel t
+		left join s_channel a on a.channel_id = t.channel_id
+		left join tk_support_operators tso on tso.support_operators = a.support_operators
+		where 
+			t.merc_account_no = #{accountNo}
+	</select>
+	
+</mapper>

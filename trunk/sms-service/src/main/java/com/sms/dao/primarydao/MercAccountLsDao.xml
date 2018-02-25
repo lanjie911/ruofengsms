@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.primarydao.MercAccountLsDao">
+
+	<resultMap type="MercAccountLs" 				id="resultMercAccountLs">
+		<id property="lsId" 						column="ls_id" />
+		<result property="transType" 				column="trans_type" />
+		<result property="accountNo" 				column="account_no" />
+		<result property="amount" 					column="amount" />
+		<result property="mobile" 					column="mobile" />
+		<result property="createDatetime" 			column="create_datetime" />
+	</resultMap>
+	
+	<sql id="select">
+		select
+			t.ls_id, t.trans_type, t.account_no,t.amount,t.mobile,t.create_datetime
+		from
+			s_merchant_account_ls t
+  	</sql>
+  	
+	<insert id="insert" parameterType="MercAccountLs" useGeneratedKeys="true" keyProperty="lsId">
+		insert into
+			s_merchant_account_ls (trans_type, account_no, amount,mobile,create_datetime)
+		values (#{transType}, #{accountNo}, #{amount},#{mobile},current_timestamp())
+	</insert>
+	
+	<select id="getById" parameterType="long" resultMap="resultMercAccountLs">
+		<include refid="select" />
+		where t.ls_id = #{id}
+	</select>
+	
+</mapper>

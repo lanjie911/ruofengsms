@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.primarydao.SysParamsDao">
+
+	<resultMap type="SysParams"					id="resultSysParams">
+		<result column="param_code"				property="paramCode"/>
+		<result column="param_value"			property="paramValue"/>
+		<result column="remark"					property="remark"/>
+	</resultMap>
+	
+	<sql id="select">
+		select t.param_code, t.param_value,t.remark
+		from s_sys_params t
+  	</sql>
+  	
+	<select id="qryParams"  resultMap="resultSysParams">
+		select t.param_code, t.param_value,t.remark
+		from s_sys_params t
+	</select>
+	
+</mapper>

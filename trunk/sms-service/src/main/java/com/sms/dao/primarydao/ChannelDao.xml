@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.primarydao.ChannelDao">
+
+	<resultMap type="Channel" 						id="resultChannel">
+		<result column="channel_id"					property="channelId"/>
+		<result column="channel_name"				property="channelName"/>
+		<result column="channel_code"				property="channelCode"/>
+		<result column="support_operators"			property="supportOperators"/>
+		<result column="support_operators_des"		property="supportOperatorsDes"/>
+		<result column="channel_status"				property="channelStatus"/>
+		<result column="channel_status_des"			property="channelStatusDes"/>
+		<result column="create_datetime"			property="createDatetime"/>
+		<result column="remark"						property="remark"/>
+		<result column="channel_type"				property="channelType"/>
+		<result column="channel_type_des"			property="channelTypeDes"/>
+		<result column="pay_method"					property="payMethod"/>
+		<result column="pay_method_des"				property="payMethodDes"/>
+		<result column="unit_price"					property="unitPrice"/>
+		<result column="priority_level"				property="priorityLevel"/>
+		<result column="billing_wordsize"			property="billingWordsize"/>
+		<result column="support_longsms_flag"		property="supportLongsmsFlag"/>
+		<result column="component_size"				property="componentSize"/>
+		<result column="flow_size"					property="flowSize"/>
+		<result column="from_telephone"				property="fromTelephone"/>
+		<result column="flow_size_oneday"			property="flowSizeOneday"/>
+		<result column="max_send_size"				property="maxSendSize"/>
+	</resultMap>
+	
+	<sql id="select">
+		select 
+			t.channel_id, t.channel_name, t.channel_code, t.support_operators, 
+			t.channel_status, date_format(t.create_datetime, '%Y-%m-%d %H:%i:%s') create_datetime, 
+			t.remark, t.unit_price, t.priority_level, t.billing_wordsize, t.support_longsms_flag, 
+			t.component_size, t.flow_size, t.from_telephone, t.flow_size_oneday, t.max_send_size,
+			tso.support_operators_des, tct.channel_type_des, tpm.pay_method_des, tcs.channel_status_des
+		from s_channel t
+		left join tk_support_operators tso on tso.support_operators = t.support_operators
+		left join tk_channel_type tct on tct.channel_type = t.channel_type
+		left join tk_pay_method tpm on tpm.pay_method = t.pay_method
+		left join tk_channel_status tcs on tcs.channel_status= t.channel_status
+  	</sql>
+  	
+  	<sql id="conditions">
+		<where>
+			<if test="channelNo !=null">
+				and t.channel_id = #{channelNo}
+			</if>
+			<if test="channelName !=null and channelName !=''">
+				and t.channel_name like concat('%',#{channelName},'%')
+			</if>
+			<if test="supportOperators !=null">
+				and t.support_operators = #{supportOperators}
+			</if>
+			<if test="channelType !=null ">
+				and t.channel_type  = #{channelType}
+			</if>
+			<if test="createDateBegin != null and createDateBegin !=''">
+				and t.create_datetime &gt;= str_to_date(#{createDateBegin},'%Y-%m-%d %H:%i:%s')
+			</if>
+			<if test="createDateEnd != null and createDateEnd !=''">
+				andt.create_datetime &lt;= str_to_date(#{repaymentTimeEnd},'%Y-%m-%d %H:%i:%s') 
+			</if>
+		</where>
+	</sql>
+	
+	<select id="query" parameterType="ChannelCriteria" resultMap="resultChannel">
+		<include refid="select"/>
+		<include refid="conditions"/>
+		order by t.channel_id desc
+	</select>
+	
+	<select id="getById" parameterType="Long" resultMap="resultChannel">
+		<include refid="select"/>
+		where t.channel_id = #{channelId}
+		order by t.channel_id desc
+	</select>
+	
+	<insert id="insert" parameterType="Channel">
+	insert into 
+		s_channel 
+		(channel_name, channel_code, support_operators, channel_status, create_datetime, remark,
+		 channel_type, pay_method, unit_price, priority_level, billing_wordsize, support_longsms_flag,
+		 component_size, flow_size, from_telephone, flow_size_oneday, max_send_size
+	    ) values 
+		(#{channelName}, #{channelCode}, #{supportOperators}, 100, now(), #{remark}, #{channelType},
+		 #{payMethod}, #{unitPrice}, #{priorityLevel}, #{billingWordsize}, #{supportLongsmsFlag},
+		 #{componentSize}, #{flowSize}, #{fromTelephone}, #{flowSizeOneday}, #{maxSendSize}
+		)
+	</insert>
+	
+	<update id="update"  parameterType="Channel">
+	update 
+		s_channel 
+	set
+	   channel_name = #{channelName},
+	   channel_code = #{channelCode},
+	   support_operators = #{supportOperators},
+	   channel_status = #{channelStatus},
+	   remark = #{remark},
+	   channel_type = #{channelType},
+	   pay_method = #{payMethod},
+	   unit_price = #{unitPrice},
+	   priority_level = #{priorityLevel},
+	   billing_wordsize = #{billingWordsize},
+	   support_longsms_flag = #{supportLongsmsFlag},
+	   component_size = #{componentSize},
+	   flow_size = #{flowSize},
+	   from_telephone = #{fromTelephone},
+	   flow_size_oneday = #{flowSizeOneday},
+	   max_send_size = #{maxSendSize}
+	where 
+		channel_id = #{channelId}
+	</update>
+	
+	<select id="getMaxLevelChannel" resultMap="resultChannel">
+		select
+			t.channel_id, t.channel_name, t.channel_code, t.priority_level
+		from
+			s_channel t
+		order by 
+			t.priority_level 
+		limit 1
+	</select>
+</mapper>

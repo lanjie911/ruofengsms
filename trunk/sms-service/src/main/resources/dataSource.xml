@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
+        
+     <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+      	<property name="driverClassName" value="${data.drivername}"/>
+		<property name="url" value="${data.url}" />
+		<property name="username" value="${data.username}" />
+		<property name="password" value="${data.password}" />
+		<property name="maxActive" value="2500"></property>
+		<property name="maxIdle" value="100"></property>
+		<property name="maxWait" value="50"></property>
+		<property name="defaultAutoCommit" value="false"></property>
+		<property name="validationQuery" value="select 1 from dual"/> 
+    </bean> 
+    
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!--指定要用到的连接池 -->
+		<property name="dataSource" ref="dataSource" />
+		<!-- 多个package用逗号或分号隔开 -->
+		<property name="typeAliasesPackage" value="com.sms.entity,com.sms.criteria"/>
+		<!-- 所有配置的mapper文件 -->
+		<property name="mapperLocations" value="classpath*:com/sms/dao/**/*.xml" />
+		<property name="configLocation" value="classpath:/mybatis-config.xml" />
+	</bean>
+	
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<!-- 多个package用逗号或分号隔开 -->
+		<property name="basePackage" value="com.sms.dao.**" />
+	</bean>
+	
+</beans>
+

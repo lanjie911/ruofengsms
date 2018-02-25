@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.primarydao.PhoneDao">
+
+	<resultMap type="Phone" id="resultPhone">
+		<result property="pref" column="pref" />
+		<result property="phone" column="phone" />
+		<result property="province" column="province" />
+		<result property="city" column="city" />
+		<result property="isp" column="isp" />
+		<result property="postCode" column="post_code" />
+		<result property="cityCode" column="city_code" />
+		<result property="areaCode" column="area_code" />
+		<result property="types" column="types" />
+		<result property="operatorCode" column="operator_code" />
+	</resultMap>
+
+	<sql id="select">
+		select
+		t.pref, t.phone, t.province, t.city,t.isp,t.post_code,t.city_code,
+		t.area_code, t.types, t.operator_code
+		from
+		s_phone t
+	</sql>
+
+	<select id="getByMobile" parameterType="String" resultMap="resultPhone">
+		select
+		t.pref, t.phone, t.province, t.city,t.isp,t.post_code,t.city_code,
+		t.area_code, t.types, t.operator_code
+		from
+		s_phone t
+		where t.phone = #{mobileSeven}
+	</select>
+
+	<select id="qryPhone" resultMap="resultPhone">
+		select
+		t.pref, t.phone, t.province, t.city,t.isp,t.post_code,t.city_code,
+		t.area_code, t.types, t.operator_code
+		from
+		s_phone t
+	</select>
+
+</mapper>

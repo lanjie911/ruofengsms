@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.primarydao.TemplateDao">
+
+	<resultMap type="Template" 						id="resultTemplate">
+		<id property="templateId" 					column="template_id" />
+		<result property="accountNo" 				column="account_no" />
+		<result property="merchantNameAbbreviation" column="merchant_name_abbreviation" />
+		<result property="accountType" 				column="account_type" />
+		<result property="templateContent" 			column="template_content" />
+		<result property="operator" 				column="operator" />
+		<result property="status" 					column="status" />
+		<result property="remark" 					column="remark" />
+		<result property="createDatetime" 			column="create_datetime" />
+	</resultMap>
+	
+	<sql id="select">
+		select
+			t.template_id, t.account_no, t.merchant_name_abbreviation, t.account_type,t.template_content,t.operator,t.status,t.remark,t.create_datetime
+		from
+			s_template t
+  	</sql>
+  	
+	<insert id="insert" parameterType="Template" useGeneratedKeys="true" keyProperty="templateId">
+		insert into
+			s_template (account_no, merchant_name_abbreviation, account_type,template_content,operator,status,remark,create_datetime)
+		values (#{accountNo}, #{merchantNameAbbreviation}, #{accountType}, #{templateContent}, #{operator}, #{status}, #{remark},current_timestamp())
+	</insert>
+	
+	<select id="getById" parameterType="long" resultMap="resultTemplate">
+		<include refid="select" />
+		where t.template_id = #{id}
+	</select>
+	
+	<update id="updateInitStatusToNew">
+		update 
+			s_template t 
+		set
+			t.status = #{newStatus}
+		where
+			t.status = #{initStatus}
+		and
+			t.template_id = #{templateId}
+	</update>
+	
+</mapper>
