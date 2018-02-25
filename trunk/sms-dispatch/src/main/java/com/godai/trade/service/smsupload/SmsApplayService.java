@@ -38,7 +38,10 @@ public class SmsApplayService {
 			@Override
 			public void run() {
 				List<SmsApplay> list = smsApplayDao.loadNormalApprove();
-				if(list.size() == 0 || list.isEmpty()) return;
+				if(list.size() == 0 || list.isEmpty()) {
+					return;
+				}
+				logger.info("dispatch batch send begin..",list.get(0).getBatchNo());
 				for(SmsApplay sc : list) {
 					execSend(sc);
 				}
