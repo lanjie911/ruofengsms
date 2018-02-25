@@ -30,7 +30,7 @@ public class SmsApplayService {
 	@Autowired
 	private TradeForDispatchService tradeForDispatchService;
 	
-	private Executor exec = Executors.newFixedThreadPool(6);
+	private Executor exec = Executors.newFixedThreadPool(3);
 	
 	public Runnable doSendNormal() {
 		return new Runnable() {
@@ -89,33 +89,6 @@ public class SmsApplayService {
 				}
 			}
 		});
-		
-		
-		/*new Thread(new Runnable() {
-			
-			@Override
-			public void run() {
-				try {
-					Long batchNo = smsApplay.getBatchNo();
-					String smsContent = smsApplay.getSmsContent();
-					Long accountNo = smsApplay.getAccountNo();
-					String signTip = smsApplay.getSignTip();
-					int orderFlag = smsApplay.getOrderFlag();
-					int accountType = smsApplay.getAccountType();
-					Timestamp appointmentTime = smsApplay.getAppointmentTime();
-					List<SmsApplayDetail> cnList = smsApplayDetailDao.loadApprovedByBatchNo(batchNo, 200, 0, 25);
-					if(cnList.isEmpty() || cnList.size() == 0) return;
-					
-					int penddingRow = smsApplayDetailDao.batchUpdatePendding(cnList);
-					if(penddingRow == 0) return;
-					
-					String cnReqJson = PackageRequestUtil.packageNormalSmsJsonStr(accountNo, 200, batchNo, smsContent, signTip, cnList, orderFlag, appointmentTime, accountType);
-					tradeForDispatchService.sendSmsBatchNormal(cnReqJson);
-				} catch (Exception e) {
-					logger.error("SmsApplayService.sendCUData-Exception{}", e);
-				}
-			}
-		}).start();*/
 	}
 	
 	private void sendCMData(final SmsApplay smsApplay) {
@@ -145,31 +118,6 @@ public class SmsApplayService {
 				}
 			}
 		});
-		/*new Thread(new Runnable() {
-			
-			@Override
-			public void run() {
-				try {
-					Long batchNo = smsApplay.getBatchNo();
-					String smsContent = smsApplay.getSmsContent();
-					Long accountNo = smsApplay.getAccountNo();
-					String signTip = smsApplay.getSignTip();
-					int orderFlag = smsApplay.getOrderFlag();
-					int accountType = smsApplay.getAccountType();
-					Timestamp appointmentTime = smsApplay.getAppointmentTime();
-					List<SmsApplayDetail> cmList = smsApplayDetailDao.loadApprovedByBatchNo(batchNo, 300, 0, 25);
-					if(cmList.isEmpty() || cmList.size() == 0) return;
-					
-					int penddingRow = smsApplayDetailDao.batchUpdatePendding(cmList);
-					if(penddingRow == 0) return;
-					
-					String cmReqJson = PackageRequestUtil.packageNormalSmsJsonStr(accountNo, 300, batchNo, smsContent, signTip, cmList, orderFlag, appointmentTime, accountType);
-					tradeForDispatchService.sendSmsBatchNormal(cmReqJson);
-				} catch (Exception e) {
-					logger.error("SmsApplayService.sendCMData-Exception{}", e);
-				}
-			}
-		}).start();*/
 	}
 	
 	private void sendCTData(final SmsApplay smsApplay) {
@@ -199,32 +147,5 @@ public class SmsApplayService {
 				}
 			}
 		});
-		
-		
-		/*new Thread(new Runnable() {
-			
-			@Override
-			public void run() {
-				try {
-					Long batchNo = smsApplay.getBatchNo();
-					String smsContent = smsApplay.getSmsContent();
-					Long accountNo = smsApplay.getAccountNo();
-					String signTip = smsApplay.getSignTip();
-					int orderFlag = smsApplay.getOrderFlag();
-					int accountType = smsApplay.getAccountType();
-					Timestamp appointmentTime = smsApplay.getAppointmentTime();
-					List<SmsApplayDetail> ctList = smsApplayDetailDao.loadApprovedByBatchNo(batchNo, 100, 0, 25);
-					if(ctList.isEmpty() || ctList.size() == 0) return;
-					
-					int penddingRow = smsApplayDetailDao.batchUpdatePendding(ctList);
-					if(penddingRow == 0) return;
-					
-					String ctReqJson = PackageRequestUtil.packageNormalSmsJsonStr(accountNo, 100, batchNo, smsContent, signTip, ctList, orderFlag, appointmentTime, accountType);
-					tradeForDispatchService.sendSmsBatchNormal(ctReqJson);
-				} catch (Exception e) {
-					logger.error("SmsApplayService.sendCTData-Exception{}", e);
-				}
-			}
-		}).start();*/
 	}
 }
