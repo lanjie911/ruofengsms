@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.godai.trade.dao.AuditingDao" >
+
+	<resultMap type="Auditing" 							id="resultAuditing">
+		<result column="auditing_id"					property="auditingId" />   
+		<result column="account_no"						property="accountNo" />
+		<result column="merchant_name_abbreviation"		property="merchantNameAbbreviation" />
+		<result column="account_type"					property="accountType" />
+		<result column="order_flag"						property="orderFlag" />
+		<result column="reservation_datetime"			property="reservationDatetime" />
+		<result column="batch_no"						property="batchNo" />
+		<result column="mobile"							property="mobile" />
+		<result column="sms_content"					property="smsContent" />
+		<result column="sms_count"						property="smsCount" />
+		<result column="sms_unit_count"					property="smsUnitCount" />
+		<result column="sms_account_num"				property="smsAccountNum" />
+		<result column="auditing_status"				property="auditingStatus" />
+		<result column="auditing_operator"				property="auditingOperator" />
+		<result column="registrars"						property="regiStrars" />
+		<result column="create_datetime"				property="createDatetime" />
+		<result column="auditing_datetime"				property="auditingDatetime" />
+		<result column="cost_tip"						property="costTip" />
+		<result column="sign_tip"						property="signTip" />
+  	</resultMap>
+	
+	<sql id="select">
+		select
+			t.auditing_id,t.account_no,t.merchant_name_abbreviation,t.account_type,t.order_flag,t.reservation_datetime,t.batch_no,
+			t.mobile,t.sms_content,t.sms_count,t.sms_unit_count,t.sms_account_num,t.auditing_status,t.auditing_operator,t.registrars,
+			t.create_datetime,t.auditing_datetime,t.cost_tip,t.sign_tip
+		from
+			s_auditing t
+	</sql>
+	
+    <select id="getNeedToSend" parameterType="Integer" resultMap="resultAuditing">
+		<include refid="select" />
+		 where t.auditing_status=200 
+		 order by t.auditing_datetime limit #{startIndex},#{offset} 
+	</select>
+	
+</mapper>

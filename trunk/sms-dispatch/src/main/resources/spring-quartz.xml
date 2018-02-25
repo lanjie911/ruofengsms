@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	  xmlns:aop="http://www.springframework.org/schema/aop"
+	  xmlns:context="http://www.springframework.org/schema/context"
+	  xmlns:tx="http://www.springframework.org/schema/tx" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="  
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd    
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+	
+	<!-- quarts configurations -->
+	<bean name="startQuertz" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="triggers">
+			<!-- 调度清单 -->
+			<list>
+				<!-- 更新通道统计信息信息 -->
+				<ref bean="doCountChannelDataTrigger" />
+				<!-- 更新平台统计信息信息 -->
+				<ref bean="doCountPlatformDataTrigger" />
+				<!-- 发送审核通过后的短信 -->
+				<ref bean="doSendAfterAuditTrigger" />
+				<!-- 发送审核通过后的短信 -->
+				<ref bean="doSendReservationMsgTrigger" />
+				<!-- 发送审核通过后的短信 -->
+				<ref bean="doCrectAfterFailTrigger" />
+				<!-- 商户发送量统计 -->
+				<ref bean="doCountMerchantTransTrigger" />
+			</list>
+		</property>
+		<property name="configLocation" value="classpath:quartz.properties" />
+	</bean>
+	
+	<!-- triggers -->
+	<bean id="doCountChannelDataTrigger"
+		class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail">
+			<ref bean="doCountChannelDataDetail" />
+		</property>
+		<property name="cronExpression">
+			<value>${tk0001.cronExpression}</value> 
+		</property>
+	</bean>
+
+	<bean id="doCountPlatformDataTrigger"
+		class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail">
+			<ref bean="doCountChannelDataDetail" />
+		</property>
+		<property name="cronExpression">
+			<value>${tk0002.cronExpression}</value> 
+		</property>
+	</bean>
+	
+	<bean id="doSendAfterAuditTrigger"
+		class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail">
+			<ref bean="doSendAfterAuditDetail" />
+		</property>
+		<property name="cronExpression">
+			<value>${tk0003.cronExpression}</value> 
+		</property>
+	</bean>
+	
+	<bean id="doSendReservationMsgTrigger"
+		class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail">
+			<ref bean="doSendReservationMsgDetail" />
+		</property>
+		<property name="cronExpression">
+			<value>${tk0004.cronExpression}</value> 
+		</property>
+	</bean>
+	
+	<bean id="doCrectAfterFailTrigger"
+		class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail">
+			<ref bean="doCrectAfterFailDetail" />
+		</property>
+		<property name="cronExpression">
+			<value>${tk0005.cronExpression}</value>
+		</property>
+	</bean>
+	
+	<!-- <bean id="doCountMerchantTransTrigger"
+		class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail">
+			<ref bean="doCountMerchantTransDetail" />
+		</property>
+		<property name="cronExpression">
+			<value>0 20 17 * * ?</value>
+		</property>
+	</bean> -->
+	<bean id="doCountMerchantTransTrigger"
+		class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail">
+			<ref bean="doCountMerchantTransDetail" />
+		</property>
+		<property name="cronExpression">
+			<value>0 20 0 * * ?</value>
+		</property>
+	</bean>
+	
+	<!-- jobs -->
+	<bean id="doCountChannelDataDetail" 
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<!-- 调用的类 -->
+		<property name="targetObject">
+			<ref bean="doCountChannelDataJob" />
+		</property>
+		<!-- 调用类中的方法 -->
+		<property name="targetMethod">
+			<value>doit</value>
+		</property>
+	</bean>
+	
+	<bean id="doCountPlatformDataDetail" 
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<!-- 调用的类 -->
+		<property name="targetObject">
+			<ref bean="doCountPlatformDataJob" />
+		</property>
+		<!-- 调用类中的方法 -->
+		<property name="targetMethod">
+			<value>doit</value>
+		</property>
+	</bean>
+	
+	<bean id="doSendAfterAuditDetail" 
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<!-- 调用的类 -->
+		<property name="targetObject">
+			<ref bean="doSendAfterAuditJob" />
+		</property>
+		<!-- 调用类中的方法 -->
+		<property name="targetMethod">
+			<value>doit</value>
+		</property>
+	</bean>
+	
+	<bean id="doSendReservationMsgDetail" 
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<!-- 调用的类 -->
+		<property name="targetObject">
+			<ref bean="doSendReservationMsgJob" />
+		</property>
+		<!-- 调用类中的方法 -->
+		<property name="targetMethod">
+			<value>doit</value>
+		</property>
+	</bean>
+	
+	<bean id="doCrectAfterFailDetail" 
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<!-- 调用的类 -->
+		<property name="targetObject">
+			<ref bean="doCrectAfterFailJob" />
+		</property>
+		<!-- 调用类中的方法 -->
+		<property name="targetMethod">
+			<value>doit</value>
+		</property>
+	</bean>
+	
+	<bean id="doCountMerchantTransDetail" 
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<!-- 调用的类 -->
+		<property name="targetObject">
+			<ref bean="doCountMerchantJob" />
+		</property>
+		<!-- 调用类中的方法 -->
+		<property name="targetMethod">
+			<value>doit</value>
+		</property>
+	</bean>
+	
+</beans> 

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.godai.trade.dao.dashboard.TransCountDao">
+
+	<resultMap type="TransCount" id="resultTransCount">
+		<id property="transCountId" 			column="trans_count_id" />
+		<result property="merchantId" 			column="merchant_id" />
+		<result property="accountNo" 			column="account_no" />
+		<result property="merchantNameAbbreviation" column="merchant_name_abbreviation" />
+		<result property="sendNum" 				column="send_num" />
+		<result property="successNum" 			column="success_num" />
+		<result property="failureNum" 			column="failure_num" />
+		<result property="unknownNum" 			column="unknown_num" />
+		<result property="missionSuccessRate" 	column="mission_success_rate" />
+		<result property="statisticalTime" 		column="statistical_time" />
+		<result property="createDatetime" 		column="create_datetime" />
+		<result property="dataStatus" 			column="data_status" />
+	</resultMap>
+	
+	<sql id="select">
+		select 
+			t.trans_count_id, t.merchant_id, t.account_no, t.merchant_name_abbreviation,
+			t.send_num, t.success_num, t.failure_num, t.unknown_num, t.mission_success_rate,
+			t.statistical_time, t.create_datetime, t.data_status
+		from
+			s_trans_count t
+  	</sql>
+  	
+  	<insert id="insert" parameterType="TransCount" useGeneratedKeys="true" keyProperty="transCountId">
+		insert into
+			s_trans_count (merchant_id, account_no, merchant_name_abbreviation, send_num, success_num,
+			failure_num, unknown_num, mission_success_rate, statistical_time, create_datetime, data_status)
+		values (#{merchantId}, #{accountNo}, #{merchantNameAbbreviation}, #{sendNum}, #{successNum},
+			#{failureNum}, #{unknownNum}, FORMAT(#{missionSuccessRate},4), #{statisticalTime}, 
+			DATE_FORMAT(CURRENT_TIMESTAMP(),'%Y-%m-%d %H:%i:%S'), 100)
+	</insert>
+	
+	<select id="getById" parameterType="java.lang.Integer" resultMap="resultTransCount">
+		<include refid="select" />
+		where t.trans_count_id = #{transCountId}
+	</select>
+	
+	<select id="getByAccountNo" resultType="java.lang.Long">
+		<include refid="select" />
+		where t.account_no = #{accountNo}
+	</select>
+	
+</mapper>

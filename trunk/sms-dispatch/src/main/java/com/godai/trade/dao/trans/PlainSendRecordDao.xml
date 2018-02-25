@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.godai.trade.dao.trans.PlainSendRecordDao" >
+
+	<resultMap type="com.godai.trade.entity.trans.PlainSendRecord" 	id="resultPlainSendRecord">
+		<result property="recordId"	column="record_id" />
+		<result property="channelId"	column="channel_id" />
+		<result property="channelName"	column="channel_name" />
+		<result property="accountNo"	column="account_no" />
+		<result property="merchantNameAbbreviation"	column="merchant_name_abbreviation" />
+		<result property="accountType"	column="account_type" />
+		<result property="failedRetransmission"	column="failed_retransmission" />
+		<result property="mobile"	column="mobile" />
+		<result property="content"	column="content" />
+		<result property="sendStatus"	column="send_status" />
+		<result property="sendMsg"	column="send_msg" />
+		<result property="failedNum"	column="failed_num" />
+		<result property="createDatetime"	column="create_datetime" />
+		<result property="respDatetime"	column="resp_datetime" />
+		<result property="messageId"	column="message_id" />
+		<result property="reservationDatetime"	column="reservation_datetime" />
+		<result property="signTip"	column="sign_tip" />
+		<result property="province"	column="province" />
+		<result property="city"	column="city" />
+		<result property="isp" column="isp" />
+		<result property="reqMsgId" column="req_msg_id" />
+		
+		<result property="totalNum"	column="total_num" />
+		<result property="succNum"	column="succ_num" />
+		<result property="failureNum"	column="failure_num" />
+		<result property="unknowNum"	column="unknow_num" />
+		<result property="succAvg"	column="succ_avg" />
+  	</resultMap>
+	
+	<sql id="select">
+		select
+			t.record_id, t.channel_id, t.channel_name, t.account_no, t.merchant_name_abbreviation, t.account_type, 
+			t.failed_retransmission, t.mobile, t.content, t.send_status, t.send_msg, t.failed_num, t.create_datetime, 
+			t.resp_datetime, t.message_id, t.reservation_datetime, t.sign_tip, t.province, t.city, t.isp, t.req_msg_id
+		from
+			s_plain_send_record t
+	</sql>
+	
+	<!-- <select id="countTranNumByAccountNo" parameterType="java.lang.Long" resultMap="resultPlainSendRecord">
+		<![CDATA[
+		select a.total_num, b.succ_num, c.failure_num, d.unknow_num, IFNULL(FORMAT(b.succ_num/a.total_num,4), 0) as succ_avg from
+		(select count(0) as total_num from s_plain_send_record t 
+			where t.account_no = #{accountNo}
+			and t.create_datetime >= DATE_FORMAT(CURRENT_DATE(),'%Y-%m-%d %H:%i:%S')) a,
+		(select count(0) as succ_num from s_plain_send_record t 
+			where t.account_no = #{accountNo}
+			and t.create_datetime >= DATE_FORMAT(CURRENT_DATE(),'%Y-%m-%d %H:%i:%S')
+			and t.send_status = 500) b,
+		(select count(0) as failure_num from s_plain_send_record t 
+			where t.account_no = #{accountNo}
+			and t.create_datetime >= DATE_FORMAT(CURRENT_DATE(),'%Y-%m-%d %H:%i:%S')
+			and t.send_status in (300,400)) c,
+		(select count(0) as unknow_num from s_plain_send_record t 
+			where t.account_no = #{accountNo}
+			and t.create_datetime >= DATE_FORMAT(CURRENT_DATE(),'%Y-%m-%d %H:%i:%S')
+			and t.send_status < 300) d
+		]]>
+	</select> -->
+	
+	<!-- <select id="countTransYesterday"  resultMap="resultPlainSendRecord">
+		<![CDATA[
+		select a.total_num, b.succ_num,c.failure_num, d.unknow_num, CONCAT(IFNULL(FORMAT(b.succ_num/a.total_num*100,2),0),'%') from
+		(select sum((CASE  when CHAR_LENGTH(s.content)<= 70 THEN 1 when CHAR_LENGTH(s.content)> 70 then ceil(CHAR_LENGTH(s.content)/70)END))as total_num 
+			from s_plain_send_record s 
+			WHERE s.create_datetime >= #{yesterdayStart}
+			AND  s.create_datetime <= #{yesterdayEnd}
+			AND s.account_no = #{accountNo}) a,
+		(select sum((CASE  when CHAR_LENGTH(s.content)<= 70 THEN 1 when CHAR_LENGTH(s.content)> 70 then ceil(CHAR_LENGTH(s.content)/70)END))as succ_num 
+			from s_plain_send_record s 
+			WHERE s.create_datetime >= #{yesterdayStart}
+			AND  s.create_datetime <= #{yesterdayEnd}
+			AND  s.send_status = 500
+			AND s.account_no = #{accountNo}) b,
+		(select sum((CASE  when CHAR_LENGTH(s.content)<= 70 THEN 1 when CHAR_LENGTH(s.content)> 70 then ceil(CHAR_LENGTH(s.content)/70)END))as failure_num 
+			from s_plain_send_record s 
+			WHERE s.create_datetime >= #{yesterdayStart}
+			AND  s.create_datetime <= #{yesterdayEnd}
+			AND  s.send_status in (300,400)
+			AND  s.account_no = #{accountNo}) c,
+		(select sum((CASE  when CHAR_LENGTH(s.content)<= 70 THEN 1 when CHAR_LENGTH(s.content)> 70 then ceil(CHAR_LENGTH(s.content)/70)END))as unknow_num 
+			from s_plain_send_record s 
+			WHERE s.create_datetime >= #{yesterdayStart}
+			AND  s.create_datetime <= #{yesterdayEnd}
+			AND  s.send_status < 300
+			AND s.account_no = #{accountNo}) d
+		]]>
+	</select> -->
+	
+	<select id="queryTotalNum"  resultType="java.lang.Integer">
+	<![CDATA[
+		select IFNULL(sum((CASE  when CHAR_LENGTH(s.content)<= 70 THEN 1 when CHAR_LENGTH(s.content)> 70 then ceil(CHAR_LENGTH(s.content)/67)END)),0)as total_num
+			from s_plain_send_record s 
+			WHERE s.create_datetime >= #{yesterdayStart}
+			AND  s.create_datetime <= #{yesterdayEnd}
+			AND s.account_no = #{accountNo} 
+		]]>
+	</select>
+	<select id="querySuccNum"  resultType="java.lang.Integer">
+	<![CDATA[
+		select IFNULL(sum((CASE  when CHAR_LENGTH(s.content)<= 70 THEN 1 when CHAR_LENGTH(s.content)> 70 then ceil(CHAR_LENGTH(s.content)/67)END)),0)as succ_num
+			from s_plain_send_record s 
+			WHERE s.create_datetime >= #{yesterdayStart}
+			AND  s.create_datetime <= #{yesterdayEnd}
+			AND  s.send_status = 500
+			AND s.account_no = #{accountNo}
+		]]>
+	</select>
+	<select id="queryFailNum"  resultType="java.lang.Integer">
+	<![CDATA[
+		select IFNULL(sum((CASE  when CHAR_LENGTH(s.content)<= 70 THEN 1 when CHAR_LENGTH(s.content)> 70 then ceil(CHAR_LENGTH(s.content)/67)END)),0)as failure_num
+			from s_plain_send_record s 
+			WHERE s.create_datetime >= #{yesterdayStart}
+			AND  s.create_datetime <= #{yesterdayEnd}
+			AND  s.send_status in (300,400)
+			AND  s.account_no = #{accountNo}
+		]]>
+	</select>
+	<select id="queryUnknowNum"  resultType="java.lang.Integer">
+	<![CDATA[
+		select IFNULL(sum((CASE  when CHAR_LENGTH(s.content)<= 70 THEN 1 when CHAR_LENGTH(s.content)> 70 then ceil(CHAR_LENGTH(s.content)/67)END)),0)as unknow_num
+			from s_plain_send_record s 
+			WHERE s.create_datetime >= #{yesterdayStart}
+			AND  s.create_datetime <= #{yesterdayEnd}
+			AND  s.send_status < 300
+			AND s.account_no = #{accountNo}
+		]]>	
+	</select>
+</mapper>

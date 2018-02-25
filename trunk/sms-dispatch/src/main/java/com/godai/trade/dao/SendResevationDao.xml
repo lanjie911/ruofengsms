@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.godai.trade.dao.SendResevationDao">
+
+	<resultMap type="Sms" 						id="resultSms">
+		<result column="record_id"	property="recordId"/>
+		<result column="channel_id"	property="channelId"/>
+		<result column="channel_name"	property="channelName"/>
+		<result column="account_no"	property="accountNo"/>
+		<result column="merchant_name_abbreviation"	property="merchantNameAbbreviation"/>
+		<result column="account_type"	property="accountType"/>
+		<result column="failed_retransmission"	property="failedRetransmission"/>
+		<result column="mobile"	property="mobile" />
+		<result column="content"	property="content"/>
+		<result column="reservation_datetime"	property="reservationDatetime"/>
+		<result column="send_status"	property="sendStatus"/>
+		<result column="send_msg"	property="sendMsg"/>
+		<result column="failed_num"	property="failedNum"/>
+		<result column="create_datetime"	property="createDatetime"/>
+		<result column="resp_datetime"	property="respDatetime"/>
+		<result column="sum_num"		property="sumNum"/>
+		<result column="success_num"	property="successNum"/>
+		<result column="blacklist_num"	property="blacklistNum"/>
+		<result column="message_id"		property="messageId"/>
+		<result column="record_type"	property="recordType"/>
+		<result column="record_id_list"	property="recordIdList"/>
+		<result column="sign_tip"		property="signTip" />
+	</resultMap>
+	
+	<sql id="select">
+		select record_id,
+	       channel_id,
+	       channel_name,
+	       account_no,
+	       merchant_name_abbreviation,
+	       account_type,
+	       failed_retransmission,
+	       mobile,
+	       content,
+	       reservation_datetime,
+	       send_status,
+	       send_msg,
+	       failed_num,
+	       create_datetime,
+	       resp_datetime,
+	       sum_num,
+	       success_num,
+	       blacklist_num,
+	       message_id,
+	       sign_tip
+		from s_reservation_send_record
+  	</sql>
+  	
+	
+	<select id="getNeedResevation" parameterType="Integer" resultMap="resultSms">
+		<include refid="select"/>
+		 where to_days(reservation_datetime) &lt;= to_days(now())
+		 and send_status = 100
+		order by reservation_datetime  limit #{startIndex},#{offset} 
+	</select>
+	
+	<select id="getNeedCredit" resultMap="resultSms">
+	select group_concat(record_id) record_id_list,
+	       account_no
+	from s_plain_send_record
+	where send_status = 300
+	group by account_no
+	</select>
+	
+</mapper>

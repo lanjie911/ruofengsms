@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.godai.trade.dao.merchant.MercAccountDao" >
+
+	<resultMap type="MercAccount" 	id="resultMercAccount">
+		<result column="account_no"					property="accountNo"/>
+		<result column="merchant_id"				property="merchantId"/>
+		<result column="merchant_name"				property="merchantName"/>
+		<result column="merchant_name_abbreviation"	property="merchantNameAbbreviation"/>
+		<result column="account_type"				property="accountType"/>
+		<result column="account_type_des"			property="accountTypeDes"/>
+		<result column="payment_methods"			property="paymentMethods"/>
+		<result column="extend_no"					property="extendNo"/>
+		<result column="charging_methods"			property="chargingMethods"/>
+		<result column="unit_price"					property="unitPrice"/>
+		<result column="priority_level"				property="priorityLevel"/>
+		<result column="total_balance"				property="totalBalance"/>
+		<result column="free_balance"				property="freeBalance"/>
+		<result column="frozen_balance"				property="frozenBalance"/>
+		<result column="start_blacklist_flag"		property="startBlacklistFlag"/>
+		<result column="send_audit_flag"			property="sendAuditFlag"/>
+		<result column="fail_to_reissue_flag"		property="failToReissueFlag"/>
+		<result column="sms_group_id"				property="smsGroupId"/>
+		<result column="sms_group_desc"				property="smsGroupDesc"/>
+		<result column="signature_content"			property="signatureContent"/>
+		<result column="binding_ip_flag"			property="bindingIpFlag"/>
+		<result column="authorization_ip"			property="authorizationIp"/>
+		<result column="remark"						property="remark"/>
+		<result column="account_status"				property="accountStatus"/>
+		<result column="account_status_des"			property="accountStatusDes"/>
+		<result column="create_datetime"			property="createDatetime"/>
+		<result column="operator"					property="operator"/>
+		<result column="initial_valid_smscount"		property="initialValidSmscount"/>
+		<result column="onetime_min_limit"			property="onetimeMinLimit"/>
+		<result column="onetime_max_limit"			property="onetimeMaxLimit"/>
+		<result column="account_manager"			property="accountManager"/>
+		<result column="valid_sign_method"			property="validSignMethod"/>
+		<result column="sense_word_flag"			property="senseWordFlag"/>
+		<result column="template_match_flag"		property="templateMatchFlag"/>
+		<result column="cost_quantity"				property="costQuantity"/>
+		<result column="send_num_hours"				property="sendNumHours"/>
+		<result column="send_num_days"				property="senNumDays"/>
+		<result column="account_no_password"		property="passWord"/>
+		<result column="password_salt"				property="passSalt"/>
+  	</resultMap>
+	
+	<sql id="select">
+		select
+			t.account_no, t.merchant_id, t.merchant_name_abbreviation, t.account_type, t.payment_methods,
+			t.charging_methods, t.unit_price, t.priority_level, t.total_balance, t.free_balance, t.frozen_balance,
+			t.start_blacklist_flag, t.send_audit_flag, t.fail_to_reissue_flag, t.signature_content, t.binding_ip_flag,
+			t.authorization_ip, t.account_status, t.onetime_min_limit, t.onetime_max_limit, valid_sign_method, 
+			sms_group_id, sms_group_desc, t.sense_word_flag, t.template_match_flag, t.cost_quantity, t.send_num_hours,
+			t.send_num_days, t.account_no_password, t.password_salt
+		from
+			s_merchant_account t
+	</sql>
+	
+	<select id="loadMerAccount" resultMap="resultMercAccount">
+		<include refid="select"/>
+		where t.account_status = 100
+	</select>
+	
+</mapper>
