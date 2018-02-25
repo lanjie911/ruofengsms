@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.TemplateDao">
+
+	<resultMap type="java.util.Map" 				id="resultTemplate">
+		<id property="templateId" 					column="template_id" />
+		<result property="accountNo" 				column="account_no" />
+		<result property="merchantNameAbbreviation" column="merchant_name_abbreviation" />
+		<result property="accountType" 				column="account_type" />
+		<result property="templateContent" 			column="template_content" />
+		<result property="operator" 				column="operator" />
+		<result property="status" 					column="status" />
+		<result property="remark" 					column="remark" />
+		<result property="participle" 				column="participle" />
+		<result property="templateLength" 			column="template_length" />
+		<result property="createDatetime" 			column="create_datetime" />
+	</resultMap>
+	
+	<sql id="select">
+		select
+			t.template_id, t.account_no, t.merchant_name_abbreviation, t.account_type,t.template_content,t.operator,t.status,t.remark,t.create_datetime
+		from
+			s_template t
+  	</sql>
+  	
+	<select id="queryAll" resultMap="resultTemplate">
+		select
+			t.account_no,t.template_content,t.template_length
+		from
+			s_template t
+		order by t.template_length desc
+	</select>
+	
+	<select id="queryAllAccount" resultType="java.lang.String">
+		select distinct t.account_no from s_template t order by t.account_no desc
+	</select>
+	
+	<select id="queryAllLength" resultType="java.lang.Integer">
+		select distinct t.template_length from s_template t where t.account_no = #{accountNo} and t.status = 100 order by t.template_length desc
+	</select>
+	
+	<select id="queryAllTemplate" resultType="java.lang.String">
+		select t.template_content from s_template t where t.account_no = #{accountNo} and t.template_length = #{templateLength} and t.status = 100 order by t.template_length desc
+	</select>
+	
+</mapper>

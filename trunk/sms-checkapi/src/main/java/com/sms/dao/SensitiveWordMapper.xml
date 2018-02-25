@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.SensitiveWordDao">
+
+	<resultMap type="java.util.Map" id="resultSensitiveWord">
+		<id property="wordId" 						column="word_id" />
+		<result property="wordContent" 				column="word_content" />
+		<result property="wordStatus" 				column="word_status" />
+	</resultMap>
+	
+	<sql id="select">
+		select
+			t.word_id, t.word_content, t.word_status
+		from
+			s_sensitive_word t
+  	</sql>
+  	
+	<select id="getById" parameterType="java.lang.String" resultMap="resultSensitiveWord">
+		select
+			t.word_id, t.word_content, t.word_status
+		from
+			s_sensitive_word t
+		where t.word_id = #{id}
+	</select>
+	
+	<select id="queryAll" resultType="java.lang.String">
+		select
+			t.word_content
+		from
+			s_sensitive_word t
+		where
+			t.word_status = 100
+	</select>
+	
+</mapper>
