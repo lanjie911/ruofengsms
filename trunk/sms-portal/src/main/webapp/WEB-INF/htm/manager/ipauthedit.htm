@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Merchant Account Add</title>
+<link rel="stylesheet" type="text/css" href="../../themes/general.css">
+<link rel="stylesheet" type="text/css" href="../../themes/icon.css">
+<link rel="stylesheet" type="text/css" href="../../themes/default/easyui.css">
+<script type="text/javascript" src="../../scripts/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="../../scripts/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../../scripts/src/jquery.parser.js"></script>
+<script type="text/javascript" src="../../scripts/locale/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="../../scripts/sessionExpriation.js"></script>
+<script type="text/javascript" src="../../scripts/util/userformatter.js"></script>
+<script type="text/javascript">
+$(function() {
+	
+	$('#accountNo').combobox({
+		url:'../../mercaccount/queryAccountNo.ajax',
+			valueField:'accountNo',
+			textField:'accountNo',
+			panelHeight:'auto',
+			editable:false ,
+			onLoadSuccess: function () {
+				var data = $('#accountNo').combobox('getData');
+			    if (data.length > 0) {
+			        $('#accountNo').combobox('select', data[0].accountNo);
+			        getMercAccountInfo();
+			    }
+			},
+			onChange: function () {
+				 getMercAccountInfo();
+			}
+	});
+    
+	$('#edit_form').form({
+		url : '../../mercaccount/editMercAccount.ajax',
+		onSubmit : function() {
+			return $(this).form('validate');
+		},
+		success : function(data) {
+			var obj = $.parseJSON(data);
+			if (obj.success) {
+				$('#btn_submit').css('display', 'none');
+				$.messager.alert('Info', '提交成功', 'info');
+			} else {
+				$.messager.alert('Error', '提交失败:' + obj.message, 'error');
+			}
+		}
+	});
+
+	$('#btn_submit').bind('click', function() {
+		$("#edit_form").submit();
+	});
+	$('#btn_cancel').bind('click', function() {
+		parent.closeTabByTitle("账户IP授信");
+	});
+});
+function getMercAccountInfo(){
+	var mercAccountNo = $("#accountNo").combobox("getValue");
+	$.ajax({
+		url : '../../mercaccount/getMercAccountByAccountNo.ajax',
+		type : 'get',
+		dataType : 'JSON',
+		cache: false,
+		data : {
+			mercAccountNo : mercAccountNo
+		},
+		success : function(data) {
+			init_view(data);
+		}
+	});
+}
+function init_view(data) {
+	$("#merchantName").attr("value",data.merchantName);
+	$("#merchantNameAbbreviation").attr("value",data.merchantNameAbbreviation);
+	$("#accountType").attr("value",data.accountType);
+	$("#accountTypeDes").attr("value",data.accountTypeDes);
+	$("#paymentMethodsDes").attr("value",data.paymentMethodsDes);
+	$("#extendNo").attr("value",data.extendNo);
+	$("input[name='bindingIpFlag'][value="+data.bindingIpFlag+"]").attr("checked",true);
+	$("#authorizationIp").text(data.authorizationIp);
+	bindingIp(data.bindingIpFlag);
+}
+function bindingIp(data){
+	if(data==200){
+		$("#bindingIp").hide();
+	}else{
+		$("#bindingIp").show();
+	}
+}
+</script>
+</head>
+<body>
+	<form id="edit_form" method="post">
+	<table class="table_view">
+		<tr>
+			<td class="td_new_subtitle" colspan="4">商户账户基本信息</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">商户账号：</td>
+			<td class="td_view_value">
+				<input type="text" name="accountNo" id="accountNo" class="easyui-combobox input_140" >
+			</td>
+			<td class="td_view_name">商户名称：</td>
+			<td class="td_view_value" >
+				<input type="text" name="merchantName" id="merchantName" class="easyui-validatebox input_140"  readonly="readonly">
+			</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">账户类型：</td>
+			<td class="td_view_value" >
+				<input  class="easyui-validatebox input_140" type="text" name="accountTypeDes" id="accountTypeDes" readonly="readonly">
+			</td>
+			<td class="td_view_name">付费方式：</td>
+			<td class="td_view_value" >
+				<input  class="easyui-validatebox input_140" type="text" name="paymentMethodsDes" id="paymentMethodsDes" readonly="readonly">
+			</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">自定义扩展号： </td>
+			<td class="td_view_value" colspan="3">
+				<input type="text" name="extendNo" id="extendNo" class="easyui-validatebox input_140"   readonly="readonly">
+			</td>
+		</tr>
+		<tr>
+			<td class="td_view_name">是否绑定IP：</td>
+			<td class="td_view_value" colspan="3">
+				<input type="radio" name="bindingIpFlag" class="easyui-validatebox"  value="200" checked="checked" onclick="bindingIp(200);">不绑定</input>
+		        <input  type="radio" name="bindingIpFlag" class="easyui-validatebox" value="100" onclick="bindingIp(300);">绑定</input>
+			</td>
+		</tr>
+		<tr id="bindingIp">
+			<td class="td_view_name">客户端列表：</td>
+			<td class="td_view_value"  colspan="3">
+				<textarea rows="5" cols="80" id="authorizationIp" name="authorizationIp"  style="height:50px;width:772px;resize:none;" ></textarea> 
+				<br>可设置多个ip，多个IP之间以英文字母逗号分隔
+			</td>
+		</tr>
+		<tr>
+		<td colspan="6" align="center">
+			<a id="btn_submit" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" >提交</a>
+			<a id="btn_cancel" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" >取消</a>
+		</td>
+		</tr>
+		</table>
+	</form>
+	
+</body>

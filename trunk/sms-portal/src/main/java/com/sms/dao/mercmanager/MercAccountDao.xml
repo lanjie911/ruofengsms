@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.sms.dao.mercmanager.MercAccountDao" >
+
+	<resultMap type="MercAccount" id="resultMercAccount">
+		<result column="account_no"	property="accountNo"/>
+		<result column="merchant_id"	property="merchantId"/>
+		<result column="merchant_name"	property="merchantName"/>
+		<result column="merchant_name_abbreviation"	property="merchantNameAbbreviation"/>
+		<result column="account_type"	property="accountType"/>
+		<result column="account_type_des"	property="accountTypeDes"/>
+		<result column="payment_methods"	property="paymentMethods"/>
+		<result column="payment_methods_des"	property="paymentMethodsDes"/>
+		<result column="extend_no"	property="extendNo"/>
+		<result column="charging_methods"	property="chargingMethods"/>
+		<result column="unit_price"	property="unitPrice"/>
+		<result column="priority_level"	property="priorityLevel"/>
+		<result column="total_balance"	property="totalBalance"/>
+		<result column="free_balance"	property="freeBalance"/>
+		<result column="frozen_balance"	property="frozenBalance"/>
+		<result column="start_blacklist_flag"	property="startBlacklistFlag"/>
+		<result column="send_audit_flag"	property="sendAuditFlag"/>
+		<result column="fail_to_reissue_flag"	property="failToReissueFlag"/>
+		<result column="sms_group_id"	property="smsGroupId"/>
+		<result column="sms_group_desc"	property="smsGroupDesc"/>
+		<result column="signature_content"	property="signatureContent"/>
+		<result column="binding_ip_flag"	property="bindingIpFlag"/>
+		<result column="authorization_ip"	property="authorizationIp"/>
+		<result column="remark"	property="remark"/>
+		<result column="account_status"	property="accountStatus"/>
+		<result column="account_status_des"	property="accountStatusDes"/>
+		<result column="create_datetime"	property="createDatetime"/>
+		<result column="operator"	property="operator"/>
+		<result column="initial_valid_smscount"	property="initialValidSmscount"/>
+		<result column="onetime_min_limit"	property="onetimeMinLimit"/>
+		<result column="onetime_max_limit"	property="onetimeMaxLimit"/>
+		<result column="valid_sign_method"	property="validSignMethod"/>
+		
+		<result column="cus_manager_name"	property="accountManager"/>
+		<result column="contacts_name"	property="contactsName"/>
+		<result column="telephone"	property="telephone"  />
+		<result column="billing_wordsize"	property="billingWordsize"/>
+		<result column="sense_word_flag"	property="senseWordFlag"/>
+		<result column="template_match_flag"	property="templateMatchFlag"/>
+		<result column="cost_quantity"	property="costQuantity"/>
+		<result column="send_num_hours"	property="sendNumHours"/>
+		<result column="send_num_days"	property="sendNumDays"/>
+		<result column="account_no_password"	property="accountNoPass"/>
+		<result column="password_salt"	property="passSalt"/>
+  	</resultMap>
+	
+	<sql id="select">
+		select a.account_no,m.merchant_name,m.merchant_name_abbreviation,a.account_type,a.merchant_id,
+			a.payment_methods,if(a.payment_methods=100,'预付费',if(a.account_type=200,'后付费',''))  payment_methods_des,
+			a.charging_methods,a.unit_price,a.initial_valid_smscount,a.onetime_min_limit,a.onetime_max_limit,a.priority_level,
+			a.start_blacklist_flag,a.send_audit_flag,a.fail_to_reissue_flag,a.sms_group_id,a.extend_no,
+			a.signature_content,a.binding_ip_flag,a.authorization_ip,a.remark,a.valid_sign_method,
+			a.send_num_hours,a.send_num_days,
+			if(a.account_type=100,'行业类',if(a.account_type=200,'营销类',''))  account_type_des,
+			a.free_balance,a.create_datetime,a.account_status,c.contacts_name,c.telephone,
+			cm.cus_manager_name,a.cost_quantity,
+			case
+			  when a.account_status=100 then '正常'
+			  when a.account_status=200 then '停用'
+			  when a.account_status=300 then '注销'
+			  when a.account_status=400 then '冻结'
+			  when a.account_status=500 then '欠费'
+			  else ''
+			end account_status_des,
+	    a.account_no_password,a.password_salt
+		from s_merchant_account a
+		inner join s_merchant_info m on a.merchant_id = m.merchant_id
+		inner join s_merchant_contacts c on a.merchant_id= c.merc_info_id
+		left join s_merc_cus_manger mc on mc.merc_id = a.merchant_id
+		left join s_customer_manager cm on cm.cus_manager_id = mc.cus_manager_id
+	</sql>
+	
+	<sql id="conditions">
+		<where>
+			<if test="merchantId !=null">
+				and a.merchant_id = #{merchantId}
+			</if>
+			<if test="merchantName !=null and merchantName !=''">
+				and m.merchant_name like concat('%',#{merchantName},'%')
+			</if>
+			<if test="mercAccountNo !=null">
+				and a.account_no = #{mercAccountNo}
+			</if>
+			<if test="mercAccountStatus !=null and merchantName !=''">
+				and a.account_status  = #{mercAccountStatus}
+			</if>
+		</where>
+	</sql>
+    
+    <select id="query" parameterType="MercAccountCriteria" resultMap="resultMercAccount">
+		<include refid="select"/>
+		<include refid="conditions"/>
+		order by a.merchant_id desc
+	</select>
+	
+	<select id="getMercAccountByAccountNo" parameterType="Long" resultMap="resultMercAccount">
+		<include refid="select"/>
+		where a.account_no = #{mercAccountNo}
+	</select>
+	
+	<select id="getMarketAccount" resultMap="resultMercAccount">
+		<include refid="select"/>
+			where a.merchant_id = #{merchantId} and a.account_type = #{accountType}
+	</select>
+	
+	<update id="update" parameterType="MercAccount">
+	update s_merchant_account SET
+	   binding_ip_flag =#{bindingIpFlag}
+	  ,authorization_ip = #{authorizationIp}
+	WHERE account_no =#{accountNo}
+	</update>
+	
+	<select id="getMerchantById" resultMap="resultMercAccount">
+		<include refid="select"/>
+			where a.merchant_id = #{merchantId}
+	</select>
+	
+</mapper>

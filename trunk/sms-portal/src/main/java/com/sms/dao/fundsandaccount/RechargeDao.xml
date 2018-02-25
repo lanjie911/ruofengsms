@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.fundsandaccount.RechargeDao">
+
+	<resultMap type="Recharge" 						id="resultRecharge">
+		<result column="deposit_id"	property="depositId"/>
+		<result column="account_no"	property="accountNo"/>
+		<result column="merchant_name"	property="merchantName"/>
+		<result column="account_type"	property="accountType"/>
+		<result column="account_type_des"	property="accountTypeDes"/>
+		<result column="amount"	property="amount"/>
+		<result column="unit_price"	property="unitPrice"/>
+		<result column="deposit_num"	property="depositNum"/>
+		<result column="operator"	property="operator"/>
+		<result column="deposit_status"	property="depositStatus"/>
+		<result column="deposit_status_des"	property="depositStatusSes"/>
+		<result column="create_datetime"	property="createDatetime"/>
+		<result column="deposit_type"	property="rechargeType"/>
+		<result column="deposit_type_des"	property="rechargeTypeDes"/>
+	</resultMap>
+	
+	<sql id="select">
+		select  
+			d.deposit_id,a.account_no,m.merchant_name,a.account_type,
+			if(a.account_type=100,'行业账户',if(a.account_type=200,'普通账户',''))  account_type_des,
+			d.amount,d.unit_price,d.deposit_num,d.operator,d.deposit_status,
+			if(d.deposit_status=100,'成功','失败')  deposit_status_des,
+			d.deposit_type,if(d.deposit_type=100,'手动充值','调账')  deposit_type_des,
+			date_format(d.create_datetime , '%Y-%m-%d %H:%i:%s') create_datetime
+		FROM s_deposit d
+		inner join s_merchant_account a on a.account_no =d.account_no
+		inner join s_merchant_info m on a.merchant_id = m.merchant_id
+		
+  	</sql>
+  	
+  	<sql id="conditions">
+		<where>
+			<if test="mercAccountNo !=null">
+				and d.account_no = #{mercAccountNo}
+			</if>
+			<if test="rechargeNo !=null ">
+				and d.deposit_id  = #{rechargeNo}
+			</if>
+			<if test="outRechargeNo !=null ">
+				and d.out_recharge_no  = #{outRechargeNo}
+			</if>
+			<if test="rechargeDateBegin != null and rechargeDateBegin !=''">
+				and d.create_datetime &gt;= str_to_date(#{rechargeDateBegin},'%Y-%m-%d %H:%i:%s')
+			</if>
+			<if test="rechargeDateEnd != null and rechargeDateEnd !=''">
+				and d.create_datetime &lt;= str_to_date(#{rechargeDateEnd},'%Y-%m-%d %H:%i:%s') 
+			</if>
+			and m.merchant_id =#{merchantId}
+		</where>
+	</sql>
+	
+	<select id="query" parameterType="RechargeCriteria" resultMap="resultRecharge">
+		<include refid="select"/>
+		<include refid="conditions"/>
+		order by d.deposit_id desc
+	</select>
+	
+	<select id="getById" parameterType="Long" resultMap="resultRecharge">
+		<include refid="select"/>
+		where d.deposit_id = #{depositId}
+	</select>
+	
+	<insert id="insert" parameterType="Recharge">
+	insert into s_deposit (
+	   merchant_name_abbreviation
+	  ,account_no
+	  ,amount
+	  ,deposit_num
+	  ,unit_price
+	  ,deposit_type
+	  ,create_datetime
+	  ,deposit_status
+	  ,remark
+	  ,operator
+	  ,out_recharge_no
+	) VALUES (
+	  #{merchantNameAbbreviation}
+	  ,#{accountNo}
+	  ,#{amount}
+	  ,#{depositNum}
+	  ,#{unitPrice}
+	  ,#{rechargeType}
+	  ,now()
+	  ,100
+	  ,#{remark}
+	  ,#{operator}
+	  ,#{outRechargeNo}
+	)
+	</insert>
+	
+</mapper>

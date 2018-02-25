@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.trademanager.SmsAuditDao">
+
+	<resultMap type="SmsAudit" 						id="resultSmsAudit">
+		<result column="auditing_id"	property="auditingId"/>
+		<result column="account_no"	property="accountNo"/>
+		<result column="merchant_name_abbreviation"	property="merchantNameAbbreviation"/>
+		<result column="account_type"	property="accountType"/>
+		<result column="account_type_des"	property="accountTypeDes"/>
+		<result column="channel_id"	property="channelId"/>
+		<result column="channel_name"	property="channelName"/>
+		<result column="order_flag"	property="orderFlag"/>
+		<result column="order_flag_des"	property="orderFlagDes"/>
+		<result column="reservation_datetime"	property="reservationDatetime"/>
+		<result column="batch_no"	property="batchNo"/>
+		<result column="mobile"	property="mobile" />
+		<result column="sms_content"	property="smsContent"/>
+		<result column="upload_content"	property="uploadContent"/>
+		<result column="sms_count"	property="smsCount"/>
+		<result column="sms_unit_count"	property="smsUnitCount"/>
+		<result column="sms_account_num"	property="smsAccountNum"/>
+		<result column="auditing_status"	property="auditingStatus"/>
+		<result column="auditing_status_des"	property="auditingStatusDes"/>
+		<result column="auditing_operator"	property="auditingOperator"/>
+		<result column="registrars"	property="registrars"/>
+		<result column="create_datetime"	property="createDatetime"/>
+		<result column="auditing_datetime"	property="auditingDatetime"/>
+	</resultMap>
+	
+  	
+	
+	<insert id="insert" parameterType="SmsAudit">
+	insert into s_auditing (
+	   account_no
+	  ,merchant_name_abbreviation
+	  ,account_type
+	  ,order_flag
+	  <if test="reservationDatetime !=null and reservationDatetime !=''">,reservation_datetime</if>
+	  ,batch_no
+	  ,mobile
+	  ,sms_content
+	  ,sms_count
+	  ,sms_unit_count
+	  ,sms_account_num
+	  ,auditing_status
+	  ,auditing_operator
+	  ,registrars
+	  ,sign_tip
+	  ,create_datetime  
+	) VALUES (
+	   #{accountNo}
+	  ,#{merchantNameAbbreviation}
+	  ,#{accountType}
+	  ,#{orderFlag}
+	   <if test="reservationDatetime !=null and reservationDatetime !=''">,#{reservationDatetime}</if>
+	  ,#{batchNo}
+	  ,#{mobile}
+	  ,#{smsContent}
+	  ,#{smsCount}
+	  ,#{smsUnitCount}
+	  ,#{smsAccountNum}
+	  ,100
+	  ,''  
+	  ,#{registrars}
+	  ,#{signTip}
+	  ,now()
+	)
+	</insert>
+	
+	<insert id="insertBatch" >
+		insert into
+			s_auditing (account_no, merchant_name_abbreviation, account_type, order_flag,
+			 <if test="smsAudit.reservationDatetime !=null and smsAudit.reservationDatetime !=''">reservation_datetime,</if>
+			batch_no,mobile,sms_content,
+			sms_count,sms_unit_count,sms_account_num,auditing_status,auditing_operator,registrars,create_datetime,auditing_datetime,sign_tip,cost_tip)
+		values
+		<foreach collection="strs" item="str" index="index" separator=",">
+			(#{smsAudit.accountNo}, #{smsAudit.merchantNameAbbreviation}, #{smsAudit.accountType},#{smsAudit.orderFlag},
+			<if test="smsAudit.reservationDatetime !=null and smsAudit.reservationDatetime !=''">#{smsAudit.reservationDatetime},</if>
+			#{smsAudit.batchNo},
+			#{str},#{smsAudit.smsContent},#{smsAudit.smsCount},#{smsAudit.smsUnitCount},#{smsAudit.smsAccountNum},100,#{smsAudit.auditingOperator},
+			#{smsAudit.registrars},CURRENT_TIMESTAMP(),#{smsAudit.auditingDatetime},#{smsAudit.signTip},#{smsAudit.costTip})
+		</foreach>
+	</insert>
+	
+	<insert id="insertBatchList" >
+		insert into
+			s_auditing (account_no, merchant_name_abbreviation, account_type, order_flag,
+			reservation_datetime,
+			batch_no,mobile,sms_content,upload_content,
+			sms_count,sms_unit_count,sms_account_num,auditing_status,auditing_operator,registrars,create_datetime,auditing_datetime,sign_tip,cost_tip)
+		values
+		<foreach collection="smsAuditList" item="smsAudit" index="index" separator=",">
+			(#{smsAudit.accountNo}, #{smsAudit.merchantNameAbbreviation}, #{smsAudit.accountType},#{smsAudit.orderFlag},
+			#{smsAudit.reservationDatetime},
+			#{smsAudit.batchNo},
+			#{smsAudit.mobile},#{smsAudit.smsContent},#{smsAudit.uploadContent},#{smsAudit.smsCount},#{smsAudit.smsUnitCount},#{smsAudit.smsAccountNum},100,#{smsAudit.auditingOperator},
+			#{smsAudit.registrars},CURRENT_TIMESTAMP(),#{smsAudit.auditingDatetime},#{smsAudit.signTip},#{smsAudit.costTip})
+		</foreach>
+	</insert>
+	
+	<insert id ="insertSmsDetailUploadBatch" parameterType="java.util.List" >
+		insert into
+			s_auditing (account_no, mobile, merchant_name_abbreviation, account_type, batch_no, 
+			upload_content, auditing_status, registrars, create_datetime)
+		values
+		<foreach collection ="list" item="smsAudit" index= "index" separator =",">
+			(#{smsAudit.accountNo}, #{smsAudit.mobile}, #{smsAudit.merchantNameAbbreviation}, 200, #{smsAudit.batchNo}, 
+			#{smsAudit.uploadContent}, 601, #{smsAudit.registrars}, current_timestamp())
+		</foreach >
+ 	</insert >
+	
+	<update id="updteStatus">
+	update s_auditing SET
+	   auditing_status = #{auditStatus}
+	  ,auditing_operator = #{operator}
+	  ,auditing_datetime = now()
+	where auditing_id =#{auditingId} and auditing_status = #{beforeStatus}
+	
+	</update>
+	
+	<select id="countBySmsUploadBatchNo" parameterType="java.lang.String" resultType="int">
+		select count(0) from s_auditing t where t.batch_no = #{batchNo} and t.auditing_status = 601
+	</select>
+	
+	<select id="loadFinishUploadLessThan10000" parameterType="java.lang.String" resultMap="resultSmsAudit">
+		select * from s_auditing t
+		where t.batch_no = #{batchNo} and t.auditing_status = 601 limit 0,10000
+	</select>
+	
+	<select id="loadFinishUploadALL" parameterType="java.lang.String" resultMap="resultSmsAudit">
+		select * from s_auditing t
+		where t.batch_no = #{batchNo} and t.auditing_status = 601
+	</select>
+	
+	<update id="batchUpdate">
+		<foreach collection="list" item="smsAudit" index="index" separator=";">
+            update 
+            	s_auditing
+			set 
+				mobile = #{smsAudit.mobile},
+				sms_content = #{smsAudit.smsContent},
+				auditing_status = 100,
+				sms_count = #{smsAudit.smsCount},
+				sms_unit_count = #{smsAudit.smsUnitCount},
+				order_flag = #{smsAudit.orderFlag},
+				reservation_datetime = #{smsAudit.reservationDatetime},
+				sign_tip = #{smsAudit.signTip},
+				sms_account_num = #{smsAudit.smsAccountNum},
+				cost_tip = #{smsAudit.costTip}
+            where 
+            	auditing_id = #{smsAudit.auditingId}
+            and
+            	auditing_status = 601
+		</foreach>
+	</update>
+	
+	<update id="updateBySmsBatchUpload">
+		update 
+			s_auditing 
+		set
+	   		order_flag = #{orderFlag},
+	  		reservation_datetime = #{reservationDatetime},
+	  		sms_content = #{smsContent},
+	  		sms_count = #{smsCount},
+	  		sms_unit_count = 1,
+	  		sms_account_num = #{smsAccountNum},
+	  		auditing_status = 100,
+	  		sign_tip = #{signTip},
+	  		cost_tip = 100
+		where 
+			batch_no = #{batchNo} 
+		and 
+			auditing_status = 601
+	</update>
+	
+</mapper>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Merchant Info List</title>
+<link rel="stylesheet" type="text/css" href="../../themes/general.css">
+<link rel="stylesheet" type="text/css" href="../../themes/icon.css">
+<link rel="stylesheet" type="text/css" href="../../themes/default/easyui.css">
+<script type="text/javascript" src="../../scripts/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="../../scripts/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../../scripts/src/jquery.parser.js"></script>
+<script type="text/javascript" src="../../scripts/locale/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="../../scripts/sessionExpriation.js"></script>
+<script type="text/javascript" src="../../scripts/util/userformatter.js"></script>
+<script type="text/javascript">
+		$(function(){
+			$('#supportOperators').combobox({
+	    		url:'../../bizdict/getDirWithAll.ajax?dirType=CHANNEL_SUPPORT_OPERATOR',
+	    			valueField:'dirCode',
+	    			textField:'dirCodeDesc',
+	    			panelHeight:'auto',
+	    			editable:false 
+			});
+			$('#channelType').combobox({
+				url:'../../bizdict/getDirWithAll.ajax?dirType=CHANNEL_TYPE',
+					valueField:'dirCode',
+					textField:'dirCodeDesc',
+					panelHeight:'auto',
+					editable:false 
+			});
+		
+			var pg = $("#query_result").datagrid("getPager");
+			if (pg) {
+				$(pg).pagination({		
+					onBeforeRefresh : function() {
+					},
+					onRefresh : function(pageNumber, pageSize) {
+						do_submit(pageNumber, pageSize)
+					},
+					onChangePageSize : function() {
+					},
+					onSelectPage : function(pageNumber, pageSize) {
+						do_submit(pageNumber, pageSize);
+					}
+				});
+			}
+			
+			$('#btn_query').bind('click', function(){  
+				$(pg).pagination('select', 1);
+        	});
+			
+			$('#btn_reset').bind('click', function(){  
+				$('#query_search_Div').form('clear');
+        	});
+		});
+	
+	function do_submit(pageNumber, pageSize) {
+		$('#query_form').form('submit', {
+			url : '../../recharge/query.ajax',
+			cache: false,
+			onSubmit:function(param){
+				param.paging = true;
+				param.limit = pageSize;
+				param.offset = (pageNumber-1)*pageSize;
+				return $(this).form('validate');
+			},
+			success : function(data) {
+				var obj = $.parseJSON(data);
+				$('#query_result').datagrid('loadData', obj)
+			}
+		});
+	}
+	
+	</script>
+</head>
+<body>
+
+	<form id="query_form" method="post">
+		<div style="margin: 5px 0"></div>
+		<div style="margin: 0 5px" id='query_search_Div'>
+			<table class="table_view" style="font-size: 12px; background: #F1F1F1;width:99.5%;">
+				<tr>
+					<td class="td_view_name">商户账号</td>
+					<td class="td_view_value">
+						<input class="easyui-numberbox input_140" 	type="text" name="mercAccountNo" id="mercAccountNo" />
+					</td>
+					<td class="td_view_name">充值订单号</td>
+					<td class="td_view_value">
+						<input class="easyui-numberbox input_140" 	type="text" name="rechargeNo" id="rechargeNo" />
+					</td>
+				</tr>
+				<tr>
+					<td class="td_view_name">外部订单号</td>
+					<td class="td_view_value">
+						<input class="easyui-numberbox input_140" 	type="text" name="outRechargeNo" id="outRechargeNo" />
+					</td>
+					<td class="td_view_name">充值日期</td>
+					<td class="td_view_value">
+						 <input id="rechargeDateBegin" name="rechargeDateBegin" type="text" class="easyui-datetimebox" data-options="editable:false,formatter:fmtwithhms">
+						至
+						<input id="rechargeDateEnd" name="rechargeDateEnd" type="text" class="easyui-datetimebox"  data-options="editable:false,formatter:fmtwithhms">
+					</td>
+				</tr>
+				<tr>
+					<td colspan="4" align="center" class="td_view_name">
+						<div align="center">
+							<a id="btn_query" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-search">查询</a> 
+							<a id="btn_reset" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-reset">重置</a>
+						</div>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<div style="margin: 10px 0;"></div>
+		<div style="margin: 0 5px">
+			<table class="easyui-datagrid" title="查询结果" id="query_result"
+				data-options="singleSelect:true,pagination:true,rownumbers:true"
+				toolbar="#tb">
+				<thead>
+					<tr>
+						<th field="ck" checkbox="true"></th>
+						<th data-options="field:'depositId'">充值订单号</th>
+						<th data-options="field:'accountNo'">商户账号</th>
+						<th data-options="field:'merchantName'">商户名称</th>
+						<th data-options="field:'accountTypeDes'">账户类型</th>
+						<!-- <th data-options="field:'amount',align:'center',formatter:formatAmt">充值金额（元）</th> -->
+						<th data-options="field:'depositNum',align:'center',formatter:formatAmt">充值条数（条）</th>
+						<th data-options="field:'outRechargeNo'">外部订单号</th>
+						<th data-options="field:'operator',align:'center'">操作员</th>
+						<th data-options="field:'createDatetime',align:'center'">创建时间</th>
+						<th data-options="field:'depositStatusSes',align:'center'">状态</th>
+					</tr>
+				</thead>
+			</table>
+			<div id="tb">
+			</div>
+		</div>
+	</form>
+</body>

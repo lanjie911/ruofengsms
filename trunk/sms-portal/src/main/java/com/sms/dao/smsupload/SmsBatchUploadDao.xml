@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.smsupload.SmsBatchUploadDao">
+
+	<resultMap type="SmsBatchUpload" 		id="resultSmsBatchUpload">
+		<id property="smsUploadId" 				column="sms_upload_id" />
+		<result property="batchType" 			column="batch_type" />
+		<result property="smsContent" 			column="sms_content" />
+		<result property="mobileCount" 			column="mobile_count" />
+		<result property="accountNo" 			column="account_no" />
+		<result property="merchantNameAbbreviation" column="merchant_name_abbreviation" />
+		<result property="accountType" 			column="account_type" />
+		<result property="orderFlag" 			column="order_flag" />
+		<result property="reservationDatetime" 	column="reservation_datetime" />
+		<result property="uploadStatus" 		column="upload_status" />
+		<result property="createDatetime" 		column="create_datetime" />
+		<result property="operator" 			column="operator" />
+		<result property="signTip" 				column="sign_tip" />
+		<result property="batchNo" 				column="batch_no" />
+	</resultMap>
+	
+	<sql id="select">
+		select 
+			t.sms_upload_id, t.batch_type, t.sms_content, t.mobile_count,
+			t.account_no, t.account_type, t.order_flag, t.reservation_datetime,
+			t.upload_status, t.create_datetime, t.operator, t.sign_tip, t.batch_no,
+			t.merchant_name_abbreviation
+		from
+			sms_batch_upload t
+  	</sql>
+  	
+  	<select id="query" parameterType="SmsBatchUploadCriteria" resultMap="resultSmsBatchUpload">
+		<include refid="select"/>
+		<include refid="conditions"/>
+		order by t.create_datetime desc
+	</select>
+	
+	<sql id="conditions">
+		<where>
+			<if test="uploadStatus !=null">
+				and t.upload_status = #{uploadStatus}
+			</if>
+		</where>
+	</sql>
+  	
+	<insert id="insert" parameterType="SmsBatchUpload" useGeneratedKeys="true" keyProperty="smsUploadId">
+		insert into 
+			sms_batch_upload(batch_no, batch_type, mobile_count, account_no, merchant_name_abbreviation, account_type, order_flag, upload_status, create_datetime, operator)
+		values (#{batchNo}, #{batchType}, #{mobileCount}, #{accountNo}, #{merchantNameAbbreviation}, #{accountType}, #{orderFlag}, 100, current_timestamp(), #{operator})
+	</insert>
+	
+	<select id="getById" parameterType="java.lang.Integer" resultMap="resultSmsBatchUpload">
+		<include refid="select" />
+		where t.sms_upload_id = #{smsUploadId}
+	</select>
+	
+	<update id="uploadFinish" parameterType="SmsBatchUpload">
+		update 
+			sms_batch_upload 
+		set
+			batch_type = #{batchType},
+			sms_content = #{smsContent},
+			order_flag = #{orderFlag},
+			reservation_datetime = #{reservationDatetime},
+			sign_tip = #{signTip},
+			upload_status = 200  
+		where 
+			sms_upload_id = #{smsUploadId}
+		and
+			upload_status = 100
+	</update>
+	
+	<delete id="delete" parameterType="java.lang.Integer">
+		delete from sms_batch_upload where sms_upload_id = #{smsUploadId}
+	</delete>
+	
+</mapper>

@@ -1,0 +1,85 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans     
+        http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+        http://www.springframework.org/schema/context 
+        http://www.springframework.org/schema/context/spring-context-4.0.xsd
+        http://www.springframework.org/schema/mvc
+        http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd">
+
+	<context:component-scan base-package="com.sms.controller" />
+
+	<mvc:annotation-driven>
+		<mvc:message-converters>
+			<bean
+				class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
+				<property name="supportedMediaTypes">
+					<list>
+						<value>text/html;charset=UTF-8</value>
+					</list>
+				</property>
+			</bean>
+		</mvc:message-converters>
+	</mvc:annotation-driven>
+
+	<mvc:resources mapping="/htm/**" location="/WEB-INF/htm/" />
+	<mvc:resources mapping="/images/**" location="/WEB-INF/images/" />
+	<mvc:resources mapping="/scripts/**" location="/WEB-INF/scripts/" />
+	<mvc:resources mapping="/themes/**" location="/WEB-INF/themes/" />
+
+	<mvc:default-servlet-handler />
+
+	<bean
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix">
+			<value>/WEB-INF/jsp/</value>
+		</property>
+		<property name="suffix">
+			<value>.jsp</value>
+		</property>
+	</bean>
+
+	<mvc:interceptors>
+		<!-- session check -->
+		<mvc:interceptor>
+			<!-- 需拦截的地址 -->
+			<!-- 一级目录 -->
+			<mvc:mapping path="/*.do" />
+			<mvc:mapping path="/*.ajax" />
+			<mvc:mapping path="/*.htm" />
+			<!-- 二级目录 -->
+			<mvc:mapping path="/*/*.do" />
+			<mvc:mapping path="/*/*.ajax" />
+			<mvc:mapping path="/*/*.htm" />
+			<!-- 三级目录 -->
+			<mvc:mapping path="/*/*/*.do" />
+			<mvc:mapping path="/*/*/*.ajax" />
+			<mvc:mapping path="/*/*/*.htm" />
+			<!-- 需排除拦截的地址 -->
+			<mvc:exclude-mapping path="/index.htm" />
+			<mvc:exclude-mapping path="/htm/login.htm" />
+			<mvc:exclude-mapping path="/login/login.ajax" />
+			<mvc:exclude-mapping path="/login/logout.ajax" />
+			<bean class="com.sms.interceptor.SessionCheckInterceptor" />
+		</mvc:interceptor>
+		<!-- SQL注入拦截 -->
+		<mvc:interceptor>
+			<mvc:mapping path="/**" />
+			<mvc:exclude-mapping path="/smstemplate/addSmsTemplate.ajax" />
+			<mvc:exclude-mapping path="/smstemplate/editSmsTemplate.ajax" />
+			<bean class="com.sms.interceptor.XssInterceptor" />
+		</mvc:interceptor>
+	</mvc:interceptors>
+
+	<!-- SpringMVC上传文件时，需要配置MultipartResolver处理器 -->
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="defaultEncoding" value="utf-8" />
+		<!-- 指定所上传文件的总大小不能超过104857600B=100M。注意maxUploadSize属性的限制不是针对单个文件，而是所有文件的容量之和 -->
+		<property name="maxUploadSize" value="104857600" />
+		<property name="maxInMemorySize" value="40960" />
+	</bean>
+
+</beans>

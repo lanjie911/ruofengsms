@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="shortcut icon" type="image/x-icon" href="../images/login.png" media="screen" /> 
+	<link rel="stylesheet" type="text/css" href="../themes/general.css">
+	<link rel="stylesheet" type="text/css" href="../themes/icon.css">
+	<link rel="stylesheet" type="text/css" href="../themes/gray/easyui.css">
+	<script type="text/javascript" src="../scripts/jquery-1.8.0.min.js"></script>
+	<script type="text/javascript" src="../scripts/jquery.easyui.min.js"></script>
+	<script type="text/javascript" src="../scripts/locale/easyui-lang-zh_CN.js"></script>
+	<title>聚合信息 - 无线通讯服务专家</title>
+	<script type="text/javascript">
+		$(function(){
+			$('#login_form').form({
+				url:'../login/login.ajax',
+				onSubmit:function(){
+					return $(this).form('validate');
+				},
+				success:function(data){
+					var obj = $.parseJSON(data);  
+                    if(obj.success){  
+                        window.location.href = "main.htm";  
+                    }
+                    else{  
+                        $.messager.alert('Error','登录失败:'+obj.message, 'error');  
+                    }  
+				}
+			});
+			
+			//jump out the iframe container
+			if (window != top)
+			 	top.location.href = location.href; 
+			
+			$('#btn_login').bind('click', function(){  
+				do_login();  
+        	});
+        	
+        	$('#username').bind('keydown', function(e){  
+				var curKey = e.which;
+				if(curKey==13) {
+					$('#password').focus();
+				}  
+        	});
+        	
+        	$('#password').bind('keydown', function(e){  
+				var curKey = e.which;
+				if(curKey==13) {
+					do_login();
+				}  
+        	});
+        });
+        
+        function do_login() {
+        	$("#login_form").submit();
+        }
+		
+	</script>
+</head>
+
+<body style="text-align:center">
+	<div style="margin:200 auto;width:500px;height:169px;background:#F9F9F9;border:1px solid #EBEBEB;">
+		<div style="height:22px;padding:10px 10px 0px 10px;font:bold;font-size:18px">
+			<b>欢迎访问聚合信息 -客户服务平台</b></div>
+		<form id="login_form" method="post">
+			<table width="100%" align="center" style="font-size:12px;">
+			    <tr height="28px">
+			    	<td width="28%" rowspan="4" align="center" ><img src="../images/login.png"/> </td>
+                </tr>
+            	<tr height="28px">
+                    <td width="17%" align="right">用户名&nbsp;</td>
+                    <td width="55%">
+                    	<input type="text" class="easyui-validatebox input_120" id="username" value="" name="username" data-options="required:true">
+					</td>
+                </tr>
+                <tr height="28px">
+                	<td align="right">密码&nbsp;</td>
+                    <td><input type="password" class="easyui-validatebox input_120" id="password" name="password" data-options="required:true">
+					</td>
+                </tr>
+            </table>
+
+			<div class="action_bar" style="text-align:center">
+				<a id="btn_login" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok">登录</a>
+			</div>
+		</form>
+	</div>
+</body>
+</html>

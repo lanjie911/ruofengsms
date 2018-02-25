@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.bizdict.BizDictDao">
+
+	<resultMap type="Bizdict" 		id="resultBizdict">
+		<id column="dir_id" 	property="dirId" />
+		<result column="dir_code" 	property="dirCode" />
+		<result column="dir_code_desc" 		property="dirCodeDesc" />
+	</resultMap>
+
+
+	<select id="getDirs" resultMap="resultBizdict">
+	    SELECT 
+			 dir_id,dir_code,dir_code_desc,dir_type
+		from fk_biz_dict 
+		where dir_type =  #{dirType}
+	</select>
+	
+	<select id="getArea" resultMap="resultBizdict">
+	   select 
+	   		codeid dir_code, parentid, cityName dir_code_desc 
+	   from tb_da_area
+	   where parentid = (select codeid FROM tb_da_area where cityName =#{cityName})
+	</select>
+
+</mapper>

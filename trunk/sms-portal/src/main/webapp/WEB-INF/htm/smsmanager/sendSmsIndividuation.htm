@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Merchant Account Add</title>
+<link rel="stylesheet" type="text/css" href="../../themes/general.css">
+<link rel="stylesheet" type="text/css" href="../../themes/icon.css">
+<link rel="stylesheet" type="text/css" href="../../themes/default/easyui.css">
+<style type="text/css">
+.border-table td {   
+	border: solid #000 0px;   
+}  
+</style>
+<script type="text/javascript" src="../../scripts/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="../../scripts/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../../scripts/src/jquery.parser.js"></script>
+<script type="text/javascript" src="../../scripts/locale/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="../../scripts/sessionExpriation.js"></script>
+<script type="text/javascript" src="../../scripts/util/userformatter.js"></script>
+<script type="text/javascript" src="../../scripts/js-xls/xlsx.js"></script>
+<script type="text/javascript" src="../../scripts/easyloader.js"></script>
+<script type="text/javascript">
+$(function() {
+	$('#sendSmsType').combobox({
+		url:'../../bizdict/getDir.ajax?dirType=SEND_SMS_TYPE',
+			valueField:'dirCode',
+			textField:'dirCodeDesc',
+			panelHeight:'auto',
+			editable:false,
+	});
+	
+	$('#orderFlag').combobox({
+		editable:false ,
+		panelHeight:'auto',
+		onChange: function () {
+			var flag = $("#orderFlag").combobox("getValue");
+			if(flag ==100){
+				$("#reservation").hide();
+			}else{
+				$("#reservation").show();
+			}
+		}
+	});
+	
+	$('#add_form').form({
+		url : '../../smsSendIndividuation/doSendSms.ajax',
+		onSubmit : function() {
+			return $(this).form('validate');
+		},
+		success : function(data) {
+			var obj = $.parseJSON(data);
+			if (obj.success) {
+				$.messager.alert('Info', '提交成功,批次号：'+ $('#batchNo').val(), 'info');
+			} else {
+				$.messager.alert('Error', '提交失败:' + obj.message, 'error');
+				$('#btn_submit').css('display', 'block');
+			}
+		}
+	});
+
+	$('#btn_submit').bind('click', function() {
+		var orderFlag = $('#orderFlag').val();
+		if('200'==orderFlag){
+			var appointmentTime = $("#appointmentTime").datetimebox("getValue");
+			if(null == appointmentTime || '' == appointmentTime){
+				$.messager.alert('Error', '请选择预约发送时间', 'error');
+				return;
+			}
+		}
+		
+		var smsContent = $('#smsContent').val();
+		if(null == smsContent || '' == smsContent){
+			$.messager.alert('Error', '请输入要发送的短信内容', 'error');
+			return;
+		}
+		
+		var signTip = $('#signTip').val();
+		if(null == signTip || '' == signTip){
+			$.messager.alert('Error', '请选择需要使用的签名', 'error');
+			return;
+		}
+		
+		$('#btn_submit').css('display', 'none');
+		$("#add_form").submit();
+	});
+	$('#btn_cancel').bind('click', function() {
+		parent.closeTabByTitle("短信发送");
+	});
+	
+	$('#btn_reset').bind('click', function() {
+		$('#add_form').form('reset');
+	});
+	$.ajax({
+		url : '../../mercaccount/queryMarketAccount.ajax',
+		type : 'get',
+		dataType : 'JSON',
+		cache: false,
+		success : function(data) {
+			if(data != null){
+				init_view(data);
+			}else{
+				$("#btn_submit").hide();
+				$.messager.alert('警告','操作异常：未找到对应营销账户','info',function(){
+				　　　　　parent.closeTabByTitle("短信发送");
+				});
+			}
+			
+		}
+	});
+	
+	checkContentLength();
+	modifyGong();
+	
+	$('#loadExcelForm').form({
+		url : '../../smsSendIndividuation/uploadExcel.ajax',
+		onSubmit : function() {
+			return $(this).form('validate');
+		},
+		success : function(data) {
+			MaskUtil.unmask();
+			var obj = $.parseJSON(data);
+			if (obj.success) {
+				$('#smsApplayId').val(obj.smsApplayId);
+				$('#batchNo').val(obj.batchNo);
+				$('#batchType').val(obj.batchType);
+				$('#initialHiddenData').val(obj.excelHiddenContent);
+				$('#mobileCount').val(obj.excelRowNum);
+				$('#initialData').val(obj.excelConetnt);
+				$('#smsPreview').val(obj.headStr + obj.excelConetnt);
+				$('#mobilesCount').html("<font color='#FF0000'>共计号码："+obj.excelRowNum+" 条</front>只显示前1000条");
+			} else {
+				$.messager.alert('Error', 'Excel文件处理失败:' + obj.message, 'error');
+			}
+		}
+	});
+});
+
+function return_preview(){
+	$('#smsPreview').val($('#initialData').val());
+}
+
+/* 在textarea处插入文本 Start */
+function addVal(){
+	var obj = $("#smsContent").get(0);
+	var str = $('#valRep').val();
+	if (document.selection) {
+		obj.focus();
+		var sel = document.selection.createRange();
+		sel.text = str;
+	} else if (typeof obj.selectionStart === 'number' && typeof obj.selectionEnd === 'number') {
+		var startPos = obj.selectionStart;
+		var endPos = obj.selectionEnd;
+		var tmpStr = obj.value;
+		obj.value = tmpStr.substring(0, startPos) + str + tmpStr.substring(endPos, tmpStr.length);
+	} else {
+		obj.value += str;
+	}
+}
+
+function insertAtCursor(myField, myValue) {
+	//IE support
+	if (document.selection) {
+		myField.focus();
+		sel = document.selection.createRange();
+		sel.text = myValue;
+		sel.select();
+	}else if (myField.selectionStart || myField.selectionStart == '0') {
+		var startPos = myField.selectionStart;
+		var endPos = myField.selectionEnd;
+		// save scrollTop before insert www.keleyi.com
+		var restoreTop = myField.scrollTop;
+		myField.value = myField.value.substring(0, startPos) + myValue + myField.value.substring(endPos, myField.value.length);
+		if (restoreTop > 0) {
+			myField.scrollTop = restoreTop;
+		}
+		myField.focus();
+		myField.selectionStart = startPos + myValue.length;
+		myField.selectionEnd = startPos + myValue.length;
+	} else {
+		myField.value += myValue;
+		myField.focus();
+	}
+}
+/* 在textarea处插入文本 End */
+
+function init_view(data) {
+	$("#accountNo").attr("value",data.accountNo);
+	$("#merchantId").attr("value",data.merchantId);
+	$("#sendAuditFlag").attr("value",data.sendAuditFlag);
+	$("#accountType").attr("value",data.accountType);
+	$("#costQuantity").attr("value",data.costQuantity);
+	
+	var signTip =  $("#signTip");
+	if("" !=data.signatureContent){
+		var temp =  data.signatureContent.split(",");
+		var str = '';
+		for(var i=0; i<temp.length;i++){     //循环添加多个值
+			str += '<option value="'+temp[i]+'">'+temp[i]+'</option>';
+		} 
+		 signTip.append(str);
+	}
+}
+
+function checkContentLength(){
+	var content = document.getElementById("smsContent");
+    var length = 500;
+    var signLength= 0;
+   if(null != $('#signTip').val()){
+	   signLength=$('#signTip').val().length; 
+   }
+   var message = document.getElementById("message");
+    var l=content.value.length+signLength;
+
+    var b = length - l;
+    if (l < 0) {
+        l = 0;
+    }
+    if (b < 0) {
+        b = 0;
+    }
+
+	var tellength=telcount(l);
+    var phonelength=mobilecount(l,70);
+}
+
+function telcount(contentLength){
+    var totalcount = 1;
+    if (contentLength > 60 && contentLength <= (60 + 54)){
+        totalcount = 2;
+    }else if (contentLength > (60 + 54) && contentLength <= (60 + 54 * 2)){
+        totalcount = 3;
+    }else if (contentLength > (60 + 54 * 2) && contentLength <= (60 + 54 * 3)){
+        totalcount = 4;
+    }else if (contentLength > (60 + 54 * 3)){
+        totalcount = 5;
+    }
+    return totalcount;
+}
+function mobilecount(contentLength, firstLength){
+    
+    var totalcount = 1;
+    if(contentLength <= firstLength){
+        totalcount = 1;
+    }else{
+        totalcount = Math.ceil(contentLength/67);
+    }
+    return totalcount;
+}
+function modifyGong(){
+	 var signLength= 0;
+   	 if(null != $('#signTip').val()){
+	   signLength=$('#signTip').val().length; 
+   	 }
+   	document.getElementById("gong").innerHTML = signLength; 
+   	checkContentLength();
+}
+
+function add_txt() {
+	$('#txtUpfile').val('');
+	$('#txtDialog').dialog('open').dialog('setTitle', '上传Txt');
+}
+
+function add_excel() {
+	$('#excelUpfile').val('');
+	$('#excelDialog').dialog('open').dialog('setTitle', 'EXCEL导入');
+}
+
+function checkFile(){
+	var file = $('#excelUpfile').val();
+	if(null == file && ""==file)
+		return false;
+	
+	var fileName = ''+file;
+	if(fileName.indexOf(".xlsx") < 0){
+		$.messager.alert('提示','请上传xlsx格式的文件！');
+		var obj = document.getElementById('file') ;
+		obj.outerHTML = obj.outerHTML; 
+		return;
+	}
+}
+
+function txtConfirm(){
+	var file=document.getElementById("txtUpfile").files[0];
+	var reader=new FileReader();
+	reader.readAsText(file);
+	reader.onload=function(data) {
+    		$("#mobile").text();
+        $("#mobile").text(this.result);
+    }
+}
+
+function txtCancel(){
+	$('#txtDialog').dialog('close');
+}
+function excelConfirm(){
+	excelCancel();
+	checkFile();
+	MaskUtil.mask();
+    $("#loadExcelForm").submit();
+}
+function excelCancel(){
+	$('#excelDialog').dialog('close');
+}
+
+function gen_preview(){
+	$.ajax({
+		url : '../../smsSendIndividuation/genPreviewSmsContent.ajax',
+		type : 'post',
+		dataType : 'JSON',
+		data:{
+			initialHiddenData:$('#initialHiddenData').val(),
+			enterSmsContent:$('#smsContent').val(),
+			mobileColumn:$('#mobileColumn').val(),
+			smsSign:$('#signTip').val(),
+		},
+		cache: false,
+		success : function(data) {
+			if (data.success) {
+				$('#smsConetntHidden').val(data.smsConetntHidden);
+				$('#smsPreview').val(data.smsContent);
+				$('#mobilesCount').html("<font color='#FF0000'>共计号码："+obj.excelRowNum+" 个</front>");
+			}else{
+				$.messager.alert('Error', '生成预览失败:' + data.message, 'error');
+			}
+		}
+	});	
+}
+
+</script>
+</head>
+<body>
+	<div>
+		<form id="add_form" method="post">
+			<input type="text" name="accountNo" id="accountNo" hidden>
+			<input type="text" name="merchantId" id="merchantId" hidden>
+			<input type="text" name="sendAuditFlag" id="sendAuditFlag" hidden>
+			<input type="text" name="accountType" id="accountType" hidden>
+			<input type="text" name="costQuantity" id="costQuantity" hidden>
+			<input type="hidden" name="smsApplayId" id="smsApplayId" />
+			<input type="hidden" name="batchNo" id="batchNo" />
+			<input type="hidden" name="batchType" id="batchType" />
+			<input type="hidden" name="mobileCount" id="mobileCount" />
+			<input type="text" name="batchType" id="batchType" value="200"  hidden />
+			<table class="table_view">
+				<tr>
+					<td class="td_new_subtitle" colspan="2">高级发送</td>
+				</tr>
+				<tr>
+					<td>
+						<table class="border-table">
+							<tr>
+								<td align="right">是否预约发送：</td>
+								<td >
+									<select id="orderFlag" name="orderFlag" class="easyui-combobox input_140" data-options="panelHeight:'auto'" editable="false">
+										<option value="200">是</option>
+										<option value="100" selected>否</option>
+									</select>
+								</td>
+							</tr>
+							<tr id="reservation" hidden>
+								<td align="right">预约发送时间</td>
+								<td>
+									<input id="appointmentTime" name="appointmentTime" type="text" class="easyui-datetimebox input_140" data-options="editable:false,formatter:fmtwithhms" />
+								</td>
+							</tr>
+							<tr>
+								<td align="right">第一步：</td>
+								<td>
+									<!-- <a href="javascript:void(0)" class="easyui-linkbutton" onclick="add_txt();">TXT导入</a> -->
+									<a href="javascript:void(0)" class="easyui-linkbutton" onclick="add_excel();">EXCEL导入</a>
+									&nbsp;&nbsp;&nbsp;（注：单次建议不超过50万个号码）
+								</td>
+							</tr>
+							<tr>
+								<td align="right">第二步：</td>
+								<td>输入内容</td>
+							</tr>
+							<tr>
+								<td>&nbsp;</td>
+								<td>
+									<textarea rows="5" cols="80" id="smsContent" name="smsContent" onkeyup="checkContentLength();"></textarea>
+								</td>
+							</tr>
+							<tr>
+								<td align="right">使用签名：</td>
+								<td>
+									<select id="signTip" name="signTip" class="input_140" data-options="panelHeight:'auto'" editable="false" onchange="modifyGong();">
+										<option value="">请选择签名</option>
+									</select>
+									&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;共<font color="#FF0000" id="gong"></font>字
+								</td>
+							</tr>
+							<tr>
+								<td align="right">第三步：</td>
+								<td>插入变量</td>
+							</tr>
+							<tr>
+								<td>&nbsp;</td>
+								<td>① 发送号码：<select id="mobileColumn" name="mobileColumn">
+										<option value="{列1}">列1</option>
+										<option value="{列2}">列2</option>
+										<option value="{列3}">列3</option>
+										<option value="{列4}">列4</option>
+										<option value="{列5}">列5</option>
+										<option value="{列6}">列6</option>
+										<option value="{列7}">列7</option>
+										<option value="{列8}">列8</option>
+										<option value="{列9}">列9</option>
+										<option value="{列10}">列10</option>
+										<!-- <option value="M">手动</option> -->
+									</select>
+								</td>
+							</tr>
+							<tr>
+								<td>&nbsp;</td>
+								<td>② 插入变量：
+									<select id="valRep" name="valRep">
+										<option value="{列1}">列1</option>
+										<option value="{列2}">列2</option>
+										<option value="{列3}">列3</option>
+										<option value="{列4}">列4</option>
+										<option value="{列5}">列5</option>
+										<option value="{列6}">列6</option>
+										<option value="{列7}">列7</option>
+										<option value="{列8}">列8</option>
+										<option value="{列9}">列9</option>
+										<option value="{列10}">列10</option>
+										<!-- <option value="M">手动</option> -->
+									</select>
+									&nbsp;&nbsp;
+									<a href="javascript:addVal()">插入 ↑</a>
+								</td>
+							</tr>
+							<tr>
+								<td align="right">第四步：</td>
+								<td>
+									<a href="javascript:void(0)" class="easyui-linkbutton" onclick="gen_preview()">生成预览</a>
+									<a href="javascript:void(0)" class="easyui-linkbutton" onclick="return_preview()">还原预览</a>
+								</td>
+							</tr>
+							<tr>
+								<td align="right">短信发送预览：</td>
+								<td>
+									<textarea rows="10" cols="80" id="smsPreview" name="smsPreview" ></textarea>
+									<input type="hidden" id="initialData" value="" />
+									<input type="hidden" id="initialHiddenData" value="" />
+									<input type="hidden" id="smsConetntHidden" name="smsConetntHidden" value="" />
+								</td>
+							</tr>
+							<tr>
+								<td>&nbsp;</td>
+								<td id="mobilesCount">共计号码：0 个</td>
+							</tr>
+							<tr>
+								<td ></td>
+								<td ><br>
+									<a id="btn_submit" href="javascript:void(0)" class="easyui-linkbutton">发送短信</a>
+									<a id="btn_reset" href="javascript:void(0)" class="easyui-linkbutton">清除消息</a>
+									<a id="btn_cancel" href="javascript:void(0)" class="easyui-linkbutton">取消发送</a>
+								</td>
+							</tr>
+						</table>
+					</td>
+					<td>
+						<table class="border-table">
+							<tr>
+								<td style="font-size:14px;font-weight: bold;">发送步骤：</td>
+							</tr>
+							<tr>
+								<td style="border-right:0;">1、上传相关文档。<br> <br>2、编辑【短信模板】内容，将变量插入到模板中。
+									<br> <br>3、选择【手机号】所在的列。 <br> <br>4、点击生成预览。
+									<br> <br>5、确认预览内容是否正确，然后点击【发送短信】。 <br> <br>6、模板示例：员工 {列3},你在{列4}工资为{列6},注意查收【短信签名】。
+								</td>
+							</tr>
+							<tr>
+								<td style="font-size:14px;font-weight: bold;">特别注意：</td>
+							</tr>
+							<tr>
+								<td style="border-right:0;">1、默认读取EXCEL第一个标签的工作簿。<br> <br>2、第一行必须为列名抬头。
+									<br> <br>3、下载示例：<a href="../../themes/template/ExcelTemplate.xls">EXCEL </a>。 <br> <br>4、Excel格式参考图片：
+									<br> <br><img src="../../images/gongzi_big.jpg" height="200" width="400" /><br> <br>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</form>
+	</div>
+	<div id="txtDialog" class="easyui-dialog" data-options="closed:true,modal:true" style="width:480px;height:100px">
+		<table>
+			<tr>
+				<td>上传号码：</td>
+				<td><input type="file" id="txtUpfile" /></td>
+				<td style="width:168px;">多个手机号码请使用逗号分隔。</td>
+			</tr>
+			<tr>
+				<td colspan="2">
+					<a style="float: right; margin-right: 120px;" class="easyui-linkbutton" onclick="txtConfirm()">提交</a>
+					<a class="easyui-linkbutton" style="float: right; margin-right: 130px;" onclick="javascript:txtCancel()">取消</a>
+				</td>
+			</tr>
+		</table>
+	</div>
+
+	<div id="excelDialog" class="easyui-dialog" data-options="closed:true,modal:true" style="width:350px; height: 110px">
+		<form method="POST" enctype="multipart/form-data" id="loadExcelForm" >
+		<table>
+			<tr>
+				<td>上传号码：</td>
+				<td><input type="file" id="excelUpfile" name="excelUpfile" onchange="checkFile()" /></td>
+			</tr>
+			<tr>
+				<td style="width:150px;" colspan="2">请参考右侧示例图片，或 <a class="red" href="../../themes/template/ExcelTemplate.xlsx">点击下载</a> 示例文件。</td>
+			</tr>
+			<tr>
+				<td colspan="2">
+					<a class="easyui-linkbutton"  style="float:right; margin-right: 52px;" onclick="javascript:excelConfirm()">提交</a>
+					<a class="easyui-linkbutton"  style="float:right; margin-right: 148px;" onclick="javascript:excelCancel()">取消</a>
+				</td>
+			</tr>
+		</table>
+		</form>
+	</div>
+</body>

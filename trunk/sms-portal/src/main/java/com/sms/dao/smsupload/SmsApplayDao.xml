@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.smsupload.SmsApplayDao">
+
+	<resultMap type="SmsApplay" 		id="resultSmsApplay">
+		<id property="smsApplayId" 			column="sms_applay_id" />
+		<result property="batchNo" 			column="batch_no" />
+		<result property="accountNo" 		column="account_no" />
+		<result property="accountType" 		column="account_type" />
+		<result property="accountName" 		column="account_name" />
+		<result property="batchType" 		column="batch_type" />
+		<result property="smsContent" 		column="sms_content" />
+		<result property="mobileCount" 		column="mobile_count" />
+		<result property="outlierCount" 	column="outlier_count" />
+		<result property="repeatCount" 		column="repeat_count" />
+		<result property="succCount" 		column="succ_count" />
+		<result property="orderFlag" 		column="order_flag" />
+		<result property="appointmentTime" 	column="appointment_time" />
+		<result property="applayStatus" 	column="applay_status" />
+		<result property="createDatetime" 	column="create_datetime" />
+		<result property="operator" 		column="operator" />
+		<result property="signTip" 			column="sign_tip" />
+	</resultMap>
+	
+	<sql id="select">
+		select 
+			t.sms_applay_id, t.batch_no, t.account_no, t.account_type, t.account_name, t.batch_type, 
+			t.sms_content, t.mobile_count, t.outlier_count, t.repeat_count, t.succ_count, 
+			t.order_flag, t.appointment_time, t.applay_status, t.create_datetime, t.operator, t.sign_tip
+		from
+			sms_applay t
+  	</sql>
+  	
+	<insert id="insert" parameterType="SmsApplay" useGeneratedKeys="true" keyProperty="smsApplayId">
+		insert into 
+			sms_applay(batch_no, batch_type, account_no, account_type, account_name, mobile_count, 
+			outlier_count, repeat_count, succ_count, applay_status, create_datetime, operator)
+		values
+		(#{batchNo}, #{batchType}, #{accountNo}, #{accountType}, #{accountName},  #{mobileCount}, 
+		 #{outlierCount}, #{repeatCount}, #{succCount}, 100, current_timestamp(), #{operator})
+	</insert>
+	
+	<select id="getById" parameterType="java.lang.Integer" resultMap="resultSmsApplay">
+		<include refid="select" />
+		where t.sms_applay_id = #{smsApplayId}
+	</select>
+	
+	<update id="uploadFinish" parameterType="SmsApplay">
+		update 
+			sms_applay 
+		set
+			sms_content = #{smsContent},
+			order_flag = #{orderFlag},
+			appointment_time = #{appointmentTime},
+			sign_tip = #{signTip},
+			applay_status = 101
+		where 
+			sms_applay_id = #{smsApplayId}
+		and
+			applay_status = 100
+	</update>
+	
+	<update id="updateStatusByFrontStatus">
+		update 
+			sms_applay 
+		set
+			applay_status = #{newStatus}
+		where 
+			sms_applay_id = #{smsApplayId}
+		and
+			applay_status = #{oldStatus}
+	</update>
+	
+	<update id="refreshMobileNum">
+		update 
+			sms_applay 
+		set
+			succ_count = #{succCount},
+			outlier_count = #{outlierCount}
+		where 
+			batch_no = #{batchNo}
+	</update>
+	
+</mapper>

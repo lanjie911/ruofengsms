@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Edit User</title>
+<link rel="stylesheet" type="text/css" href="../../themes/general.css">
+<link rel="stylesheet" type="text/css" href="../../themes/icon.css">
+<link rel="stylesheet" type="text/css" href="../../themes/default/easyui.css">
+<script type="text/javascript" src="../../scripts/jquery-1.8.0.min.js"></script>
+<script type="text/javascript" src="../../scripts/jquery.easyui.min.js"></script>
+<script type="text/javascript" src="../../scripts/src/jquery.parser.js"></script>
+<script type="text/javascript"
+	src="../../scripts/locale/easyui-lang-zh_CN.js"></script>
+<script type="text/javascript" src="../../scripts/general.js"></script>
+<script type="text/javascript" src="../../scripts/sessionExpriation.js"></script>
+
+<script type="text/javascript">
+	$(function() {
+		var userId = $.getUrlParam('userId');
+		$('#edit_form').form({
+			url : '../../user/editUser.ajax',
+			cache: false,
+			async:false,
+			onSubmit : function() {
+				if ($(this).form('validate')) {
+					return extra_validate();
+				} else {
+					return false;
+				}
+			},
+			success : function(data) {
+				var obj = $.parseJSON(data);
+				if (obj.success) {
+					$('#btn_submit').css('display','none');
+					$.messager.alert('Info', '提交成功', 'info');
+				} else {
+					$.messager.alert('Error', '提交失败:' + obj.message, 'error');
+				}
+			}
+		});
+		
+		$('#btn_submit').bind('click', function() {
+			$("#edit_form").submit();
+		});
+		$('#btn_cancel').bind('click', function() {
+			parent.closeTabByTitle("用户信息");
+		});
+		
+		$.ajax({
+			url : '../../user/getUser.ajax',
+			type : 'get',
+			dataType : 'JSON',
+			async:false,
+			cache: false,
+			success : function(data) {
+				init_view(data);
+			}
+		});
+		
+		$.ajax({
+			url : '../../mercaccount/queryAll.ajax',
+			type : 'get',
+			dataType : 'JSON',
+			async:false,
+			cache: false,
+			data : {
+				merchantId : $("#merchantId").val()
+			},
+			success : function(data) {
+				var obj = $.parseJSON(data);
+				$('#query_result').datagrid('loadData', obj)
+			}
+		});
+		
+	})
+		
+	function init_view(data) {
+		$("#merchantId").attr("value",data.merchantId);
+		$("#id").attr("value",data.id);
+		$("#loginName").attr("value",data.loginName);
+		$("#name").attr("value",data.name);
+		$("#email").attr("value",data.email);
+		$("#mobile").attr("value",data.mobile);
+		$("#phone").attr("value",data.phone);
+	}
+	
+	function extra_validate() {
+		var pwd = $.trim($("#loginPassword").val());
+		var pwd2 = $.trim($("#confirmPassword").val());
+		
+		if (pwd != pwd2) {
+			$.messager.alert('Info', '两次密码输入不一致，请检查。', 'info');
+			return false;
+		}
+		return true;
+	}
+	
+</script>
+</head>
+<body>
+	<form id="edit_form" method="post">
+	<input type="text"  id="id" name="id" hidden>
+		<table class="table_view">
+			<tr>
+				<td class="td_new_subtitle" colspan="2">基本信息</td>
+			</tr>
+			<tr>
+				<td class="td_view_name">商户号</td>
+				<td class="td_view_value">
+					<input class="input_140 gray" type="text" readonly="readonly" data-options="required:true" id="merchantId" name="merchantId">
+				</td>
+			</tr>
+			<tr>
+				<td class="td_view_name">用户名</td>
+				<td class="td_view_value">
+					<input class="input_140 gray" type="text" readonly="readonly" data-options="required:true" id="loginName" name="loginName">
+				</td>
+			</tr>
+			<tr>
+				<td class="td_view_name">姓名</td>
+				<td class="td_view_value">
+					<input class="easyui-validatebox input_140" type="text" data-options="required:true" id="name" name="name">
+				</td>
+			</tr>
+			<tr>
+				<td class="td_view_name">修改密码</td>
+				<td class="td_view_value">
+					<input class="easyui-validatebox input_140" type="password" data-options="required:true" id="loginPassword" name="loginPassword">
+				</td>
+			</tr>
+			<tr>
+				<td class="td_view_name">确认密码</td>
+				<td class="td_view_value">
+					<input class="easyui-validatebox input_140" type="password" data-options="required:true" id="confirmPassword" name="confirmPassword">
+				</td>
+			</tr>
+			<tr>
+				<td class="td_view_name">手机</td>
+				<td class="td_view_value">
+					<input class="easyui-validatebox input_140" type="text" data-options="required:true" id="mobile" name="mobile" />
+				</td>
+			</tr>
+			<tr>
+				<td class="td_view_name">电话</td>
+				<td class="td_view_value">
+					<input class="input_140" type="text" id="phone" name="phone" /></td>
+			</tr>
+			<tr>
+				<td class="td_view_name">Email</td>
+				<td class="td_view_value">
+					<input id="email" name="email" class="easyui-validatebox input_140" data-options="validType:['email','length[3,30]']" />
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2" align="center">
+					<a id="btn_submit" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-ok" >提交</a>
+					<a id="btn_cancel" href="javascript:void(0)" class="easyui-linkbutton" iconCls="icon-cancel" >取消</a>
+				</td>
+			</tr>
+		</table>
+	</form>
+</body>
+</html>

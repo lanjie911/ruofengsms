@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.smsupload.SmsDetailUploadDao">
+
+	<resultMap type="SmsDetailUpload" 		id="resultSmsDetailUpload">
+		<id property="detailUploadId" 		column="detail_upload_id" />
+		<result property="batchNo" 			column="batch_no" />
+		<result property="accountNo" 		column="account_no" />
+		<result property="accountType" 		column="account_type" />
+		<result property="accountName" 		column="account_name" />
+		<result property="mobile" 			column="mobile" />
+		<result property="mobileOperator" 	column="mobile_operator" />
+		<result property="uploadContent" 	column="upload_content" />
+		<result property="smsContent" 		column="sms_content" />
+		<result property="createDatetime" 	column="create_datetime" />
+		<result property="detailStatus" 	column="detail_status" />
+		<result property="smsContentLength" column="sms_content_length" />
+		<result property="chargingCount" 	column="charging_count" />
+	</resultMap>
+	
+	<sql id="select">
+		select 
+			t.detail_upload_id, t.batch_no, t.account_no, t.account_type, t.account_name,
+			t.mobile, t.mobile_operator, t.upload_content, t.sms_content, t.create_datetime, 
+			t.detail_status, t.sms_content_length, t.charging_count
+		from
+			sms_detail_upload t
+  	</sql>
+  	
+  	<insert id="insert" parameterType="SmsDetailUpload" useGeneratedKeys="true" keyProperty="detailUploadId">
+		insert into 
+			sms_detail_upload(batch_no, account_no, account_type, account_name, upload_content, create_datetime, detail_status)
+		values (#{batchNo}, #{accountNo}, #{accountType}, #{accountName}, #{uploadContent}, current_timestamp(), 100)
+	</insert>
+	
+	<insert id ="insertSmsDetailUploadBatch" parameterType="java.util.List" >
+		insert into 
+			sms_detail_upload(batch_no, account_no, account_type, account_name, upload_content, create_datetime, detail_status)
+ 		values
+		<foreach collection ="list" item="smsDetailUpload" index="index" separator=",">
+			(#{smsDetailUpload.batchNo}, #{smsDetailUpload.accountNo}, #{smsDetailUpload.accountType}, #{smsDetailUpload.accountName}, 
+			#{smsDetailUpload.uploadContent}, current_timestamp(), 100)
+		</foreach >
+ 	</insert>
+ 	
+ 	<select id="getById" parameterType="java.lang.Integer" resultMap="resultSmsDetailUpload">
+		<include refid="select" />
+		where t.detail_upload_id = #{detailUploadId}
+	</select>
+	
+	<select id="loadPenddingByBatchNo" parameterType="java.lang.Long" resultMap="resultSmsDetailUpload">
+		<include refid="select"/>
+		where t.batch_no = #{batchNo} and t.detail_status = 100 limit 0,10000		
+	</select>
+	
+	<update id="updateAnalysis" parameterType="SmsDetailUpload">
+		update 
+			sms_detail_upload 
+		set
+			sms_content = #{smsContent},
+			detail_status = 101,
+			sms_content_length = #{smsContentLength},
+			charging_count = #{chargingCount},
+			mobile_operator = #{mobileOperator},
+			mobile = #{mobile}
+		where 
+			detail_upload_id = #{detailUploadId}
+		and 
+			detail_status = 100
+	</update>
+	
+	<delete id="delete" parameterType="java.lang.Integer">
+		delete from sms_detail_upload where detail_upload_id = #{detailUploadId} and detail_status = 100
+	</delete>
+	
+	<select id="count101Num" resultType="java.lang.Integer">
+		select count(0) from sms_detail_upload t
+		where t.batch_no = #{batchNo} and t.detail_status = 101	
+	</select>
+	
+  <!-- 	<select id="query" parameterType="SmsDetailUploadCriteria" resultMap="resultSmsDetailUpload">
+		<include refid="select"/>
+		<include refid="conditions"/>
+		order by t.create_datetime desc
+		<if test="paging == true">
+			limit #{limit},#{offset}		
+		</if>
+	</select>
+	
+	<select id="loadFinishUpload" parameterType="java.lang.Integer" resultMap="resultSmsDetailUpload">
+		<include refid="select"/>
+		where t.sms_upload_id = #{smsUploadId} and t.detail_status = 100 limit 0,20000
+	</select>
+	
+	<select id="countBySmsUploadId" parameterType="java.lang.Integer" resultType="int">
+		select count(0) from sms_detail_upload t where t.sms_upload_id = #{smsUploadId} and t.detail_status = 100
+	</select>
+	
+	<select id="countNotifyBySmsUploadId" parameterType="java.lang.Integer" resultType="int">
+		select count(0) from sms_detail_upload t where t.sms_upload_id = #{smsUploadId} and t.detail_status = 200
+	</select>
+	
+	<select id="loadNotifyData" parameterType="java.lang.Integer" resultMap="resultSmsDetailUpload">
+		<include refid="select"/>
+		where t.sms_upload_id = #{smsUploadId} and t.detail_status = 200 limit 0,10000
+	</select>
+	
+	<sql id="conditions">
+		<where>
+			<if test="detailStatus != null">
+				and t.detail_status = #{detailStatus}
+			</if>
+			<if test="smsUploadId != null">
+				and t.sms_upload_id = #{smsUploadId}
+			</if>
+		</where>
+	</sql>
+ 	
+	<update id="batchUpdate">
+		<foreach collection="list" item="smsDetailUpload" index="index" separator=";">
+            update 
+            	sms_detail_upload
+			set 
+				mobile = #{smsDetailUpload.mobile},
+				sms_content = #{smsDetailUpload.smsContent},
+				detail_status = 200,
+				sms_content_length = #{smsDetailUpload.smsContentLength},
+				charging_count = #{smsDetailUpload.chargingCount}
+            where 
+            	detail_upload_id = #{smsDetailUpload.detailUploadId}
+            and
+            	detail_status = 100
+		</foreach>
+	</update>
+	
+	<update id="update" parameterType="SmsDetailUpload">
+		update 
+			sms_detail_upload 
+		set
+			sms_content = #{smsContent},
+			detail_status = #{detailStatus},
+			sms_content_length = #{smsContentLength},
+			charging_count = #{chargingCount}
+		where 
+			detail_upload_id = #{detailUploadId}
+	</update>
+	
+	<update id="updateNotifyedById" parameterType="java.lang.Integer">
+		update 
+			sms_detail_upload 
+		set
+			detail_status = 300
+		where 
+			detail_upload_id = #{detailUploadId}
+		and
+			detail_status = 200
+	</update> -->
+	
+</mapper>

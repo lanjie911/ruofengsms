@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.trademanager.SmsDao">
+
+	<resultMap type="Sms" 						id="resultSms">
+		<result column="account_no"	property="accountNo"/>
+		<result column="failed_retransmission"	property="failedRetransmission"/>
+		<result column="mobile"	property="mobile" />
+		<result column="content"	property="content"/>
+		<result column="reservation_datetime"	property="reservationDatetime"/>
+		<result column="send_status"	property="sendStatus"/>
+		<result column="send_status_des"	property="sendStatusDes"/>
+		<result column="send_msg"	property="sendMsg"/>
+		<result column="failed_num"	property="failedNum"/>
+		<result column="create_datetime"	property="createDatetime"/>
+		<result column="resp_datetime"	property="respDatetime"/>
+		<result column="sum_num"	property="sumNum"/>
+		<result column="success_num"	property="successNum"/>
+		<result column="sum_success"	property="sumSuccess"/>
+		<result column="blacklist_num"	property="blacklistNum"/>
+		<result column="operator"	property="operator"/>
+		<result column="content_size"	property="contentSize"/>
+		<result column="merc_req_time"	property="mercReqTime"/>
+	</resultMap>
+	
+	<sql id="select">
+		select r.account_no,r.failed_num,r.blacklist_num,a.merchant_id,r.mobile,
+			date_format(r.create_datetime, '%Y-%m-%d %H:%i:%s') create_datetime, 
+			date_format(r.resp_datetime, '%Y-%m-%d %H:%i:%s') resp_datetime,
+			r.send_status,r.content,
+			r.reservation_datetime,
+			 case
+	          WHEN r.send_status = 100 THEN '待处理'
+	          WHEN r.send_status = 200 THEN '提交成功'
+	          WHEN r.send_status = 300 THEN '失败'
+	          WHEN r.send_status = 400 THEN '已冲正'
+	          WHEN r.send_status = 500 THEN '发送成功'
+	          ELSE ''
+	       end
+	          send_status_des,	
+			r.send_msg,
+	         r.province,
+	         r.city,
+	         r.isp,
+	         r.merc_req_time,
+			concat(r.sum_num,'/',r.success_num) sum_success
+		from s_plain_send_record r
+		inner join s_merchant_account a on a.account_no = r.account_no
+  	</sql>
+  	
+  	<sql id="conditions">
+		<where>
+			<if test="mobile != null and mobile !=''">
+				and r.mobile = #{mobile} 
+			</if>
+			<if test="dateBegin != null and dateBegin !=''">
+				and r.resp_datetime &gt;= str_to_date(#{dateBegin},'%Y-%m-%d %H:%i:%s')
+			</if>
+			<if test="dateEnd != null and dateEnd !=''">
+				and r.resp_datetime &lt;= str_to_date(#{dateEnd},'%Y-%m-%d %H:%i:%s') 
+			</if>
+			and a.merchant_id =#{merchantId}
+		</where>
+	</sql>
+	
+	<select id="query" parameterType="SmsCriteria" resultMap="resultSms">
+		<include refid="select"/>
+		<include refid="conditions"/>
+		order by r.create_datetime desc
+	</select>
+	
+</mapper>
