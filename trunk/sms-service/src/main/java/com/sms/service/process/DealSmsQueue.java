@@ -36,7 +36,7 @@ public class DealSmsQueue {
 	private ScheduledExecutorService smsDelayTimePush = null;
 	
 	//private final static int realTimeNum = 200;
-	private final static int delayTimeNum = 200;
+	private final static int delayTimeNum = 2;
 	
 	@Autowired
 	private SmsMessageQueue smsMessageQueue;
@@ -52,48 +52,6 @@ public class DealSmsQueue {
 	
 	@Autowired
 	private PhoneDao phoneDao;
-	
-	/*private class SmsRealTimeDeal implements Runnable {
-		
-		@Override
-		public void run() {
-			try {
-				if(smsMessageQueue.checkRealTimePushQueueIsEmpity())
-					return;
-				PlainSendRecord tempSmsRecord = smsMessageQueue.pollRealTimeSmsInfo();
-				if(null == tempSmsRecord)
-					return;
-				
-				Phone phone = phoneDao.getByMobile(tempSmsRecord.getMobile().substring(0, 7));
-				if(null == phone){
-					tempSmsRecord.setSendStatus(300);
-					tempSmsRecord.setSendMsg("号码格式有误");
-					plainSendRecordDao.insert(tempSmsRecord);
-					throw new RuntimeException(tempSmsRecord.getMobile()+"号码格式有误");
-				}
-				tempSmsRecord = swich(tempSmsRecord, phone);
-				tempSmsRecord.setProvince(phone.getProvince());
-				tempSmsRecord.setCity(phone.getCity());
-				tempSmsRecord.setIsp(phone.getIsp());
-					
-				Map<String,Object> result = swichToSendService.send(tempSmsRecord.getMobile(), tempSmsRecord.getContent(), tempSmsRecord.getChannelName(),tempSmsRecord.getAccountType());
-				// 2.记录短信发送结果
-				tempSmsRecord.setSendStatus(300);
-				tempSmsRecord.setSendMsg("发送失败");
-				if((boolean)result.get("status")){
-					tempSmsRecord.setSendStatus(200);
-					tempSmsRecord.setSendMsg("提交成功");
-					tempSmsRecord.setReqMsgId((String)result.get("reqMsgId"));
-				}
-				Integer inserRows = plainSendRecordDao.insert(tempSmsRecord);
-				if(1 != inserRows)
-					logger.error("短信记录失败：analysisRealTimePushQueue-SmsRecord:", tempSmsRecord.toString());
-				
-			} catch (Exception e) {
-				logger.error("短信发送失败:", e);
-			}
-		}
-	}*/
 	
 	private class SmsDelayTimeDeal implements Runnable {
 
