@@ -1,0 +1,45 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>com.sms</groupId>
+	<artifactId>sms-core.api</artifactId>
+	<version>1.0.1</version>
+	<packaging>jar</packaging>
+
+	<name>sms-core.api</name>
+	<url>http://maven.apache.org</url>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<!-- spring.hessian.version -->
+		<hessian.version>4.0.38</hessian.version>
+	</properties>
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.caucho</groupId>
+			<artifactId>hessian</artifactId>
+			<scope>compile</scope>
+			<version>${hessian.version}</version>
+		</dependency>
+	</dependencies>
+	<!-- 配置远程发布到私服，mvn deploy -->
+	<distributionManagement>
+		<repository>
+			<id>releases</id>
+			<name>releaseRepository</name>
+			<url>http://192.16.1.252:8081/nexus/content/repositories/releases/</url>
+		</repository>
+		<snapshotRepository>
+			<id>snapshots</id>
+			<name>snapshotRepository</name>
+			<url>http://192.16.1.252:8081/nexus/content/repositories/snapshots/</url>
+		</snapshotRepository>
+	</distributionManagement>
+</project>
