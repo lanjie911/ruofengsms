@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.UnsubscribeDao">
+
+	<resultMap type="Unsubscribe" 					id="resultUnsubscribe">
+		<id property="unsubscribeId" 				column="unsubscribe_id" />
+		<result property="transType" 				column="trans_type" />
+		<result property="unsubscribeMobile" 		column="unsubscribe_mobile" />
+		<result property="unsubscribeStatus" 		column="unsubscribe_status" />
+		<result property="remark" 					column="remark" />
+		<result property="createDatetime" 			column="create_datetime" />
+	</resultMap>
+	
+	<sql id="select">
+		select
+			t.unsubscribe_id, t.trans_type, t.unsubscribe_mobile, t.unsubscribe_status,t.remark,t.create_datetime
+		from
+			s_unsubscribe t
+  	</sql>
+  	
+	<insert id="insert" parameterType="Unsubscribe" useGeneratedKeys="true" keyProperty="unsubscribeId">
+		insert into
+			s_unsubscribe (trans_type, unsubscribe_mobile, unsubscribe_status, remark,create_datetime)
+		values (#{transType}, #{unsubscribeMobile}, #{unsubscribeStatus}, #{remark},current_timestamp())
+	</insert>
+	
+	<select id="getByMobile" parameterType="String" resultMap="resultUnsubscribe">
+		<include refid="select" />
+		where t.unsubscribe_mobile = #{mobile}
+	</select>
+	
+	<select id="qryUnsubscribeList" resultMap="resultUnsubscribe">
+		select
+			t.trans_type, t.unsubscribe_mobile, t.unsubscribe_status
+		from
+			s_unsubscribe t
+		where 
+			t.unsubscribe_status = 100
+	</select>
+	
+	<update id="update">
+		update 
+			s_unsubscribe t 
+		set
+			t.trans_type = #{transType},
+			t.unsubscribe_mobile = #{unsubscribeMobile},
+			t.unsubscribe_status = #{unsubscribeStatus},
+			t.remark = #{remark}
+		where
+			t.unsubscribe_id = #{unsubscribeId}
+	</update>
+	
+	<select id="checkIfInBlackList" parameterType="String" resultType="Integer">
+		select
+			count(0)
+		from
+			s_unsubscribe
+		where
+			unsubscribe_mobile =  #{mobile} 
+		and 
+			unsubscribe_status = 100
+	</select>
+	
+</mapper>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
+
+	<!-- 开发环境 -->
+	<beans profile="dev">
+		<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+			<property name="locations">
+				<list>
+					<value>classpath:config/dev/db.properties</value>
+					<value>classpath:config/dev/base.properties</value>
+				</list>
+			</property>
+		</bean>
+		<import resource="classpath*:applicationContext-core.xml"/>
+		<import resource="classpath*:spring-hessian.xml"/>
+	</beans>
+	
+	<!-- 生产环境 -->
+	<beans profile="pro">
+		<bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+			<property name="locations">
+				<list>
+					<value>classpath:config/pro/db.properties</value>
+					<value>classpath:config/pro/base.properties</value>
+				</list>
+			</property>
+		</bean>
+		<!-- spring config -->
+		<import resource="classpath*:applicationContext-core.xml"/>
+		<import resource="classpath*:spring-hessian.xml"/>
+	</beans>
+
+</beans>  

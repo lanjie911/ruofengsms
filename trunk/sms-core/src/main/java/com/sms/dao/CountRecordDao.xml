@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.CountRecordDao">
+
+	<resultMap type="CountRecord" id="resultCountRecord">
+		
+		<result column="record_id" property="recordId" />
+		<result column="ref_id" property="refId" />
+		<result column="column_name" property="columnName" />
+		<result column="column_value" property="columnValue" />
+		<result column="column_time" property="columnTime" />
+		<result column="column_type" property="columnType" />
+		<result column="data_type" property="dataType" />
+		<result column="categories" property="categories" />
+	</resultMap>
+
+	<insert id="insert" parameterType="CountRecord">
+		insert into s_count_record_new (
+		   ref_id
+		  ,sum_count
+		  ,suc_count
+		  ,fail_count
+		  ,column_type
+		  ,column_name
+		  ,count_time
+		) values (
+		   #{refId}
+		  , #{sumCount}
+		  ,#{sucCount}
+		  ,#{failCount}
+		  ,#{columnType}
+		  ,#{columnName}
+		  ,date_format(NOW(),'%Y%m%d%H') 
+		)	
+	</insert>
+	
+</mapper>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.sms.dao.CountChannelDao" >
+
+	<resultMap type="CountChannel" id="resultCountChannel">
+		<result column="channel_id"	property="channelId" />
+		<result column="channel_name"	property="channelName" />
+		<result column="sum_count"	property="sumCount" />
+		<result column="suc_count"	property="sucCount" />
+		<result column="fail_count"	property="failCount" />
+  	</resultMap>
+
+    <select id="getCountChannel" resultMap="resultCountChannel">
+		select s.channel_id,
+	             s.channel_name,
+	             a.suc_count,
+	             b.fail_count
+	      from s_plain_send_record      s
+	           left join (select count(0) suc_count, channel_id
+	                      from s_plain_send_record
+	                      where send_status = 200
+	                      group by channel_id) a
+	              on a.channel_id = s.channel_id
+	           left join (select count(0) fail_count, channel_id
+	                      from s_plain_send_record
+	                      where send_status = 300
+	                      group by channel_id) b
+	              on b.channel_id = s.channel_id
+	      where to_days(s.resp_datetime) = to_days(now())
+	      group by s.channel_id
+	</select>
+	
+	<select id="getPlatformSumData" resultType="Long">
+		select count(0) total_count
+		from s_plain_send_record
+		where create_datetime > date_sub(now(), INTERVAL 1 HOUR)
+	</select>
+	
+	<select id="getPlatformSucData" resultType="Long">
+		select count(0) total_count
+		from s_plain_send_record
+		where     create_datetime > date_sub(now(), INTERVAL 1 HOUR)
+		      and send_status = 200
+		     
+	</select>
+	
+	<select id="getPlatformFailData" resultType="Long">
+		select count(0) total_count
+		from s_plain_send_record
+		where     create_datetime > date_sub(now(), INTERVAL 1 HOUR)
+		      and send_status = 300
+		    
+	</select>
+	
+</mapper>

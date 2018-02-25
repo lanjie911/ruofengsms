@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.sms.dao.MercContactsDao" >
+
+	<resultMap type="MercContacts" id="resultMercContacts">
+		<result column="merc_contacts_id"	property="mercContactsId"  />  
+		<result column="merc_info_id"	property="mercInfoId"  />  
+		<result column="contacts_name"	property="contactsName"  />  
+		<result column="contact_address"	property="contactAddress"  />  
+		<result column="zip_code"	property="zipCode"  />  
+		<result column="telephone"	property="telephone"  />  
+		<result column="contact_qq"	property="contactQq"  />  
+		<result column="fax"	property="fax"  />  
+		<result column="company_website"	property="companyWebsite"  />  
+		<result column="contact_mobile"	property="contactMobile"  />  
+		<result column="email"	property="email"  />  
+		<result column="account_manager"	property="accountManager"  />  
+		<result column="account_manager_mobile"	property="accountManagerMobile"  />  
+  	</resultMap>
+  	
+  	<insert id="insert" parameterType="MercContacts" keyProperty="mercContactsId" useGeneratedKeys="true">
+  		insert into s_merchant_contacts (
+		   merc_info_id
+		  ,contacts_name
+		  ,contact_address
+		  ,zip_code
+		  ,telephone
+		  ,contact_qq
+		  ,fax
+		  ,company_website
+		  ,contact_mobile
+		  ,email
+		  ,account_manager
+		  ,account_manager_mobile
+		) values (
+		   #{mercInfoId}
+		  ,#{contactsName}
+		  ,#{contactAddress}
+		  ,#{zipCode}
+		  ,#{telephone}
+		  ,#{contactQq}
+		  ,#{fax}
+		  ,#{companyWebsite}
+		  ,#{contactMobile}
+		  ,#{email}
+		  ,#{accountManager}
+		  ,#{accountManagerMobile}
+		)
+  	
+  	</insert>
+  	
+  	<update id="update" parameterType="MercContacts">
+  		update s_merchant_contacts set
+		   contacts_name = #{contactsName}
+		  ,contact_address = #{contactAddress}
+		  ,zip_code = #{zipCode}
+		  ,telephone = #{telephone}
+		  ,contact_qq = #{contactQq}
+		  ,fax =#{fax}
+		  ,company_website = #{companyWebsite}
+		  ,contact_mobile = #{contactMobile}
+		  ,email = #{email}
+		  ,account_manager = #{accountManager}
+		  ,account_manager_mobile = #{accountManagerMobile}
+		where merc_contacts_id =#{mercContactsId} and  merc_info_id =  #{mercInfoId} 
+  	</update>
+	
+</mapper>

@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.sms.dao.MercInfoDao" >
+
+	<resultMap type="MercInfo" id="resultMercInfo">
+		<result column="merchant_id"	property="merchantId" />   
+		<result column="merchant_name"	property="merchantName" />
+		<result column="merchant_name_abbreviation"	property="merchantNameAbbreviation" />
+		<result column="operating_address"	property="operatingAddress" />
+		
+		<result column="merc_contacts_id"	property="mercContacts.mercContactsId" />
+		<result column="contacts_name"	property="mercContacts.contactsName" />
+		<result column="contact_address"	property="mercContacts.contactAddress" />
+		<result column="zip_code"	property="mercContacts.zipCode" />
+		<result column="telephone"	property="mercContacts.telephone" />
+		<result column="contact_qq"	property="mercContacts.contactQq" />
+		<result column="fax"	property="mercContacts.fax" />
+		<result column="company_website"	property="mercContacts.companyWebsite" />
+		<result column="email"	property="mercContacts.email" />
+		<result column="account_manager"	property="mercContacts.accountManager" />
+		<result column="account_manager_mobile"	property="mercContacts.accountManagerMobile" />
+		<result column="contact_mobile"	property="mercContacts.contactMobile" />
+		<result column="create_datetime"	property="createDatetime" />
+		<result column="update_datetime"	property="updateDatetime" />
+		<result column="remark"	property="remark" />
+		<result column="operator"	property="operator" />
+		<result column="merchant_status"	property="merchantStatus" />
+		<result column="merchant_status_des"	property="merchantStatusDes" />
+		<result column="merchant_nature"	property="merchantNature" />
+		<result column="merchant_nature_des"	property="merchantNatureDes" />
+		<result column="legal_representative"	property="legalRepresentative" />
+		<result column="operating_address_province"	property="province" />
+		<result column="operating_address_city"	property="city" />
+		<result column="operating_address_area"	property="area" />
+  	</resultMap>
+	
+	<sql id="select">
+	select t.merchant_id, t.merchant_name, t.merchant_name_abbreviation, c.merc_contacts_id,
+		t.operating_address, c.contact_address, c.zip_code, c.contacts_name,c.telephone,c.account_manager_mobile,
+		c.contact_mobile, c.contact_qq,c.fax, c.company_website,c.email, c.account_manager, 
+		date_format(t.create_datetime, '%Y-%m-%d %H:%i:%s') create_datetime,
+		date_format(t.update_datetime, '%Y-%m-%d %H:%i:%s') update_datetime,
+		t.remark, t.operator, t.merchant_status, t.merchant_nature,t.operating_address_province,
+		t.operating_address_city,t.operating_address_area,
+		case
+			when t.merchant_status=100 then '正常'
+			when t.merchant_status=200 then '停用'
+			when t.merchant_status=300 then '注销'
+			when t.merchant_status=400 then '冻结'
+			else ''
+		end merchant_status_des,
+		case
+			when t.merchant_nature=100 then '法人企业'
+			when t.merchant_nature=200 then '非法人企业'
+			when t.merchant_nature=300 then '事业单位'
+			when t.merchant_nature=400 then '个体工商户'
+			when t.merchant_nature=500 then '其他'
+			else ''
+		end merchant_nature_des
+	from s_merchant_info t
+	inner join s_merchant_contacts c on t.merchant_id = c.merc_info_id
+	</sql>
+	
+	<sql id="conditions">
+		<where>
+			<if test="merchantId !=null">
+				and t.merchant_id = #{merchantId}
+			</if>
+			<if test="merchantName !=null and merchantName !=''">
+				and t.merchant_name like concat('%',#{merchantName},'%')
+			</if>
+			<if test="legalRepresentative !=null and legalRepresentative != ''">
+				andt.legal_representative like concat('%',#{legalRepresentative},'%')
+			</if>
+			<if test="merchantStatus !=null">
+				and t.merchant_status  = #{merchantStatus}
+			</if>
+		</where>
+	</sql>
+    
+    <select id="query" parameterType="MercInfoCriteria" resultMap="resultMercInfo">
+		<include refid="select"/>
+		<include refid="conditions"/>
+		order by t.merchant_id desc
+	</select>
+	
+	<insert id="insert" parameterType="MercInfo" keyProperty="merchantId" useGeneratedKeys="true">
+		insert into s_merchant_info (
+		   merchant_name
+		  ,merchant_name_abbreviation
+		  ,operating_address
+		  ,create_datetime
+		  ,update_datetime
+		  ,remark
+		  ,operator
+		  ,merchant_status
+		  ,merchant_nature
+		  ,operating_address_province
+		  ,operating_address_city
+		  ,operating_address_area
+		) values (
+		   #{merchantName}
+		  , #{merchantNameAbbreviation}
+		  , #{operatingAddress}
+		  ,now()
+		  ,null
+		  ,#{remark}
+		  ,#{operator}
+		  ,100
+		  ,#{merchantNature}
+		  ,#{province}
+		  ,#{city}
+		  ,#{area}
+		)
+	</insert>
+	
+	<update id="update" parameterType="MercInfo">
+	update s_merchant_info set
+	   merchant_name = #{merchantName}
+	  ,merchant_name_abbreviation = #{merchantNameAbbreviation}
+	  ,operating_address =  #{operatingAddress}
+	  ,update_datetime = now()
+	  ,remark = #{remark}
+	  ,operator = #{operator}
+	  ,merchant_nature = #{merchantNature}
+	  ,operating_address_province = #{province}
+	  ,operating_address_city = #{city}
+	  ,operating_address_area = #{area}
+	where merchant_id = #{merchantId}
+	</update>
+	
+	<select id="getMercInfoByMercId" parameterType="Long" resultMap="resultMercInfo">
+		<include refid="select"/>
+		where t.merchant_id = #{merchantId}
+	</select>
+	
+	<select id="getMercInfoCount" resultType="Integer">
+		select count(1) from s_merchant_info;
+	</select>
+    
+</mapper>

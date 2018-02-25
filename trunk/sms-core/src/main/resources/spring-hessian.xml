@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+	<!-- Spring Hessian Server Start -->
+	<!-- 交易服务接口 -->
+	<bean id="tradeExcuteService" class="com.sms.service.tradeserviceimpl.TradeExcuteServiceImpl" />
+	<bean name="/TradeExcuteService" class="org.springframework.remoting.caucho.HessianServiceExporter">
+		<property name="service" ref="tradeExcuteService" />
+		<property name="serviceInterface" value="com.sms.tradeservice.api.service.TradeExcuteService" />
+	</bean>
+	<!-- dispatch服务接口 -->
+	<bean id="tradeForDispatchService" class="com.sms.service.tradeserviceimpl.TradeForDispatchServiceImpl" />
+	<bean name="/TradeForDispatchService" class="org.springframework.remoting.caucho.HessianServiceExporter">
+		<property name="service" ref="tradeForDispatchService" />
+		<property name="serviceInterface" value="com.sms.tradeservice.api.service.TradeForDispatchService" />
+	</bean>
+	<!-- Spring Hessian Server End -->
+</beans>

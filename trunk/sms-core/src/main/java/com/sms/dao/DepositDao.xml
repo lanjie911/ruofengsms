@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.DepositDao">
+
+	<resultMap type="Deposit" 						id="resultDeposit">
+		<id property="depositId" 					column="deposit_id" />
+		<result property="merchantNameAbbreviation" column="merchant_name_abbreviation" />
+		<result property="accountNo" 				column="account_no" />
+		<result property="amount" 					column="amount" />
+		<result property="depositNum" 				column="deposit_num" />
+		<result property="uniPrice" 				column="unit_price" />
+		<result property="depositType" 				column="deposit_type" />
+		<result property="remark" 					column="remark" />
+		<result property="createDatetime" 			column="create_datetime" />
+		<result property="depositStatus" 			column="deposit_status" />
+		<result property="operator" 				column="operator" />
+	</resultMap>
+	
+	<sql id="select">
+		select
+			t.deposit_id, t.merchant_name_abbreviation, t.account_no, t.amount,t.deposit_num,t.unit_price,t.deposit_type,t.remark,t.create_datetime,
+			t.deposit_status,t.operator
+		from
+			s_deposit t
+  	</sql>
+  	
+	<insert id="insert" parameterType="Deposit" useGeneratedKeys="true" keyProperty="depositId">
+		insert into
+			s_deposit (merchant_name_abbreviation, account_no, amount,deposit_num,unit_price,deposit_type,remark,create_datetime,deposit_status,operator)
+		values (#{merchantNameAbbreviation}, #{accountNo}, #{amount}, #{depositNum}, #{uniPrice}, #{depositType}, #{remark},current_timestamp(),#{depositStatus},#{operator})
+	</insert>
+	
+	<select id="getById" parameterType="long" resultMap="resultDeposit">
+		<include refid="select" />
+		where t.deposit_id = #{id}
+	</select>
+	
+	<update id="updateInitStatusToNew">
+		update 
+			s_deposit t 
+		set
+			t.deposit_status = #{newStatus}
+		where
+			t.deposit_status = #{initStatus}
+		and
+			t.deposit_id = #{depositId}
+	</update>
+	
+</mapper>
