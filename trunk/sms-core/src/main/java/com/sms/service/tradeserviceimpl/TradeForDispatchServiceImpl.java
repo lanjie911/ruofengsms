@@ -278,12 +278,18 @@ public class TradeForDispatchServiceImpl implements TradeForDispatchService {
 	 */
 	@Override
 	public void sendSmsBatchNormal(String request) {
-		logger.info("TradeForDispatchServiceImpl.sendSmsBatch-Request：{}" , request);
-		if(StringUtils.isBlank(request)) return;
+		if(StringUtils.isBlank(request)) {
+			logger.info("TradeForDispatchServiceImpl.sendSmsBatch-Request is blank.");
+			return;
+		}
+		logger.info("TradeForDispatchServiceImpl.sendSmsBatch-Request：batch begin");
 		JSONObject requestJson = JSON.parseObject(request);
 		String smsContent = requestJson.getString("sms_content");
 		String mobileOperator = requestJson.getString("mobile_operator");
 		Long batchNo = Long.valueOf(requestJson.getString("batch_no"));
+		
+		logger.info("TradeForDispatchServiceImpl.sendSmsBatch-Request：{}" , batchNo);
+		
 		String signTip = requestJson.getString("sign_tip");
 		Long accountNo = Long.valueOf(requestJson.getString("account_no"));
 		String mobilesData = requestJson.getString("mobile_data");
