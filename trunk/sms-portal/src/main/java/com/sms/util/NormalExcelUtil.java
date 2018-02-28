@@ -13,6 +13,8 @@ import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
 import org.apache.poi.xssf.model.SharedStringsTable;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
@@ -22,8 +24,12 @@ import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 import com.sms.entity.smsupload.SmsApplayDetail;
+import com.sms.service.smsupload.SmsApplayService;
+
 
 public class NormalExcelUtil {
+	
+	private Logger logger =  LoggerFactory.getLogger(NormalExcelUtil.class);
 	
 	private StringBuffer textareaVal = new StringBuffer();
 	private StringBuffer CMStr = new StringBuffer();
@@ -192,8 +198,12 @@ public class NormalExcelUtil {
 					phoneShip = PhoneShipUtil.mobileOperator.get(lastContents.substring(0, 3));
 				}
 				
-				if(phoneShip.equals("") || null == phoneShip) {
+				//TODO hai you wei sha zhe ge phoneShip cha bu chu lai
+				//TODO zhe ge phoneShip shi ge mao ???????
+				if(null == phoneShip || phoneShip.equals("")) {
 					errorCount++;
+					//TODO zhe ge difang gei wo jia ge ri zhi !!!!!!!!!
+					logger.info("phoneShip:"+phoneShip);
 					return;
 				}
 				
