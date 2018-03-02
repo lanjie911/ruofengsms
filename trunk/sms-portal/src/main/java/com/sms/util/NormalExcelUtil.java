@@ -194,16 +194,19 @@ public class NormalExcelUtil {
 				String phoneShip = "";
 				if(lastContents.startsWith("170")){
 					phoneShip = PhoneShipUtil.query170OperatorMobile(lastContents);
+					
 				} else {
 					phoneShip = PhoneShipUtil.mobileOperator.get(lastContents.substring(0, 3));
 				}
 				
 				//TODO hai you wei sha zhe ge phoneShip cha bu chu lai
 				//TODO zhe ge phoneShip shi ge mao ???????
+				//if(null == phoneShip || phoneShip.equals("")) {
+				//System.out.println("phoneShip:"+phoneShip+">>>>>>>>lastContents:"+lastContents);
 				if(null == phoneShip || phoneShip.equals("")) {
 					errorCount++;
 					//TODO zhe ge difang gei wo jia ge ri zhi !!!!!!!!!
-					logger.info("phoneShip:"+phoneShip);
+					logger.info("phoneShip:"+phoneShip+">>>>>>>>lastContents:"+lastContents);
 					return;
 				}
 				

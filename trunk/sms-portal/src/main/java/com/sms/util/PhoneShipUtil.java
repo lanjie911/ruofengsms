@@ -29,6 +29,7 @@ public class PhoneShipUtil {
 		mobileOperator.put("157", "300");
 		mobileOperator.put("158", "300");
 		mobileOperator.put("159", "300");
+		mobileOperator.put("166", "200");
 		mobileOperator.put("171", "200");
 		mobileOperator.put("172", "200");
 		mobileOperator.put("173", "100");
