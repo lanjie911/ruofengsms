@@ -39,6 +39,21 @@
 		select r.record_id,
 			r.account_no, r.merchant_name_abbreviation, r.channel_id, r.channel_name,
 			date_format(r.create_datetime, '%Y-%m-%d %H:%i:%s') create_datetime,
+			date_format(IFNULL(tsr.resp_datetime,r.resp_datetime), '%Y-%m-%d %H:%i:%s') resp_datetime,
+			r.account_type, r.reservation_datetime, CAST(r.batch_no AS CHAR) batch_no,
+			tat.account_type_des, IFNULL(tsr.send_status,r.send_status) send_status, tss.send_status_des,
+			IFNULL(tsr.send_msg,r.send_msg) send_msg, r.content, r.mobile, r.province, r.city, r.isp, 
+			r.req_msg_id , r.merc_req_time, '否' appointment_flag
+		from 
+			s_plain_send_record r
+		left join tk_account_type tat on tat.account_type = r.account_type
+		left join s_plain_send_resp tsr on tsr.mobile = r.mobile and tsr.req_msg_id = r.req_msg_id
+		left join tk_send_status tss on tss.send_status = IFNULL(tsr.send_status,r.send_status)
+  	</sql>
+<!-- 	<sql id="select">
+		select r.record_id,
+			r.account_no, r.merchant_name_abbreviation, r.channel_id, r.channel_name,
+			date_format(r.create_datetime, '%Y-%m-%d %H:%i:%s') create_datetime,
 			date_format(r.resp_datetime, '%Y-%m-%d %H:%i:%s') resp_datetime,
 			r.account_type, r.reservation_datetime, CAST(r.batch_no AS CHAR) batch_no,
 			tat.account_type_des, r.send_status, tss.send_status_des,
@@ -48,7 +63,7 @@
 			s_plain_send_record r
 		left join tk_account_type tat on tat.account_type = r.account_type
 		left join tk_send_status tss on tss.send_status = r.send_status
-  	</sql>
+  	</sql> -->
   	
   	<sql id="conditions">
 		<where>
@@ -62,7 +77,7 @@
 				and r.channel_id = #{smsGroupId}
 			</if>
 			<if test="smsStatus !=null">
-				and r.send_status = #{smsStatus} 
+				and IFNULL(tsr.send_status,r.send_status) = #{smsStatus} 
 			</if>
 			<if test="mobile !=null and mobile !='' ">
 				and r.mobile = #{mobile} 
