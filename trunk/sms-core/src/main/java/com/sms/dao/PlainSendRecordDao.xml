@@ -69,23 +69,11 @@
     	set 
     		t.send_status = #{status}
     	where
-    		t.send_status = #{init}
-    	and
     		t.record_id = #{recordId}
+    	and
+    		t.send_status = #{init}
     </update>
     
-    <update id="updateStatusByReport">
-		update 
-			s_plain_send_record t
-		set 
-			t.send_status = #{status},
-			t.send_msg = #{respMsg},
-			t.resp_datetime = #{respTime}
-		where 
-			req_msg_id = #{reqMsgId}
-		and 
-			t.send_status = 200
-	</update>
 	
 	<insert id ="insertBatchList" parameterType="java.util.List" >
 		insert into
