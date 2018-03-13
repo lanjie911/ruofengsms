@@ -2,10 +2,12 @@ package com.sms.entity;
 
 import java.io.Serializable;
 
+import com.sms.criteria.AbstractCriteria;
+
 /**
  * @author Cao 普通发送记录
  */
-public class PlainSendRecord implements Serializable {
+public class PlainSendRecord implements Serializable  {
 
 	private static final long serialVersionUID = -1L;
 
@@ -232,5 +234,17 @@ public class PlainSendRecord implements Serializable {
 	public void setReqMsgId(String reqMsgId) {
 		this.reqMsgId = reqMsgId;
 	}
+
+	@Override
+	public String toString() {
+		return "PlainSendRecord [recordId=" + recordId + ", channelId=" + channelId + ", channelName=" + channelName
+				+ ", accountNo=" + accountNo + ", merchantNameAbbreviation=" + merchantNameAbbreviation
+				+ ", accountType=" + accountType + ", failedRetransmission=" + failedRetransmission + ", mobile="
+				+ mobile + ", content=" + content + ", sendStatus=" + sendStatus + ", sendMsg=" + sendMsg
+				+ ", failedNum=" + failedNum + ", createDatetime=" + createDatetime + ", respDatetime=" + respDatetime
+				+ ", messageId=" + messageId + ", reservationDatetime=" + reservationDatetime + ", signTip=" + signTip
+				+ ", province=" + province + ", city=" + city + ", isp=" + isp + ", reqMsgId=" + reqMsgId + "]";
+	}
+	
 
 }

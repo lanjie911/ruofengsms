@@ -32,12 +32,12 @@
 		where t.phone = #{mobileSeven}
 	</select>
 
-	<select id="qryPhone" resultMap="resultPhone">
+	<!-- <select id="qryPhone" resultMap="resultPhone">
 		select
 		t.pref, t.phone, t.province, t.city,t.isp,t.post_code,t.city_code,
 		t.area_code, t.types, t.operator_code
 		from
 		s_phone t
-	</select>
+	</select> -->
 
 </mapper>

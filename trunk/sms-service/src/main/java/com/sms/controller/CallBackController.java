@@ -19,8 +19,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.fastjson.JSONObject;
 import com.sms.dao.primarydao.PlainSendRecordDao;
+import com.sms.dao.primarydao.PlainSendRespDao;
 import com.sms.entity.MercAccount;
 import com.sms.entity.PlainSendRecord;
+import com.sms.entity.PlainSendResp;
 import com.sms.service.PrepareParamService;
 import com.sms.service.SendSmsService;
 import com.sms.service.send.MercAccountService;
@@ -45,6 +47,8 @@ public class CallBackController {
 	
 	@Autowired
 	private PlainSendRecordDao plainSendRecordDao;
+	@Autowired
+	private PlainSendRespDao plainSendRespDao;
 	
 	@Autowired
 	private MercAccountService mercAccountService;
@@ -139,12 +143,17 @@ public class CallBackController {
 			        		if(null == mercAccount)
 			        			continue;
 			        		int count = 0;
+			        		PlainSendResp tempBean =null;
 			        		if("DELIVRD".equals(reportOne[2])){
-			        			count = plainSendRecordDao.updateStatusByReport(reportOne[0], "500", "发送成功", DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss"));
+//			        			count = plainSendRecordDao.updateStatusByReport(reportOne[0], "500", "发送成功", DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss"));
+			        			tempBean = new PlainSendResp(reportOne[0],reportOne[1],500, "发送成功", DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss"));
+			        			count = plainSendRespDao.insert(tempBean);
 			        			if(1 == count)
 			        				mercAccountService.unFrozenBalance(plainSendRecord.getAccountNo(), 1, reportOne[0]);
 			        		}else{
-			        			count = plainSendRecordDao.updateStatusByReport(reportOne[0], "400", reportOne[2], DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss"));
+//			        			count = plainSendRecordDao.updateStatusByReport(reportOne[0], "400", reportOne[2], DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss"));
+			        			tempBean = new PlainSendResp(reportOne[0],reportOne[1],300, reportOne[2], DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss"));
+			        			count = plainSendRespDao.insert(tempBean);
 			        			if(1 == count && 100 == mercAccount.getChargingMethods()){
 			        				mercAccountService.unFrozenBalance(plainSendRecord.getAccountNo(), 1, reportOne[0]);
 			        			}else if(1 == count && 200 == mercAccount.getChargingMethods()){
@@ -173,80 +182,80 @@ public class CallBackController {
 		};
 	}
 	
-	/**
-	 * 接收推送
-	 * @param request
-	 * @param response
-	 * @return
-	 */
-	@ResponseBody
-	@RequestMapping("/juxinReport")
-	public Callable<String> juxinReport(HttpServletRequest request, HttpServletResponse response){
-		return new Callable<String>() {
-			@Override
-			public String call() throws Exception {
-				
-                String resultStr = "{\"status\":1}";
-				try {
-					String reqIp = getIpAddr(request);
-					logger.info("sendMsg synchro start request :{}", reqIp);	//获取请求IP
-					BufferedReader reader = null;
-					String jsonStr = null;
-					StringBuilder result = new StringBuilder();
-					reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
-					while ((jsonStr = reader.readLine()) != null)
-			    		result.append(jsonStr);
-			    	reader.close();// 关闭输入流
-					
-					if(null != prepareParamService.getConvinceIp(reqIp))
-						throw new TradeException("9988","{\"status\":\"0\"}");
-	    	    	
-					String data = URLDecoder.decode(result.toString(), "UTF-8");
-			    	logger.info("聚信发送结果回调："+data);
-	    	    	
-	    	    	String[] reports = data.substring(6, data.length()-1).split("','");
-		        	for(int i=0;i<reports.length;i++){
-		        		try {
-		        			String[] reportOne = reports[i].split(",");
-		        			String reqid = reportOne[0];
-			        		PlainSendRecord plainSendRecord = plainSendRecordDao.getByreqMsgId(reqid);
-			        		if(null == plainSendRecord)
-			        			continue;
-			        		MercAccount mercAccount = prepareParamService.getMercAccount(plainSendRecord.getAccountNo());
-			        		if(null == mercAccount)
-			        			continue;
-			        		int count = 0;
-			        		if("DELIVRD".equals(reportOne[2])){
-			        			count = plainSendRecordDao.updateStatusByReport(reportOne[0], "500", "发送成功", DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss"));
-			        			if(1 == count)
-			        				mercAccountService.unFrozenBalance(plainSendRecord.getAccountNo(), 1, reportOne[0]);
-			        		}else{
-			        			count = plainSendRecordDao.updateStatusByReport(reportOne[0], "400", reportOne[2], DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss"));
-			        			if(1 == count && 100 == mercAccount.getChargingMethods()){
-			        				mercAccountService.unFrozenBalance(plainSendRecord.getAccountNo(), 1, reportOne[0]);
-			        			}else if(1 == count && 200 == mercAccount.getChargingMethods()){
-			        				mercAccountService.doCorect(plainSendRecord.getAccountNo(), 1, reportOne[0]);
-			        			}
-			        		}
-						} catch (Exception e) {
-							continue;
-						}
-		        	}
-		        	response.setCharacterEncoding("UTF-8");
-            		response.setContentType("application/json; charset=utf-8");
-            		logger.info("接口处理成功："+resultStr);
-                } catch (TradeException e) {
-                	resultStr = "{\"status\":0}";
-                	logger.error("接口处理失败："+e.getErrorMsg());
-                } catch (Exception e) {
-                	e.printStackTrace();
-                	resultStr = "{\"status\":0}";
-                	logger.error("接口处理异常："+e.getMessage());
-                }
-				return resultStr;
-			}
-		};
-	}
+//	/**
+//	 * 接收推送
+//	 * @param request
+//	 * @param response
+//	 * @return
+//	 */
+//	@ResponseBody
+//	@RequestMapping("/juxinReport")
+//	public Callable<String> juxinReport(HttpServletRequest request, HttpServletResponse response){
+//		return new Callable<String>() {
+//			@Override
+//			public String call() throws Exception {
+//				
+//                String resultStr = "{\"status\":1}";
+//				try {
+//					String reqIp = getIpAddr(request);
+//					logger.info("sendMsg synchro start request :{}", reqIp);	//获取请求IP
+//					BufferedReader reader = null;
+//					String jsonStr = null;
+//					StringBuilder result = new StringBuilder();
+//					reader = new BufferedReader(new InputStreamReader(request.getInputStream()));
+//					while ((jsonStr = reader.readLine()) != null)
+//			    		result.append(jsonStr);
+//			    	reader.close();// 关闭输入流
+//					
+//					if(null != prepareParamService.getConvinceIp(reqIp))
+//						throw new TradeException("9988","{\"status\":\"0\"}");
+//	    	    	
+//					String data = URLDecoder.decode(result.toString(), "UTF-8");
+//			    	logger.info("聚信发送结果回调："+data);
+//	    	    	
+//	    	    	String[] reports = data.substring(6, data.length()-1).split("','");
+//		        	for(int i=0;i<reports.length;i++){
+//		        		try {
+//		        			String[] reportOne = reports[i].split(",");
+//		        			String reqid = reportOne[0];
+//			        		PlainSendRecord plainSendRecord = plainSendRecordDao.getByreqMsgId(reqid);
+//			        		if(null == plainSendRecord)
+//			        			continue;
+//			        		MercAccount mercAccount = prepareParamService.getMercAccount(plainSendRecord.getAccountNo());
+//			        		if(null == mercAccount)
+//			        			continue;
+//			        		int count = 0;
+//			        		if("DELIVRD".equals(reportOne[2])){
+//			        			count = plainSendRecordDao.updateStatusByReport(reportOne[0], "500", "发送成功", DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss"));
+//			        			if(1 == count)
+//			        				mercAccountService.unFrozenBalance(plainSendRecord.getAccountNo(), 1, reportOne[0]);
+//			        		}else{
+//			        			count = plainSendRecordDao.updateStatusByReport(reportOne[0], "400", reportOne[2], DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss"));
+//			        			if(1 == count && 100 == mercAccount.getChargingMethods()){
+//			        				mercAccountService.unFrozenBalance(plainSendRecord.getAccountNo(), 1, reportOne[0]);
+//			        			}else if(1 == count && 200 == mercAccount.getChargingMethods()){
+//			        				mercAccountService.doCorect(plainSendRecord.getAccountNo(), 1, reportOne[0]);
+//			        			}
+//			        		}
+//						} catch (Exception e) {
+//							continue;
+//						}
+//		        	}
+//		        	response.setCharacterEncoding("UTF-8");
+//            		response.setContentType("application/json; charset=utf-8");
+//            		logger.info("接口处理成功："+resultStr);
+//                } catch (TradeException e) {
+//                	resultStr = "{\"status\":0}";
+//                	logger.error("接口处理失败："+e.getErrorMsg());
+//                } catch (Exception e) {
+//                	e.printStackTrace();
+//                	resultStr = "{\"status\":0}";
+//                	logger.error("接口处理异常："+e.getMessage());
+//                }
+//				return resultStr;
+//			}
+//		};
+//	}
 	
 	/**
 	 * 接收烽火万家状态推送
@@ -289,12 +298,17 @@ public class CallBackController {
 			        		if(null == mercAccount)
 			        			continue;
 			        		int count = 0;
+			        		PlainSendResp tempBean =null;
 			        		if("DELIVRD".equals(reportOne[2])){
-			        			count = plainSendRecordDao.updateStatusByReport(reportOne[0], "500", "发送成功", DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss"));
+//			        			count = plainSendRecordDao.updateStatusByReport(reportOne[0], "500", "发送成功", DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss"));
+			        			tempBean = new PlainSendResp(reportOne[0],reportOne[1],500, "发送成功", DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss"));
+			        			count = plainSendRespDao.insert(tempBean);
 			        			if(1 == count)
 			        				mercAccountService.unFrozenBalance(plainSendRecord.getAccountNo(), 1, reportOne[0]);
 			        		}else{
-			        			count = plainSendRecordDao.updateStatusByReport(reportOne[0], "400", reportOne[2], DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss"));
+//			        			count = plainSendRecordDao.updateStatusByReport(reportOne[0], "400", reportOne[2], DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss"));
+			        			tempBean = new PlainSendResp(reportOne[0],reportOne[1],300, reportOne[2], DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss"));
+			        			count = plainSendRespDao.insert(tempBean);
 			        			if(1 == count && 100 == mercAccount.getChargingMethods()){
 			        				mercAccountService.unFrozenBalance(plainSendRecord.getAccountNo(), 1, reportOne[0]);
 			        			}else if(1 == count && 200 == mercAccount.getChargingMethods()){
@@ -350,18 +364,25 @@ public class CallBackController {
 	    	    	reader.close();// 关闭输入流
 	    	    	
 	    	    	String msgID = request.getParameter("MsgID");
+	    	    	String MobilePhone = request.getParameter("MobilePhone");
 	    	    	String sendState = request.getParameter("SendState");
 	    	    	String sendResultInfo = request.getParameter("SendResultInfo");
+	    	    	String ReportTime = request.getParameter("ReportTime");
 	    	    	PlainSendRecord plainSendRecord = plainSendRecordDao.getById(Long.valueOf(msgID));
 	        		MercAccount mercAccount = prepareParamService.getMercAccount(plainSendRecord.getAccountNo());
 	    	    	logger.info("乐信短信发送结果回执："+msgID+"-"+sendState+"-"+sendResultInfo);
 	        		int count = 0;
+	        		PlainSendResp tempBean =null;
 	    	    	if("DELIVRD".equals(sendResultInfo)){
-	        			count = plainSendRecordDao.updateStatusByReport(msgID, "500", "发送成功", DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss"));
+//	        			count = plainSendRecordDao.updateStatusByReport(msgID, "500", "发送成功", DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss"));
+	    	    		tempBean = new PlainSendResp(msgID,MobilePhone,500, "发送成功", ReportTime);
+	        			count = plainSendRespDao.insert(tempBean);
 	        			if(1 == count)
 	        				mercAccountService.unFrozenBalance(plainSendRecord.getAccountNo(), 1, msgID);
 	    	    	}else{
-	        			count = plainSendRecordDao.updateStatusByReport(msgID, "400", sendResultInfo, DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss"));
+//	        			count = plainSendRecordDao.updateStatusByReport(msgID, "400", sendResultInfo, DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss"));
+	    	    		tempBean = new PlainSendResp(msgID,MobilePhone,300, sendResultInfo, ReportTime);
+	        			count = plainSendRespDao.insert(tempBean);
 	        			if(1 == count && 100 == mercAccount.getChargingMethods()){
 	        				mercAccountService.unFrozenBalance(plainSendRecord.getAccountNo(), 1, msgID);
 	        			}else if(1 == count && 200 == mercAccount.getChargingMethods()){
@@ -414,13 +435,19 @@ public class CallBackController {
 	    	    	
 	    	    	String name = request.getParameter("name");
 	    	    	String sendid = request.getParameter("sendid");
-	    	    	String time = request.getParameter("time");
+	    	    	String mobile = request.getParameter("mobile");
 	    	    	String state = request.getParameter("state");
+	    	    	String time = request.getParameter("time");
 	    	    	logger.info("创锐短信发送结果回执："+name+"-"+sendid+"-"+state+"-"+time);
+	    	    	PlainSendResp tempBean =null;
 	        		if("DELIVRD".equals(state)){
-	        			plainSendRecordDao.updateStatusByReport(sendid, "500", "发送成功", DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss"));
+//	        			plainSendRecordDao.updateStatusByReport(sendid, "500", "发送成功", DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss"));
+	        			tempBean = new PlainSendResp(sendid,mobile,500, "发送成功", time);
+	        			plainSendRespDao.insert(tempBean);
 	        		}else{
-	        			plainSendRecordDao.updateStatusByReport(sendid, "400", state, DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss"));
+//	        			plainSendRecordDao.updateStatusByReport(sendid, "400", state, DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss"));
+	        			tempBean = new PlainSendResp(sendid,mobile,300, state, time);
+	        			plainSendRespDao.insert(tempBean);
 	        		}
 		        	response.setCharacterEncoding("UTF-8");
             		response.setContentType("application/json; charset=utf-8");
@@ -521,13 +548,19 @@ public class CallBackController {
 	    	    	reader.close();// 关闭输入流
 	    	    	
 	    	    	String msgid = request.getParameter("msgid");
-	    	    	String reportTime = request.getParameter("reportTime");
+	    	    	String mobile = request.getParameter("mobile");
 	    	    	String status = request.getParameter("status");
+	    	    	String reportTime = request.getParameter("reportTime");
 	    	    	logger.info("net263短信发送结果回执："+msgid+"-"+reportTime+"-"+status);
+	    	    	PlainSendResp tempBean =null;
 	        		if("DELIVRD".equals(status)){
-	        			plainSendRecordDao.updateStatusByReport(msgid, "500", "发送成功", DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss"));
+	        			tempBean = new PlainSendResp(msgid,mobile,500, "发送成功", reportTime);
+	        			plainSendRespDao.insert(tempBean);
+//	        			plainSendRecordDao.updateStatusByReport(msgid, "500", "发送成功", DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss"));
 	        		}else{
-	        			plainSendRecordDao.updateStatusByReport(msgid, "400", status, DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss"));
+//	        			plainSendRecordDao.updateStatusByReport(msgid, "400", status, DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss"));
+	        			tempBean = new PlainSendResp(msgid,mobile,300, status, reportTime);
+	        			plainSendRespDao.insert(tempBean);
 	        		}
 		        	response.setCharacterEncoding("UTF-8");
             		response.setContentType("application/json; charset=utf-8");
@@ -547,7 +580,7 @@ public class CallBackController {
 		};
 	}
 	
-	@ResponseBody
+	/*@ResponseBody
 	@RequestMapping("/jumengReport")
 	public Callable<String> jumengReport(HttpServletRequest request, HttpServletResponse response){
 		return new Callable<String>() {
@@ -566,7 +599,7 @@ public class CallBackController {
 					reader.close();// 关闭输入流
 					logger.info("聚梦回调内容：{}", result.toString());
 					
-					/*String msgid = request.getParameter("msgid");
+					String msgid = request.getParameter("msgid");
 					String reportTime = request.getParameter("reportTime");
 					String status = request.getParameter("status");
 					logger.info("net263短信发送结果回执："+msgid+"-"+reportTime+"-"+status);
@@ -576,7 +609,7 @@ public class CallBackController {
 						plainSendRecordDao.updateStatusByReport(msgid, "400", status, DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss"));
 					}
 					response.setCharacterEncoding("UTF-8");
-					response.setContentType("application/json; charset=utf-8")*/;
+					response.setContentType("application/json; charset=utf-8");
 				} catch (TradeException e) {
 					logger.error("CallBackController.jumengReport-TradeException：{}", e);
 					resultMap.put("code", e.getErrorCode());
@@ -592,7 +625,7 @@ public class CallBackController {
 				return resultMap.toString();
 			}
 		};
-	}
+	}*/
 	
 	private String getIpAddr(HttpServletRequest request)throws Exception {
     	String ip = request.getHeader("X-Real-IP");		//先从nginx自定义配置获取

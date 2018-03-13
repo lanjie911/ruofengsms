@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+<mapper namespace="com.sms.dao.primarydao.PlainSendRespDao" >
+
+	<resultMap type="PlainSendResp" 				id="resultPlainSendResp">
+		<result column="resp_id"					property="respId" />   
+		<result column="req_msg_id"					property="reqMsgId" />
+		<result column="mobile"						property="mobile" />
+		<result column="send_status"				property="sendStatus" />
+		<result column="send_msg"					property="sendMsg" />
+		<result column="resp_datetime"				property="respDatetime" />
+  	</resultMap>
+	
+	<insert id="insert" parameterType="PlainSendResp" useGeneratedKeys="true" keyProperty="respId">
+		insert IGNORE  into
+			s_plain_send_resp (req_msg_id,mobile,send_status,send_msg,resp_datetime)
+		values (#{reqMsgId},#{mobile},#{sendStatus},#{sendMsg},#{respDatetime})
+	</insert>
+	
+    
+</mapper>

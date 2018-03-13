@@ -25,7 +25,7 @@
 		<result column="province"					property="province" />
 		<result column="city"						property="city" />
 		<result column="isp"						property="isp" />
-		<result column="reqMsgId"					property="req_msg_id" />
+		<result column="req_msg_id"					property="reqMsgId" />
   	</resultMap>
 	
 	<sql id="select">
@@ -54,6 +54,20 @@
 		where t.req_msg_id = #{reqMsgId}
 	</select>
 	
+	<select id="getByreqMsgIdAndMobile" parameterType="String" resultMap="resultPlainSendRecord">
+		<include refid="select" />
+		where 
+			t.req_msg_id = #{reqMsgId}
+		and  
+			t.mobile = #{mobile}
+	</select>
+  	
+	<!-- <select id="query" resultType="com.sms.entity.PlainSendRecord"> -->
+	<select id="query" resultMap="resultPlainSendRecord">
+		<!-- select 1 recordId, 200 channelId from s_plain_send_record t limit 10 offset 0 -->
+		<include refid="select" />
+	</select>
+    
 	<insert id="insertBatch" >
 		insert into
 			s_plain_send_record (channel_id, channel_name, account_no, merchant_name_abbreviation,account_type,failed_retransmission,
@@ -65,64 +79,4 @@
 		</foreach>
 	</insert>
 	
-	<update id="updateStatusByReport">
-		update 
-			s_plain_send_record t
-		set 
-			t.send_status = #{status},
-			t.send_msg = #{respMsg},
-			t.resp_datetime = #{respTime}
-		where 
-			req_msg_id = #{reqMsgId}
-		and 
-			t.send_status = 200
-	</update>
-	
-	<update id="batchUpdaetSmsSucc" parameterType="java.util.List">
-		update 
-			s_plain_send_record t
-		set 
-			t.send_status = 500,
-			t.send_msg = '发送成功',
-			t.resp_datetime = current_timestamp()
-		where 
-			t.send_status = 200
-		<foreach collection="reqMsgIdArray" item="item" open="and req_msg_id in(" separator="," close=")">
-        	#{item}
-		</foreach>
-	</update>
-	
-	<update id="batchUpdaetSmsFailure" parameterType="java.util.List">
-		update 
-			s_plain_send_record t
-		set 
-			t.send_status = 400,
-			t.send_msg = '发送失败',
-			t.resp_datetime = current_timestamp()
-		where 
-			t.send_status = 200
-		<foreach collection="reqMsgIdArray" item="item" open="and req_msg_id in(" separator="," close=")">
-        	#{item}
-		</foreach>
-	</update>
-	
-	<update id="batchUpdateByJuMeng" parameterType="java.util.List">
-		<foreach collection="planList" item="item" index="index" open="" close="" separator=";">
-		update 
-			s_plain_send_record
-		<set>
-			send_status = #{item.sendStatus},
-			send_msg = #{item.sendMsg},
-			failed_num = #{item.failedNum},
-			resp_datetime = #{item.respDatetime}
-		</set>
-		where 
-			send_status = 200
-		and 
-			req_msg_id = #{item.reqMsgId}
-		and 
-			mobile = #{item.mobile}
-		</foreach>
-	</update>
-    
 </mapper>
