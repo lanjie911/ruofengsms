@@ -45,22 +45,8 @@ public class ReservationSendRecordService {
 		return reservationSendRecordDao.queryResult(reservationSendRecordCriteria);
 	}
 	
-	public Integer updateStatusByReport(String reqMsgId,String status,String respMsg,String respTime){
-		return plainSendRecordDao.updateStatusByReport(reqMsgId, status, respMsg, respTime);
-	}
-	
 	public PlainSendRecord getByreqMsgId(String reqMsgId){
 		return plainSendRecordDao.getByreqMsgId(reqMsgId);
 	}
 	
-	public int batchUpdaetSmsSucc(List<String> reqMsgIdArray) {
-		return plainSendRecordDao.batchUpdaetSmsSucc(reqMsgIdArray);
-	}
-	
-	public int batchUpdaetSmsFailure(List<String> reqMsgIdArray) {
-		return plainSendRecordDao.batchUpdaetSmsFailure(reqMsgIdArray);
-	}
-	public int batchUpdate(List<PlainSendRecord> planList) {
-		return plainSendRecordDao.batchUpdateByJuMeng(planList);
-	}
 }

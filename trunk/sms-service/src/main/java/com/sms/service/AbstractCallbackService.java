@@ -2,6 +2,7 @@ package com.sms.service;
 
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
@@ -18,8 +19,10 @@ import com.sms.dto.IReturnSMS;
 import com.sms.dto.MsgBox;
 import com.sms.entity.MercAccount;
 import com.sms.entity.PlainSendRecord;
+import com.sms.entity.PlainSendResp;
 import com.sms.service.executor.MyExecutor;
 import com.sms.service.send.MercAccountService;
+import com.sms.service.send.PlainSendRespService;
 import com.sms.service.send.ReservationSendRecordService;
 import com.sms.util.TradeException;
 
@@ -30,6 +33,9 @@ public class AbstractCallbackService {
 
 	@Autowired
 	protected ReservationSendRecordService reservationSendRecordService;
+	
+	@Autowired
+	protected PlainSendRespService plainSendRespService;
 
 	@Autowired
 	protected PrepareParamService prepareParamService;
@@ -82,7 +88,7 @@ public class AbstractCallbackService {
 				return;
 			}
 
-			PlainSendRecord plainSendRecord = reservationSendRecordService.getByreqMsgId(list.get(1).getTaskid());
+			PlainSendRecord plainSendRecord = reservationSendRecordService.getByreqMsgId(list.get(0).getTaskid());
 			if (null != plainSendRecord) {
 				MercAccount mercAccount = prepareParamService.getMercAccount(plainSendRecord.getAccountNo());
 				if (null != mercAccount) {
@@ -93,48 +99,40 @@ public class AbstractCallbackService {
 					int submitCharingCount = 0;
 					// 发送失败后成功量扣费方式需要冲正的数量
 					int successCharingCount = 0;
-					List<PlainSendRecord> planList = new ArrayList<PlainSendRecord>();
+					int count = 0;
+//					List<PlainSendRecord> planList = new ArrayList<PlainSendRecord>();
+					List<PlainSendResp> respList = new ArrayList<PlainSendResp>();
 					int sendStatus, failedNum;
-					PlainSendRecord tmpBean = null;
+					PlainSendResp tmpBean = null;
 					for (MsgBox statusbox : list) {
 						sendStatus = statusbox.getStatus().equals("10") ? 500 : 300;
 						failedNum = statusbox.getStatus().equals("10") ? 0 : 1;
-						tmpBean = new PlainSendRecord(statusbox.getMobile(), sendStatus, statusbox.getErrorcode(),
-								failedNum, statusbox.getTaskid(), statusbox.getReceivetime());
-						planList.add(tmpBean);
-						if (null != planList && planList.size() > 0) {
+						tmpBean = new PlainSendResp(statusbox.getTaskid(),statusbox.getMobile(), sendStatus, statusbox.getErrorcode(),
+								 statusbox.getReceivetime());
+						count = plainSendRespService.insert(tmpBean);
+						if (count > 0) {
 							if ("10".equals(statusbox.getStatus())) {
-
+								count ++;
 								successCount++;
-								/*
-								 * mercAccountService.unFrozenBalance(plainSendRecord.getAccountNo(), 1,
-								 * statusbox.getMobile());
-								 */
 
 							} else {
 								if (100 == mercAccount.getChargingMethods()) {
+									count++;
 									submitCharingCount++;
 									logger.info("mercAccount.getChargingMethods():" + mercAccount.getChargingMethods()
 											+ "submitCharingCount:" + submitCharingCount);
-									/*
-									 * mercAccountService.unFrozenBalance(plainSendRecord.getAccountNo(), 1,
-									 * statusbox.getMobile());
-									 */
 
 								} else if (200 == mercAccount.getChargingMethods()) {
+									count++;
 									successCharingCount++;
 									logger.info("mercAccount.getChargingMethods():" + mercAccount.getChargingMethods()
 											+ "successCharingCount:" + successCharingCount);
 
-									/*
-									 * mercAccountService.doCorect(plainSendRecord.getAccountNo(), 1,
-									 * statusbox.getMobile());
-									 */
 								}
 							}
 						}
 					}
-					int count = reservationSendRecordService.batchUpdate(planList);
+//					int count = reservationSendRecordService.batchUpdate(planList);
 					logger.info("count:" + count);
 
 					if (count > 0) {

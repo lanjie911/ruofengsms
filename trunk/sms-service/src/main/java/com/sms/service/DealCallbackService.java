@@ -13,8 +13,10 @@ import org.springframework.stereotype.Service;
 
 import com.sms.entity.MercAccount;
 import com.sms.entity.PlainSendRecord;
+import com.sms.entity.PlainSendResp;
 import com.sms.service.executor.MyExecutor;
 import com.sms.service.send.MercAccountService;
+import com.sms.service.send.PlainSendRespService;
 import com.sms.service.send.ReservationSendRecordService;
 import com.sms.util.TradeException;
 
@@ -23,6 +25,8 @@ public class DealCallbackService {
 	private static Logger logger = LoggerFactory.getLogger(DealCallbackService.class);
 	@Autowired
 	private ReservationSendRecordService reservationSendRecordService;
+	@Autowired
+	private PlainSendRespService plainSendRespService;
 
 	@Autowired
 	private PrepareParamService prepareParamService;
@@ -78,35 +82,42 @@ public class DealCallbackService {
 		if (plainSendRecord != null) {
 			MercAccount mercAccount = prepareParamService.getMercAccount(plainSendRecord.getAccountNo());
 			if (mercAccount != null) {
-
+				int count = 0;
 				// 发送成功后需要解冻的数量
 				int successCount = 0;
 				// 发送失败后提交量扣费方式需要解冻的数量
 				int submitCharingCount = 0;
 				// 发送失败后成功量扣费方式需要冲正的数量
 				int successCharingCount = 0;
-				List<PlainSendRecord> planList = new ArrayList<PlainSendRecord>();
-				PlainSendRecord tmpBean = null;
+//				List<PlainSendRecord> planList = new ArrayList<PlainSendRecord>();
+				List<PlainSendResp> respList = new ArrayList<PlainSendResp>();
+				PlainSendResp tmpBean = null;
 				for (int i = 0; i < reports.length; i++) {
+					
 					try {
 						String[] reportOne = reports[i].split(",");
 						String reqid = reportOne[0];
 
 						if ("DELIVRD".equals(reportOne[2])) {
-							tmpBean = new PlainSendRecord(reportOne[1], 500, "发送成功", 0, reportOne[0], respDatetime);
-							planList.add(tmpBean);
-							if (null != planList && planList.size() > 0) {
+							tmpBean = new PlainSendResp(reportOne[0], reportOne[1], 500, "发送成功", respDatetime);
+							 count = plainSendRespService.insert(tmpBean);
+							respList.add(tmpBean);
+							if (count > 0) {
+								count++;
 								successCount++;
 							}
 						} else {
-							tmpBean = new PlainSendRecord(reportOne[1], 300, "发送失败", 1, reportOne[0], respDatetime);
-							planList.add(tmpBean);
-							if (null != planList && planList.size() > 0) {
+							tmpBean = new PlainSendResp(reportOne[0], reportOne[1], 300, "发送失败",  respDatetime);
+							 count = plainSendRespService.insert(tmpBean);
+							respList.add(tmpBean);
+							if (count > 0) {
 								if (100 == mercAccount.getChargingMethods()) {
+									count++;
 									submitCharingCount++;
 									logger.info("mercAccount.getChargingMethods():" + mercAccount.getChargingMethods()
 											+ "submitCharingCount:" + submitCharingCount);
 								} else if (200 == mercAccount.getChargingMethods()) {
+									count++;
 									successCharingCount++;
 									logger.info("mercAccount.getChargingMethods():" + mercAccount.getChargingMethods()
 											+ "successCharingCount:" + successCharingCount);
@@ -119,7 +130,6 @@ public class DealCallbackService {
 					}
 				}
 
-				int count = reservationSendRecordService.batchUpdate(planList);
 				logger.info("count:" + count);
 				if (count > 0) {
 					try {
@@ -127,20 +137,12 @@ public class DealCallbackService {
 							mercAccountService.batchUnFrozenBalance(mercAccount.getAccountNo(), successCount);
 							logger.info("successCount:" + successCount);
 						}
-					} catch (TradeException e) {
-						logger.error(e.getMessage(), e);
-					}
-
-					try {
+				
 						if (submitCharingCount > 0) {
 							mercAccountService.batchUnFrozenBalance(mercAccount.getAccountNo(), submitCharingCount);
 							logger.info("submitCharingCount:" + submitCharingCount);
 						}
-					} catch (TradeException e) {
-						logger.error(e.getMessage(), e);
-					}
-
-					try {
+					
 						if (successCharingCount > 0) {
 							mercAccountService.batchDoCorect(mercAccount.getAccountNo(), successCharingCount);
 							logger.info("successCharingCount:" + successCharingCount);
