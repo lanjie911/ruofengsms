@@ -1,5 +1,7 @@
 package com.sms.service.send;
 
+import java.sql.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -17,6 +19,7 @@ import com.sms.entity.MercChannel;
 import com.sms.entity.Phone;
 import com.sms.entity.PlainSendRecord;
 import com.sms.service.PrepareParamService;
+import com.sms.util.DatetimeUtil;
 import com.sms.util.TradeException;
 
 @Service
@@ -41,7 +44,8 @@ public class ChannelService {
 	@Autowired
 	private PrepareParamService prepareParamService;
 	
-	private ExecutorService smsRealTimePush = Executors.newFixedThreadPool(200);
+	private ExecutorService smsRealTimePush = Executors.newFixedThreadPool(500);
+//	private ExecutorService smsRealTimePush = Executors.newFixedThreadPool(200);
 	
 	//即时短信发送
 	public void switchChannelToSend(String reservationDateTime, String content, String messageId, Integer orderFlag, 
@@ -132,6 +136,11 @@ public class ChannelService {
 						
 					Map<String, Object> result = swichToSendService.send(plainSendRecord.getSignTip(), plainSendRecord.getMobile(), plainSendRecord.getContent(), plainSendRecord.getChannelName(), plainSendRecord.getAccountType(), phone.getOperatorCode());
 					
+//					Map<String, Object> result = new HashMap<>();
+//					result.put("status", true);
+//					String reqMsgId = getReqMsgId();
+//					result.put("reqMsgId", reqMsgId);
+					
 					logger.info("ChannelService.dealImmediatelySms-swichToSendService Result{}", result);
 					// 2.记录短信发送结果
 					plainSendRecord.setSendStatus(300);
@@ -146,7 +155,9 @@ public class ChannelService {
 					if(1 != inserRows)
 						logger.error("短信记录失败：analysisRealTimePushQueue-SmsRecord:", plainSendRecord.toString());
 				} catch (Exception e) {
-					logger.error("短信发送失败:", e);
+					logger.info("短信发送失败:"+tempSendBean.getMobile());
+					logger.info("短信发送失败:"+plainSendRecord.getMobile());
+					logger.error("短信发送失败:",e);
 				}
 			}
 		};
@@ -156,7 +167,7 @@ public class ChannelService {
 	private PlainSendRecord swichSmsChannel(PlainSendRecord plainSendRecord, Phone phone) throws Exception {
 		List<MercChannel> mercChannelList =  prepareParamService.getMercChannel(plainSendRecord.getAccountNo());
 		logger.info("ChannelService.swichSmsChannel-mercChannelList.size:{}", mercChannelList.size());
-		logger.info("ChannelService.phone.isp:{}", phone.getIsp());
+		logger.info("ChannelService.phone.isp:{}", phone.getIsp()+phone.getPhone());
 		if(plainSendRecord.getAccountType() == 100){
 			for(MercChannel mercChannel : mercChannelList){
 				if(mercChannel.getChannelAttribute() == 100){
@@ -247,5 +258,20 @@ public class ChannelService {
 		}
 		return plainSendRecord;
 	}
+	
+	public static String getReqMsgId(){
+		String currentDateTime = DatetimeUtil.getCurrentDateTime("yyyyMMddHHmmss");
+		int randNum = 1 + (int) (Math.random() * ((9999999 - 1) + 1));
+		String reqMsgId = currentDateTime + randNum;
+		return reqMsgId;
+		
+	}
+	
+	public static void main(String[] args) {
+		String reqMsgId = getReqMsgId();
+		System.out.println(reqMsgId);
+	}
+	
+	
 	
 }
