@@ -14,7 +14,7 @@ public class MyExecutor {
 
 	@PostConstruct
 	public void init() {
-		exec = Executors.newFixedThreadPool(5);
+		exec = Executors.newFixedThreadPool(3);
 	}
 
 	public ExecutorService getExecutors() {
