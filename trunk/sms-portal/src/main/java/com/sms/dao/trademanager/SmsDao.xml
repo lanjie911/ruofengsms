@@ -29,6 +29,32 @@
 		select r.account_no,r.failed_num,r.blacklist_num,a.merchant_id,r.mobile,
 			date_format(r.create_datetime, '%Y-%m-%d %H:%i:%s') create_datetime, 
 			date_format(r.resp_datetime, '%Y-%m-%d %H:%i:%s') resp_datetime,
+			IFNULL(tsr.send_status,r.send_status) send_status,r.content,
+			r.reservation_datetime,
+			 case
+	          WHEN IFNULL(tsr.send_status,r.send_status) = 100 THEN '待处理'
+	          WHEN IFNULL(tsr.send_status,r.send_status) = 200 THEN '提交成功'
+	          WHEN IFNULL(tsr.send_status,r.send_status) = 300 THEN '失败'
+	          WHEN IFNULL(tsr.send_status,r.send_status) = 400 THEN '已冲正'
+	          WHEN IFNULL(tsr.send_status,r.send_status) = 500 THEN '发送成功'
+	          ELSE ''
+	       end
+	          send_status_des,	
+			IFNULL(tsr.send_msg,r.send_msg) send_msg,
+	         r.province,
+	         r.city,
+	         r.isp,
+	         r.merc_req_time,
+			concat(r.sum_num,'/',r.success_num) sum_success
+		from s_plain_send_record r
+		inner join s_merchant_account a on a.account_no = r.account_no
+		left join s_plain_send_resp tsr on tsr.mobile = r.mobile and tsr.req_msg_id = r.req_msg_id
+  	</sql>
+  	
+<!-- 	<sql id="select">
+		select r.account_no,r.failed_num,r.blacklist_num,a.merchant_id,r.mobile,
+			date_format(r.create_datetime, '%Y-%m-%d %H:%i:%s') create_datetime, 
+			date_format(r.resp_datetime, '%Y-%m-%d %H:%i:%s') resp_datetime,
 			r.send_status,r.content,
 			r.reservation_datetime,
 			 case
@@ -49,17 +75,17 @@
 		from s_plain_send_record r
 		inner join s_merchant_account a on a.account_no = r.account_no
   	</sql>
-  	
+  	 -->
   	<sql id="conditions">
 		<where>
 			<if test="mobile != null and mobile !=''">
 				and r.mobile = #{mobile} 
 			</if>
 			<if test="dateBegin != null and dateBegin !=''">
-				and r.resp_datetime &gt;= str_to_date(#{dateBegin},'%Y-%m-%d %H:%i:%s')
+				and r.create_datetime &gt;= str_to_date(#{dateBegin},'%Y-%m-%d %H:%i:%s')
 			</if>
 			<if test="dateEnd != null and dateEnd !=''">
-				and r.resp_datetime &lt;= str_to_date(#{dateEnd},'%Y-%m-%d %H:%i:%s') 
+				and r.create_datetime &lt;= str_to_date(#{dateEnd},'%Y-%m-%d %H:%i:%s') 
 			</if>
 			and a.merchant_id =#{merchantId}
 		</where>
