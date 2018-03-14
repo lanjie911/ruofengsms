@@ -44,8 +44,8 @@ public class ChannelService {
 	@Autowired
 	private PrepareParamService prepareParamService;
 	
-	private ExecutorService smsRealTimePush = Executors.newFixedThreadPool(500);
-//	private ExecutorService smsRealTimePush = Executors.newFixedThreadPool(200);
+//	private ExecutorService smsRealTimePush = Executors.newFixedThreadPool(500);
+	private ExecutorService smsRealTimePush = Executors.newFixedThreadPool(200);
 	
 	//即时短信发送
 	public void switchChannelToSend(String reservationDateTime, String content, String messageId, Integer orderFlag, 
