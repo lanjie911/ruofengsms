@@ -19,6 +19,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import com.sms.service.DealJuMengCallbackService;
+import com.sms.util.DatetimeUtil;
 
 public class JuMengReport extends HttpServlet {
 	private static final long serialVersionUID = -6047241528661422447L;
@@ -48,8 +49,9 @@ public class JuMengReport extends HttpServlet {
 			reader.close(); // 关闭输入流
 			String data = URLDecoder.decode(result.toString(), "UTF-8");
 			logger.info("聚梦发送结果回调：{}", data);
+			String currentDateTime = DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss");
 			if (null != data && !"".equals(data)) {
-				dealJuMengCallbackService.prepareJuMengRespData(data);
+				dealJuMengCallbackService.prepareJuMengRespData(data,currentDateTime);
 			}
 			String responseStr = genRespStr();
 			response.setCharacterEncoding("UTF-8");

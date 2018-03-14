@@ -59,12 +59,12 @@ public class AbstractCallbackService {
 		return null;
 	}
 
-	public void prepareRespData(String reponseStr) {
+	public void prepareRespData(String reponseStr,String dateTime) {
 		dealRespExec.submit(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					dealSms(reponseStr);
+					dealSms(reponseStr,dateTime);
 				} catch (Exception e) {
 					logger.error(e.getMessage(), e);
 				}
@@ -73,7 +73,7 @@ public class AbstractCallbackService {
 	}
 
 	// 子类做的事情
-	protected void dealSms(final String responseStr) {
+	protected void dealSms(final String responseStr,String dateTime) {
 		try {
 
 			logger.info("=----->,{}", this.getClass().getCanonicalName());
@@ -108,8 +108,9 @@ public class AbstractCallbackService {
 						sendStatus = statusbox.getStatus().equals("10") ? 500 : 300;
 						failedNum = statusbox.getStatus().equals("10") ? 0 : 1;
 						tmpBean = new PlainSendResp(statusbox.getTaskid(),statusbox.getMobile(), sendStatus, statusbox.getErrorcode(),
-								 statusbox.getReceivetime());
+								dateTime);
 						count = plainSendRespService.insert(tmpBean);
+						logger.info("count:"+count);
 						if (count > 0) {
 							if ("10".equals(statusbox.getStatus())) {
 								count ++;

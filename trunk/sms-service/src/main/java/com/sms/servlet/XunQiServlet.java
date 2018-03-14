@@ -15,6 +15,7 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import com.sms.service.AbstractCallbackService;
+import com.sms.util.DatetimeUtil;
 
 public class XunQiServlet extends AbstractServlet {
 	private static final long serialVersionUID = -2818309304778455126L;
@@ -39,8 +40,9 @@ public class XunQiServlet extends AbstractServlet {
 			reader.close();// 关闭输入流
 			String data = URLDecoder.decode(result.toString(), "UTF-8");
 			logger.info("讯奇发送结果回调：{}", data);
+			String currentDateTime = DatetimeUtil.getCurrentDateTime("yyyy-MM-dd HH:mm:ss");
 			if (null != data && !"".equals(data))
-				xunQiCallbackService.prepareRespData(data);
+				xunQiCallbackService.prepareRespData(data,currentDateTime);
 			// 生成响应报文
 			String responseStr = genRespStr();
 			response.setCharacterEncoding("UTF-8");

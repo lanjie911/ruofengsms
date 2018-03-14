@@ -57,12 +57,12 @@ public class DealJuMengCallbackService {
 		return null;
 	}
 
-	public void prepareJuMengRespData(String reportXml) {
+	public void prepareJuMengRespData(String reportXml,String dateTime) {
 		dealRespExec.submit(new Runnable() {
 			@Override
 			public void run() {
 				try {
-					dealReportXml(reportXml);
+					dealReportXml(reportXml,dateTime);
 				} catch (Exception e) {
 					logger.error(e.getMessage(), e);
 				}
@@ -70,7 +70,7 @@ public class DealJuMengCallbackService {
 		});
 	}
 
-	private void dealReportXml(String reportXml) throws Exception {
+	private void dealReportXml(String reportXml,String dateTime) throws Exception {
 
 		JAXBContext context = JAXBContext.newInstance(ReportDataDto.class);
 		Unmarshaller unmarshaller = context.createUnmarshaller();
@@ -84,7 +84,7 @@ public class DealJuMengCallbackService {
 		PlainSendResp tmpBean = null;
 		for (ReportDto dto : list) {
 			sendStatus = dto.getStatus().equals("0") ? 500 : 300;
-			tmpBean = new PlainSendResp(dto.getTaskid(),dto.getMobile(),sendStatus,dto.getErrcode(),dto.getReceivetime());
+			tmpBean = new PlainSendResp(dto.getTaskid(),dto.getMobile(),sendStatus,dto.getErrcode(),dateTime);
 			count = plainSendRespDao.insert(tmpBean);
 			if(count>0){
 				respList.add(tmpBean);
