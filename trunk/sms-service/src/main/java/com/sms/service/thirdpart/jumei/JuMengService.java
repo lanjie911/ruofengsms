@@ -248,9 +248,9 @@ public class JuMengService {
 		try {
 			int randNum = 1 + (int) (Math.random() * ((999999 - 1) + 1));
 			// 行业
-			// HttpPost("http://58.253.87.82:8718/smsgwhttp/sms/submit");
+			HttpPost httpPost = new  HttpPost("http://58.253.87.82:8718/smsgwhttp/sms/submit");
 			// 金融营销
-			HttpPost httpPost = new HttpPost("http://58.252.3.163:8357/smsgwhttp/sms/submit");
+//			HttpPost httpPost = new HttpPost("http://58.252.3.163:8357/smsgwhttp/sms/submit");
 
 			String content = "【聚合信息】您的注册验证码为：" + randNum;
 			// String content = "【交通银行】恭喜您成为交通银行特邀客户，额度高，审批快，天天享优惠，免年费申请！点击
@@ -268,9 +268,9 @@ public class JuMengService {
 			// nvps.add(new BasicNameValuePair("spid", "688099"));
 			// nvps.add(new BasicNameValuePair("password", "123sfdhg"));
 			// 联通的
-			// nvps.add(new BasicNameValuePair("ac", "1069130603055"));
-			// nvps.add(new BasicNameValuePair("spid", "401075"));
-			// nvps.add(new BasicNameValuePair("password", "123wrwetr"));
+			 nvps.add(new BasicNameValuePair("ac", "106911253"));
+			 nvps.add(new BasicNameValuePair("spid", "112530"));
+			 nvps.add(new BasicNameValuePair("password", "abcd1234"));
 			// 电信的
 			// nvps.add(new BasicNameValuePair("ac", "1069130603531"));
 			// nvps.add(new BasicNameValuePair("spid", "502031"));
@@ -282,9 +282,9 @@ public class JuMengService {
 			// nvps.add(newBasicNameValuePair("password", "DASfds"));
 
 			// 联通金融网贷
-			nvps.add(new BasicNameValuePair("ac", "1069130603652"));
-			nvps.add(new BasicNameValuePair("spid", "402072"));
-			nvps.add(new BasicNameValuePair("password", "123werey"));
+//			nvps.add(new BasicNameValuePair("ac", "1069130603652"));
+//			nvps.add(new BasicNameValuePair("spid", "402072"));
+//			nvps.add(new BasicNameValuePair("password", "123werey"));
 
 			nvps.add(new BasicNameValuePair("content", content));
 			nvps.add(new BasicNameValuePair("mobiles", mobiles));
