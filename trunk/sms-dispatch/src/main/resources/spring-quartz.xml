@@ -95,7 +95,7 @@
 			<ref bean="doCountMerchantTransDetail" />
 		</property>
 		<property name="cronExpression">
-			<value>0 20 0 * * ?</value>
+			<value>0 30 6 * * ?</value>
 		</property>
 	</bean>
 	
