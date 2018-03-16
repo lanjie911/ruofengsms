@@ -37,12 +37,12 @@ public class JuMengService {
 
 	@Autowired
 	private PrepareParamService prepareParamService;
-	private Unmarshaller unmarshaller = null;
+//	private Unmarshaller unmarshaller = null;
 
-	public JuMengService() throws Exception {
-		JAXBContext context = JAXBContext.newInstance(Returnsms.class);
-		unmarshaller = context.createUnmarshaller();
-	}
+//	public JuMengService() throws Exception {
+//		JAXBContext context = JAXBContext.newInstance(Returnsms.class);
+//		unmarshaller = context.createUnmarshaller();
+//	}
 
 	public Map<String, Object> doSendByCMCC(String mobiles, String smsContent, Long channelId) {
 		Map<String, Object> result = new HashMap<>();
@@ -235,6 +235,8 @@ public class JuMengService {
 	}
 
 	private Returnsms analysisReponse(String responseXml) throws Exception {
+		JAXBContext context = JAXBContext.newInstance(Returnsms.class);
+		Unmarshaller unmarshaller = context.createUnmarshaller();
 		return (Returnsms) unmarshaller.unmarshal(new StringReader(responseXml));
 	}
 
