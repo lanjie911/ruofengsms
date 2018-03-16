@@ -105,30 +105,36 @@
 	<select id="querySuccNum"  resultType="java.lang.Integer">
 	<![CDATA[
 		select IFNULL(sum((CASE  when CHAR_LENGTH(s.content)<= 70 THEN 1 when CHAR_LENGTH(s.content)> 70 then ceil(CHAR_LENGTH(s.content)/67)END)),0)as succ_num
-			from s_plain_send_record s 
+			from s_plain_send_record s  LEFT JOIN s_plain_send_resp r
+			ON s.req_msg_id = r.req_msg_id 
+			AND s.mobile =r.mobile
 			WHERE s.create_datetime >= #{yesterdayStart}
 			AND  s.create_datetime <= #{yesterdayEnd}
-			AND  s.send_status = 500
+			AND  IFNULL(r.send_status,s.send_status) = 500
 			AND s.account_no = #{accountNo}
 		]]>
 	</select>
 	<select id="queryFailNum"  resultType="java.lang.Integer">
 	<![CDATA[
 		select IFNULL(sum((CASE  when CHAR_LENGTH(s.content)<= 70 THEN 1 when CHAR_LENGTH(s.content)> 70 then ceil(CHAR_LENGTH(s.content)/67)END)),0)as failure_num
-			from s_plain_send_record s 
+			from s_plain_send_record s LEFT JOIN s_plain_send_resp r
+			ON s.req_msg_id = r.req_msg_id 
+			AND s.mobile =r.mobile
 			WHERE s.create_datetime >= #{yesterdayStart}
 			AND  s.create_datetime <= #{yesterdayEnd}
-			AND  s.send_status in (300,400)
+			AND  IFNULL(r.send_status,s.send_status) in (300,400)
 			AND  s.account_no = #{accountNo}
 		]]>
 	</select>
 	<select id="queryUnknowNum"  resultType="java.lang.Integer">
 	<![CDATA[
 		select IFNULL(sum((CASE  when CHAR_LENGTH(s.content)<= 70 THEN 1 when CHAR_LENGTH(s.content)> 70 then ceil(CHAR_LENGTH(s.content)/67)END)),0)as unknow_num
-			from s_plain_send_record s 
+			from s_plain_send_record s LEFT JOIN s_plain_send_resp r
+			ON s.req_msg_id = r.req_msg_id 
+			AND s.mobile =r.mobile
 			WHERE s.create_datetime >= #{yesterdayStart}
 			AND  s.create_datetime <= #{yesterdayEnd}
-			AND  s.send_status < 300
+			AND  IFNULL(r.send_status,s.send_status) < 300
 			AND s.account_no = #{accountNo}
 		]]>	
 	</select>

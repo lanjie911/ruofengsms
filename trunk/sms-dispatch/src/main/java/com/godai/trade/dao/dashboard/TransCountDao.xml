@@ -37,9 +37,30 @@
 			DATE_FORMAT(CURRENT_TIMESTAMP(),'%Y-%m-%d %H:%i:%S'), 100)
 	</insert>
 	
+  	<update id="update" parameterType="TransCount">
+		update
+			s_trans_count 
+		set
+			send_num = #{sendNum},
+			success_num = #{successNum},
+			failure_num = #{failureNum},
+			unknown_num = #{unknownNum},
+			mission_success_rate = FORMAT(#{missionSuccessRate},4)
+		where
+			account_no= #{accountNo}
+		and	
+			statistical_time = #{statisticalTime}
+	</update>
+	
 	<select id="getById" parameterType="java.lang.Integer" resultMap="resultTransCount">
 		<include refid="select" />
 		where t.trans_count_id = #{transCountId}
+	</select>
+	
+	<select id="getByAccountNoAndStatisticalTime"  resultMap="resultTransCount">
+		<include refid="select" />
+		where t.account_no = #{accountNo}
+		and t.statistical_time = #{statisticalTime}
 	</select>
 	
 	<select id="getByAccountNo" resultType="java.lang.Long">
