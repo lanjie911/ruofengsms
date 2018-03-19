@@ -99,7 +99,7 @@ public class DealCallbackService {
 						String reqid = reportOne[0];
 
 						if ("DELIVRD".equals(reportOne[2])) {
-							tmpBean = new PlainSendResp(reportOne[0], reportOne[1], 500, "发送成功", respDatetime);
+							tmpBean = new PlainSendResp(reportOne[0], reportOne[1], 500, reportOne[2], respDatetime);
 							 count = plainSendRespService.insert(tmpBean);
 							respList.add(tmpBean);
 							if (count > 0) {
@@ -107,7 +107,7 @@ public class DealCallbackService {
 								successCount++;
 							}
 						} else {
-							tmpBean = new PlainSendResp(reportOne[0], reportOne[1], 300, "发送失败",  respDatetime);
+							tmpBean = new PlainSendResp(reportOne[0], reportOne[1], 300, reportOne[2], respDatetime);
 							 count = plainSendRespService.insert(tmpBean);
 							respList.add(tmpBean);
 							if (count > 0) {
