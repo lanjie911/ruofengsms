@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sms.dao.smsupload.SmsApplayDetailDao">
+
+	<resultMap type="SmsApplayDetail" 		id="resultSmsApplayDetail">
+		<id property="applayDetailId" 		column="applay_detail_id" />
+		<result property="batchNo" 			column="batch_no" />
+		<result property="accountNo" 		column="account_no" />
+		<result property="accountType" 		column="account_type" />
+		<result property="accountName" 		column="account_name" />
+		<result property="batchType" 		column="batch_type" />
+		<result property="mobilesData" 		column="mobiles_data" />
+		<result property="mobileOperator" 	column="mobile_operator" />
+		<result property="mobilesCount" 	column="mobiles_count" />
+		<result property="detailStatus" 	column="detail_status" />
+		<result property="createDatetime" 	column="create_datetime" />
+	</resultMap>
+	
+	<sql id="select">
+		select 
+			t.applay_detail_id, t.batch_no, t.account_no, t.account_type, t.account_name, 
+			t.batch_type, t.mobiles_data, t.mobile_operator, t.mobiles_count, 
+			t.detail_status, t.create_datetime
+		from
+			sms_applay_detail t
+  	</sql>
+  	
+	<insert id="insert" parameterType="SmsApplayDetail" useGeneratedKeys="true" keyProperty="applayDetailId">
+		insert into 
+			sms_applay_detail(batch_no, batch_type, account_no, account_type, account_name, 
+			mobiles_data, mobiles_count, mobile_operator, detail_status, create_datetime)
+		values
+		(#{batchNo}, #{batchType}, #{accountNo}, #{accountType}, #{accountName}, 
+			#{mobilesData}, #{mobilesCount}, #{mobileOperator}, 101, current_timestamp())
+	</insert>
+	
+	<select id="getById" parameterType="java.lang.Integer" resultMap="resultSmsApplayDetail">
+		<include refid="select" />
+		where t.applay_detail_id = #{applayDetailId}
+	</select>
+	
+	<select id="loadLimitByBatchNo" resultMap="resultSmsApplayDetail">
+		<include refid="select" />
+		where t.batch_no = #{batchNo}
+		limit #{limit},#{offerSet}
+	</select>
+	
+	<update id="updateStatusByFrontStatus">
+		update 
+			sms_applay_detail 
+		set
+			detail_status = #{newStatus}
+		where 
+			applay_detail_id = #{applayDetailId}
+		and
+			detail_status = #{oldStatus}
+	</update>
+	
+	<update id="uploadFinish">
+		update 
+			sms_applay_detail 
+		set
+			detail_status = 101
+		where 
+			batch_no = #{batchNo}
+		and
+			detail_status = 100
+	</update>
+	
+	<insert id ="insertBatch" parameterType="java.util.List" >
+		insert into 
+			sms_applay_detail(batch_no, batch_type, account_no, account_type, account_name, 
+			mobiles_data, mobiles_count, mobile_operator, detail_status, create_datetime)
+		values
+		
+		<foreach collection ="list" item="smsApplayDetail" index= "index" separator =",">
+			(#{smsApplayDetail.batchNo}, #{smsApplayDetail.batchType}, #{smsApplayDetail.accountNo}, #{smsApplayDetail.accountType}, 
+			 #{smsApplayDetail.accountName}, #{smsApplayDetail.mobilesData}, #{smsApplayDetail.mobilesCount}, 
+			 #{smsApplayDetail.mobileOperator}, 100, current_timestamp())
+		</foreach >
+ 	</insert >
+	
+</mapper>
