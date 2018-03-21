@@ -20,6 +20,7 @@ import com.sms.service.send.MercAccountService;
 import com.sms.service.send.ReservationSendRecordService;
 import com.sms.service.send.ThreadService;
 import com.sms.service.send.UnsubscribeService;
+import com.sms.service.smsupload.SmsApplayService;
 import com.sms.util.DatetimeUtil;
 import com.sms.util.ResultCommon;
 import com.sms.util.TradeException;
@@ -52,6 +53,9 @@ public class SendSmsService {
 	
 	@Autowired
 	private SmsInboxDao smsInboxDao;
+	
+	@Autowired
+	private SmsApplayService smsApplayService;
 	
 	@Autowired
 	private ThreadService threadService;
@@ -165,14 +169,17 @@ public class SendSmsService {
 			costQuanteNum = costQuante(mercAccount,mobiles,sendNum,mercAccount.getCostQuantity());
 		String[] mobileStrs = Arrays.copyOfRange(mobiles, costQuanteNum, mobiles.length);
 		
-		if(100 == mercAccount.getSenseWordFlag() && 100 == mercAccount.getTemplateMatchFlag()){
-			sendToCheckService.doAll(accountNo,content);			//模板+敏感
-		}else if(100 == mercAccount.getSenseWordFlag() && 200 == mercAccount.getTemplateMatchFlag()){
-			sendToCheckService.doSensitive(accountNo,content);		//敏感
-		}else{
-			sendToCheckService.doTemplate(accountNo,content);		//模板
+		if (100 == mercAccount.getSenseWordFlag() && 100 == mercAccount.getTemplateMatchFlag()) {
+			sendToCheckService.doAll(accountNo, content); // 模板+敏感
+		} else if (100 == mercAccount.getSenseWordFlag() && 200 == mercAccount.getTemplateMatchFlag()) {
+			sendToCheckService.doSensitive(accountNo, content); // 敏感
+		} else if (200 == mercAccount.getSenseWordFlag() && 100 == mercAccount.getTemplateMatchFlag()) {
+			sendToCheckService.doTemplate(accountNo, content); // 模板
 		}
-		auditingService.insertToAudit(orderFlag,reservationDatetime,messageId,content,mercAccount, sendNum, mobileStrs,signTip);	//营销短信直接入库
+		//auditingService.insertToAudit(orderFlag,reservationDatetime,messageId,content,mercAccount, sendNum, mobileStrs,signTip);	//营销短信直接入库
+		logger.info("<<<<<<<<<<<<<<");
+		smsApplayService.insertApply(orderFlag, reservationDatetime, messageId, signTip, content, mercAccount, sendNum,
+				mobile); // 营销短信直接入库
 	}
 
 	private Integer costQuante(MercAccount mercAccount, String[] mobiles, Integer sendNum, Double costQuantity) throws TradeException {
