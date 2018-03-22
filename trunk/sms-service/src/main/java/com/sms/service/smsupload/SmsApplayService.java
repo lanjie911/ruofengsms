@@ -51,8 +51,8 @@ public class SmsApplayService {
 			smsApplay.setOperator(mercAccount.getOperator());
 			smsApplay.setOrderFlag(orderFlag);
 			logger.info("mobileCount:" + mobileCount);
-			smsApplay.setSignTip(signTip);
-			smsApplay.setSmsContent(content);
+			//smsApplay.setSignTip(signTip);
+			smsApplay.setSmsContent(signTip+content);
 			smsApplayDao.insert(smsApplay);
 			
 		} catch (Exception e) {
