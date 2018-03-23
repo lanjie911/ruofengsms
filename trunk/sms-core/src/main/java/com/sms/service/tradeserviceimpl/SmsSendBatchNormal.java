@@ -174,6 +174,25 @@ public class SmsSendBatchNormal {
 				sc.setSendMsg("提交成功");
 				list.add(sc);
 			}
+		}else if (channelCode.contains("maiyuan")) {
+			String[] mobiles = mobilesData.split(",");
+			String reqMid = (String) resultMap.get("reqMsgId");
+			for (String mbl : mobiles) {
+				sc = new PlainSendRecord();
+				sc.setBatchNo(batchNo);
+				sc.setAccountNo(accountNo);
+				sc.setAccountType(accountType);
+				sc.setChannelId(channelId);
+				sc.setChannelName(channelCode);
+				sc.setContent(signTip + smsContent);
+				sc.setFailedNum(0);
+				sc.setMobile(mbl);
+				sc.setReqMsgId(reqMid);
+				sc.setSignTip(signTip);
+				sc.setSendStatus(200);
+				sc.setSendMsg("提交成功");
+				list.add(sc);
+			}
 		}
 		// TODO 批量insert
 		plainSendRecordDao.insertBatchList(list);
