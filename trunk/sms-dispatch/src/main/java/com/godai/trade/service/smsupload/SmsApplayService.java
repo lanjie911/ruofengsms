@@ -49,20 +49,23 @@ public class SmsApplayService {
 		};
 	}
 	
-	private void execSend(SmsApplay sc) {
-		int approvedNum = smsApplayDetailDao.loadApprovedNum(sc.getBatchNo());
+	private void execSend(SmsApplay apply) {
+		int approvedNum = smsApplayDetailDao.loadApprovedNum(apply.getBatchNo());
+		// 如果count之后捞出来的数字为0
+		// 那么就不发了
 		if(approvedNum == 0){
-			smsApplayDao.setDealed(sc.getSmsApplayId());
+			smsApplayDao.setDealed(apply.getSmsApplayId());
 			return;
 		}
 		
-		sendCUData(sc);
-		sendCMData(sc);
-		sendCTData(sc);
+		// 捞联通的数据
+		sendCUData(apply);
 		
-		sendCUData(sc);
-		sendCMData(sc);
-		sendCTData(sc);
+		// 捞移动的数据
+		sendCMData(apply);
+		
+		// 捞电信的数据
+		sendCTData(apply);
 	}
 	
 	private void sendCUData(final SmsApplay smsApplay) {
