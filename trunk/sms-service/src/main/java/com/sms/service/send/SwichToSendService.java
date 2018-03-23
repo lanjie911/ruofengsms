@@ -18,6 +18,7 @@ import com.sms.service.thirdpart.fenghuo.FengHuoSend;
 import com.sms.service.thirdpart.jumei.JuMengGdqmService;
 import com.sms.service.thirdpart.jumei.JuMengService;
 import com.sms.service.thirdpart.jumei.JuMengYxService;
+import com.sms.service.thirdpart.maiyuan.MaiYuanService;
 import com.sms.service.thirdpart.tengda.TengDaService;
 import com.sms.service.thirdpart.wuxianxunqi.WuXianXunQiService;
 
@@ -57,6 +58,9 @@ public class SwichToSendService {
 
 	@Autowired
 	private JuMengGdqmService juMengGdqmService;
+	
+	@Autowired
+	private MaiYuanService maiYuanService;
 
 	public Map<String, Object> send(String signTip, String mobile, String content, String channelCode,
 			Integer accountType, Integer operatorType) {
@@ -190,6 +194,15 @@ public class SwichToSendService {
 				break;
 			case "jumenggdqmyxCN":
 				result = juMengGdqmService.SendByJumengGdqm(mobile, signTip, content, accountType, 100);
+				break;
+			case "maiyuanyxCMCC":
+				result = maiYuanService.smsSendByMaiYuan(mobile, signTip, content, accountType, 300);
+				break;
+			case "maiyuanyxUN":
+				result = maiYuanService.smsSendByMaiYuan(mobile, signTip, content, accountType, 200);
+				break;
+			case "maiyuanyxCN":
+				result = maiYuanService.smsSendByMaiYuan(mobile, signTip, content, accountType, 100);
 				break;
 
 			}
