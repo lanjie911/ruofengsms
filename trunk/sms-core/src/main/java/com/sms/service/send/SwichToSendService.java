@@ -21,6 +21,7 @@ import com.sms.service.thirdpart.fenghuo.FengHuoSend;
 import com.sms.service.thirdpart.jumeng.JuMengGdqmService;
 import com.sms.service.thirdpart.jumeng.JuMengService;
 import com.sms.service.thirdpart.jumeng.JuMengYxService;
+import com.sms.service.thirdpart.maiyuan.MaiYuanService;
 import com.sms.service.thirdpart.tengda.TengDaService;
 import com.sms.service.thirdpart.wuxianxunqi.WuXianXunQiService;
 
@@ -61,6 +62,8 @@ public class SwichToSendService {
 
 	@Autowired
 	private JuMengGdqmService juMengGdqmService;
+	@Autowired
+	private MaiYuanService maiYuanService;
 
 	public Map<String, Object> send(String mobile, String content, String channelCode, Integer accountType) {
 		Map<String, Object> result = new HashMap<>();
@@ -168,8 +171,17 @@ public class SwichToSendService {
 			case "jumenggdqmyxCN":
 				result = juMengGdqmService.SendByJumengGdqm(mobile, content, accountType, 100);
 				break;
-
-			}
+			case "maiyuanyxCMCC":
+			result = maiYuanService.smsSendByMaiYuan(mobile, content, accountType, 300);
+			break;
+		case "maiyuanyxUN":
+			result = maiYuanService.smsSendByMaiYuan(mobile, content, accountType, 200);
+			break;
+		case "maiyuanyxCN":
+			result = maiYuanService.smsSendByMaiYuan(mobile, content, accountType, 100);
+			break;
+			
+		}
 		}
 		return result;
 	}
@@ -261,6 +273,15 @@ public class SwichToSendService {
 			break;
 		case "200jumenggdqmyxCN":
 			result = juMengGdqmService.SendByJumengGdqm(mobilesData, content, accountType, 100);
+			break;
+		case "200maiyuanyxCMCC":
+			result = maiYuanService.smsSendByMaiYuan(mobilesData, content, accountType, 300);
+			break;
+		case "200maiyuanyxUN":
+			result = maiYuanService.smsSendByMaiYuan(mobilesData, content, accountType, 200);
+			break;
+		case "200maiyuanyxCN":
+			result = maiYuanService.smsSendByMaiYuan(mobilesData, content, accountType, 100);
 			break;
 
 		}
